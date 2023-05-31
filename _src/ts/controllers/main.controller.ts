@@ -4,21 +4,35 @@ import { MainModel, Transaction, Account } from '../models/main.model';
 export class MainController {
   async getMaxChangedAccount(req, res) {
     try {
+      const start = Date.now();
       const apikey = 'apikey' in req.query ? req.query.apikey : process.env.apikey;
-      let blockNumber = await this.getLastBlockNumber(apikey);
-      blockNumber = --blockNumber;
-      const transactions: Transaction[] = (await this.getBlockTransactions(blockNumber, apikey)) as Transaction[];
+      const lastBlockNumber = await this.getLastBlockNumber(apikey);
+      const lastBlockNumberDecimal = parseInt(lastBlockNumber, 16);
+      const addressBalances: Account = {};
       let maxAccount: Account = {};
-      if (transactions) {
-        const addressBalances = transactions.reduce((accum, item) => {
-          const val = Number(item.value);
-          accum[item.to] = (accum[item.to] || 0) + val;
-          accum[item.from] = (accum[item.from] || 0) - val;
-          maxAccount = this.getMaxAccount({ [item.to]: accum[item.to] }, { [item.from]: accum[item.from] }, maxAccount);
-          return accum;
-        }, <Account>{});
-        this.tests(addressBalances, maxAccount, blockNumber);
+      let i = lastBlockNumberDecimal;
+      while (i > lastBlockNumberDecimal - 100) {
+        const blockNumber = i.toString(16);
+        const transactions: Transaction[] = (await this.getBlockTransactions(blockNumber, apikey)) as Transaction[];
+        console.log('i = ', lastBlockNumberDecimal - i);
+        // console.log('blockNumber = ', blockNumber);
+        // console.log('transactions count = ', transactions.length);
+        if (transactions) {
+          transactions.reduce((accum, item) => {
+            const val = Number(item.value);
+            accum[item.to] = (accum[item.to] || 0) + val;
+            accum[item.from] = (accum[item.from] || 0) - val;
+            maxAccount = this.getMaxAccount(
+              { [item.to]: accum[item.to] },
+              { [item.from]: accum[item.from] },
+              maxAccount,
+            );
+            return accum;
+          }, addressBalances);
+        }
+        --i;
       }
+      this.benchmarks(addressBalances, maxAccount, start);
       res.send(Object.keys(maxAccount)[0] || 'no results were found');
     } catch (e) {
       console.log(e);
@@ -32,9 +46,9 @@ export class MainController {
     return block?.result?.transactions;
   }
 
-  async getLastBlockNumber(apikey): Promise<number> {
+  async getLastBlockNumber(apikey): Promise<string> {
     const result = await fetch(`https://api.etherscan.io/api?module=proxy&action=eth_blockNumber&apikey=${apikey}`);
-    const data = (await result.json()) as { result: number };
+    const data = (await result.json()) as { result: string };
     return data.result;
   }
 
@@ -48,11 +62,12 @@ export class MainController {
     return args[0];
   }
 
-  tests(addressBalances, maxAccount, blockNumber) {
+  benchmarks(addressBalances, maxAccount, startTime) {
     const values: number[] = Object.values(addressBalances);
     values.sort((a, b) => b - a);
-    console.log('\nblockNumber', blockNumber);
+    console.log('\nexecution time = ', (Date.now() - startTime) / 1000);
     console.log(maxAccount);
+    console.log('values.length', values.length);
     console.log(values);
   }
 }
