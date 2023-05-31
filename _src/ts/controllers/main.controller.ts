@@ -5,17 +5,21 @@ export class MainController {
   async getMaxChangedAccount(req, res) {
     try {
       const apikey = 'apikey' in req.query ? req.query.apikey : process.env.apikey;
-      const lastBlockNumber = await this.getLastBlockNumber(apikey);
-      const transactions: Transaction[] = (await this.getBlockTransactions(lastBlockNumber, apikey)) as Transaction[];
+      let blockNumber = await this.getLastBlockNumber(apikey);
+      blockNumber = --blockNumber;
+      const transactions: Transaction[] = (await this.getBlockTransactions(blockNumber, apikey)) as Transaction[];
       let maxAccount: Account = {};
-      const addressBalances = transactions.reduce((accum, item) => {
-        const val = Number(item.value);
-        accum[item.to] = (accum[item.to] || 0) + val;
-        accum[item.from] = (accum[item.from] || 0) - val;
-        maxAccount = this.getMaxAccount({ [item.to]: accum[item.to] }, { [item.from]: accum[item.from] }, maxAccount);
-        return accum;
-      }, <Account>{});
-      res.send(addressBalances);
+      if (transactions) {
+        const addressBalances = transactions.reduce((accum, item) => {
+          const val = Number(item.value);
+          accum[item.to] = (accum[item.to] || 0) + val;
+          accum[item.from] = (accum[item.from] || 0) - val;
+          maxAccount = this.getMaxAccount({ [item.to]: accum[item.to] }, { [item.from]: accum[item.from] }, maxAccount);
+          return accum;
+        }, <Account>{});
+        this.tests(addressBalances, maxAccount, blockNumber);
+      }
+      res.send(Object.keys(maxAccount)[0] || 'no results were found');
     } catch (e) {
       console.log(e);
     }
@@ -25,12 +29,12 @@ export class MainController {
     const url = `https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=${blockId}&boolean=true&apikey=${apikey}`;
     const response = await fetch(url);
     const block = (await response.json()) as MainModel;
-    return block.result.transactions;
+    return block?.result?.transactions;
   }
 
-  async getLastBlockNumber(apikey): Promise<string> {
+  async getLastBlockNumber(apikey): Promise<number> {
     const result = await fetch(`https://api.etherscan.io/api?module=proxy&action=eth_blockNumber&apikey=${apikey}`);
-    const data = (await result.json()) as { result: string };
+    const data = (await result.json()) as { result: number };
     return data.result;
   }
 
@@ -42,5 +46,13 @@ export class MainController {
       return item1 < item2 ? 1 : -1;
     });
     return args[0];
+  }
+
+  tests(addressBalances, maxAccount, blockNumber) {
+    const values: number[] = Object.values(addressBalances);
+    values.sort((a, b) => b - a);
+    console.log('\nblockNumber', blockNumber);
+    console.log(maxAccount);
+    console.log(values);
   }
 }
