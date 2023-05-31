@@ -9,8 +9,4 @@ mainRout.get('/', (req, res) => {
   ctr.getMaxChangedAccount(req, res);
 });
 
-mainRout.get('/test', (req, res) => {
-  res.send('<h1 style="text-align: center; margin: 30vh 0;">test test test test</h1>');
-});
-
 export default mainRout;

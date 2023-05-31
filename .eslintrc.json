@@ -40,7 +40,7 @@
 
     // just rooles
     "no-plusplus": "off",
-    "max-len": ["error", 100, 2, { "ignoreUrls": true }],
+    "max-len": ["error", 120, 2, { "ignoreUrls": true }],
      "no-console": "off",
     "no-alert": "error",
     "spaced-comment": "off",
