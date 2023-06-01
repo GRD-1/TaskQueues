@@ -1,16 +1,9 @@
-// eslint-disable-next-line max-classes-per-file
-export class QueueElement {
-  constructor(public name: string, public previous: QueueElement | null, public next: QueueElement | null) {
-    this.name = name;
-    this.previous = null;
-    this.next = null;
-  }
-}
+import { QueueElement } from './queue-element.model';
 
 type QueueMethod = QueueElement | null;
 
 export class DoubleEndedQueue {
-  constructor(public head: QueueMethod = null, public tail: QueueMethod = null) {}
+  constructor(public head: QueueElement = null, public tail: QueueElement = null) {}
 
   theQueueIsEmpty(element = null) {
     if (this.head === null || this.tail === null) {
@@ -64,7 +57,7 @@ export class DoubleEndedQueue {
     console.log('\n');
     let element = this.head;
     while (element) {
-      console.log(element.name);
+      console.log(element.value.result.transactions);
       element = element.next;
     }
   }

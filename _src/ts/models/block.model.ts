@@ -4,11 +4,13 @@ export interface Transaction {
   to: string;
   value: number;
 }
+
 export interface Account {
   [address: string]: number;
 }
 
-export class MainModel {
+export class Block {
+  constructor(public blockNumber: string) {}
   result: {
     transactions: Transaction[];
   };

@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { MainModel, Transaction, Account } from '../models/main.model';
+import { Block, Transaction, Account } from '../models/block.model';
 
 export class MainController {
   async getMaxChangedAccount(req, res) {
@@ -11,7 +11,7 @@ export class MainController {
       const addressBalances: Account = {};
       let maxAccount: Account = {};
       let i = lastBlockNumberDecimal;
-      while (i > lastBlockNumberDecimal - 100) {
+      while (i > lastBlockNumberDecimal - 1) {
         const blockNumber = i.toString(16);
         const transactions: Transaction[] = (await this.getBlockTransactions(blockNumber, apikey)) as Transaction[];
         console.log('i = ', lastBlockNumberDecimal - i);
@@ -42,7 +42,7 @@ export class MainController {
   async getBlockTransactions(blockId, apikey) {
     const url = `https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=${blockId}&boolean=true&apikey=${apikey}`;
     const response = await fetch(url);
-    const block = (await response.json()) as MainModel;
+    const block = (await response.json()) as Block;
     return block?.result?.transactions;
   }
 
