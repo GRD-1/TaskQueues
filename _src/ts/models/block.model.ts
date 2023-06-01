@@ -11,6 +11,7 @@ export interface Account {
 
 export class Block {
   constructor(public blockNumber: string) {}
+  status: number | string | undefined;
   result: {
     transactions: Transaction[];
   };

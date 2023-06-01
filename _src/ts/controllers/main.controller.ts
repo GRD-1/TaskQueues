@@ -1,5 +1,7 @@
 import fetch from 'node-fetch';
-import { Block, Transaction, Account } from '../models/block.model';
+import { Block, Account } from '../models/block.model';
+import { DoubleEndedQueue } from '../models/queue.model';
+import { QueueElement } from '../models/queue-element.model';
 
 export class MainController {
   async getMaxChangedAccount(req, res) {
@@ -10,40 +12,58 @@ export class MainController {
       const lastBlockNumberDecimal = parseInt(lastBlockNumber, 16);
       const addressBalances: Account = {};
       let maxAccount: Account = {};
-      let i = lastBlockNumberDecimal;
-      while (i > lastBlockNumberDecimal - 1) {
-        const blockNumber = i.toString(16);
-        const transactions: Transaction[] = (await this.getBlockTransactions(blockNumber, apikey)) as Transaction[];
-        console.log('i = ', lastBlockNumberDecimal - i);
-        // console.log('blockNumber = ', blockNumber);
-        // console.log('transactions count = ', transactions.length);
-        if (transactions) {
-          transactions.reduce((accum, item) => {
-            const val = Number(item.value);
-            accum[item.to] = (accum[item.to] || 0) + val;
-            accum[item.from] = (accum[item.from] || 0) - val;
-            maxAccount = this.getMaxAccount(
-              { [item.to]: accum[item.to] },
-              { [item.from]: accum[item.from] },
-              maxAccount,
-            );
-            return accum;
-          }, addressBalances);
-        }
-        --i;
-      }
-      this.benchmarks(addressBalances, maxAccount, start);
-      res.send(Object.keys(maxAccount)[0] || 'no results were found');
+      let i = 0;
+      const queue = new DoubleEndedQueue();
+
+      const timerId = setInterval(async () => {
+        const blockNumber = (lastBlockNumberDecimal - i).toString(16);
+        const blockAddedToQueue = await this.addBlockToQueue(blockNumber, apikey, queue);
+        if (blockAddedToQueue) ++i;
+        if (i >= 100) clearInterval(timerId);
+      }, 200);
+
+      let j = 0;
+      setTimeout(() => {
+        const timerId2 = setInterval(() => {
+          if (!queue.theQueueIsEmpty()) {
+            console.log(j);
+            const { transactions } = queue.tail.value.result;
+            transactions.reduce((accum, item) => {
+              const val = Number(item.value);
+              accum[item.to] = (accum[item.to] || 0) + val;
+              accum[item.from] = (accum[item.from] || 0) - val;
+              maxAccount = this.getMaxAccount(
+                { [item.to]: accum[item.to] },
+                { [item.from]: accum[item.from] },
+                maxAccount,
+              );
+              return accum;
+            }, addressBalances);
+            queue.removeFromTail();
+            j++;
+            if (j >= 100) {
+              clearInterval(timerId2);
+              this.benchmarks(addressBalances, maxAccount, start);
+              res.send(Object.keys(maxAccount)[0] || 'no results were found');
+            }
+          }
+        }, 200);
+      }, 1000);
     } catch (e) {
       console.log(e);
     }
   }
 
-  async getBlockTransactions(blockId, apikey) {
+  async addBlockToQueue(blockId, apikey, queue) {
     const url = `https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=${blockId}&boolean=true&apikey=${apikey}`;
     const response = await fetch(url);
     const block = (await response.json()) as Block;
-    return block?.result?.transactions;
+    if (!('status' in block)) {
+      const element = new QueueElement(block, blockId);
+      queue.addToHead(element);
+      return true;
+    }
+    return false;
   }
 
   async getLastBlockNumber(apikey): Promise<string> {
