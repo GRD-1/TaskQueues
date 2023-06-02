@@ -47,6 +47,7 @@
     "no-param-reassign": "off",
     "lines-between-class-members": "off",
     "no-trailing-spaces": "off",
+    "prefer-destructuring": "off",
 
     // typescript specific
     "no-underscore-dangle": "off",

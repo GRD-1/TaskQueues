@@ -15,8 +15,9 @@
 
 ## Конфигурация
 
-* Переменные окружения требующие вспомогательных функий лежат тут: _src/ts/config/config.ts
-* Константы тут: _src/ts/config/.env
+* Переменные окружения лежат тут: _src/ts/config/config.ts
+  * используйте process.env.apikey, чтобы назначить новый apikey для запросов к https://api.etherscan.io
+  * исользуйте process.env.logTheBenchmarks, чтобы отключить логироване в консоль;
 
 ## Запуск 
 
