@@ -41,12 +41,12 @@
     // just rooles
     "no-plusplus": "off",
     "max-len": ["error", 120, 2, { "ignoreUrls": true }],
-     "no-console": "off",
+    "no-console": "off",
     "no-alert": "error",
     "spaced-comment": "off",
-//    "no-param-reassign": ["error", { "props": true, "ignorePropertyModificationsFor": ["accum"] }],
     "no-param-reassign": "off",
     "lines-between-class-members": "off",
+    "no-trailing-spaces": "off",
 
     // typescript specific
     "no-underscore-dangle": "off",
@@ -60,6 +60,7 @@
     "strict": "off",
     "import/extensions": "off",
     "import/newline-after-import": "off",
-    "import/prefer-default-export": "off"
+    "import/prefer-default-export": "off",
+    "import/no-extraneous-dependencies": "off"
   }
 }
