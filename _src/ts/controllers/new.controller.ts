@@ -7,7 +7,7 @@ export class NewController {
   async getTheMaxChangedAccount(req, res) {
     try {
       const start = Date.now();
-      const queue = new Queue({ results: [] });
+      const queue = new Queue({ results: [], autostart: true });
 
       this.fillTheBlockQueue(queue);
 
@@ -40,14 +40,10 @@ export class NewController {
     const url = `https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=${blockNumber}&boolean=true&apikey=${process.env.apikey}`;
     const response = await fetch(url);
     const block = (await response.json()) as Block;
-    // console.log('\nblockNumber: ', blockNumber);
-    // console.log('block: ', block);
     if (!('status' in block)) {
-      // const worker = new QueueWorker(blockNumber, block);
-      // queue.push(worker);
       queue.push((cb) => {
-        const result = blockNumber;
-        console.log('\nqueue element: ', blockNumber);
+        const worker = new QueueWorker(block, blockNumber);
+        const result = worker.handler(queue);
         cb(null, result);
       });
 
@@ -70,12 +66,13 @@ export class NewController {
     const j = 0;
 
     setTimeout(() => {
-      console.log('queue.length:', queue.length);
-      queue.start((err) => {
-        if (err) throw err;
-        res.send(Object.keys(maxAccount)[0] || 'no results were found');
-        console.log('all done:', queue.results);
-      });
+      // console.log('\ncalculateBalances queue.results:', queue.results);
+      res.send(Object.keys(maxAccount)[0] || 'no results were found');
+      // queue.start((err) => {
+      //   if (err) throw err;
+      //   res.send(Object.keys(maxAccount)[0] || 'no results were found');
+      //   console.log('all done:', queue.results);
+      // });
 
       // const timerId2 = setInterval(() => {
       //     if (!queue.theQueueIsEmpty()) {
