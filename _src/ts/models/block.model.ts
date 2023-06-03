@@ -14,8 +14,8 @@ export interface ProcessedData {
   maxAccount: Account;
 }
 
-export class Block {
-  constructor(public blockNumber: string) {}
+export interface Block {
+  blockNumber: string;
   status: number | string | undefined;
   result: {
     transactions: Transaction[];

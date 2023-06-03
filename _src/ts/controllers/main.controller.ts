@@ -3,7 +3,7 @@ import Queue from 'queue';
 import { QueueWorker } from '../models/queue-worker.model';
 import { Block, Account, ProcessedData } from '../models/block.model';
 
-export class NpmQueueController {
+export class MainController {
   async getMaxChangedAccount(req, res) {
     const startTime = Date.now();
     const queue = new Queue({ results: [], concurrency: 1, autostart: true });
@@ -36,8 +36,7 @@ export class NpmQueueController {
 
   async addBlockToQueue(blockNumber: string, queue: Queue, blocksAmount: number) {
     try {
-      const url = `https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=${blockNumber}&boolean=true&apikey=${process.env.apikey}`;
-      const response = await fetch(url);
+      const response = await fetch(`${process.env.etherscanAPIBlockRequest}&tag=${blockNumber}`);
       const block = (await response.json()) as Block;
       if (!('status' in block)) {
         queue.push((cb) => {
@@ -49,7 +48,7 @@ export class NpmQueueController {
       }
       return false;
     } catch (e) {
-      console.log('Failed to get the data block! reason: ', e.message);
+      console.warn('Failed to get the data block! reason: ', e.message);
       return false;
     }
   }
@@ -73,13 +72,11 @@ export class NpmQueueController {
 
   async getLastBlockNumber(): Promise<{ err?: string; value?: string }> {
     try {
-      const result = await fetch(
-        `https://api.etherscan.io/api?module=proxy&action=eth_blockNumber&apikey=${process.env.apikey}`,
-      );
+      const result = await fetch(process.env.etherscanAPILastBlockNumberRequest);
       const data = (await result.json()) as { result: string };
       return { value: data.result };
     } catch (e) {
-      console.log('Failed to get the last block number! reason: ', e.message);
+      console.warn('Failed to get the last block number! reason: ', e.message);
       return { err: e.message };
     }
   }
