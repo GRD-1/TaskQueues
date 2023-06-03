@@ -1,4 +1,4 @@
-import { QueueElement } from './queue-element.model';
+import { QueueElement } from './my-queue-element.model';
 
 type QueueMethod = QueueElement | null;
 

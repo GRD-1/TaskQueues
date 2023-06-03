@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
 import Queue from 'queue';
-import { QueueWorker } from '../models/queue-worker.model';
+import { QueueWorker } from '../models/npm-queue-worker.model';
 import { Block, Account, ProcessedData } from '../models/block.model';
 
 export class MainController {
@@ -13,9 +13,8 @@ export class MainController {
 
     const { addressBalances, maxAccount } = await this.getResults(queue, blocksAmount);
 
-    if (process.env.logBenchmarks === 'true') {
-      this.benchmarks(addressBalances, maxAccount, startTime);
-    }
+    if (process.env.logBenchmarks === 'true') this.getBenchmarks(addressBalances, maxAccount, startTime);
+
     res.send(Object.keys(maxAccount)[0] || 'no results were found');
   }
 
@@ -81,7 +80,7 @@ export class MainController {
     }
   }
 
-  benchmarks(addressBalances: Account, maxAccount: Account, startTime: number) {
+  getBenchmarks(addressBalances: Account, maxAccount: Account, startTime: number) {
     const values: number[] = Object.values(addressBalances);
     values.sort((a, b) => b - a);
     console.log('\nexecution time = ', (Date.now() - startTime) / 1000);
