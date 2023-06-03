@@ -4,7 +4,7 @@ import { DoubleEndedQueue } from '../models/queue.model';
 import { QueueElement } from '../models/queue-element.model';
 
 export class SelfWrittenQueueController {
-  async getTheMaxChangedAccount(req, res) {
+  async getMaxChangedAccount(req, res) {
     try {
       const start = Date.now();
       const apikey = 'apikey' in req.query ? req.query.apikey : process.env.apikey;
@@ -56,7 +56,7 @@ export class SelfWrittenQueueController {
     }
   }
 
-  async addBlockToQueue(blockId, apikey, queue) {
+  async addBlockToQueue(blockId: string, apikey: string, queue: DoubleEndedQueue) {
     const url = `https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=${blockId}&boolean=true&apikey=${apikey}`;
     const response = await fetch(url);
     const block = (await response.json()) as Block;
@@ -68,7 +68,7 @@ export class SelfWrittenQueueController {
     return false;
   }
 
-  async getLastBlockNumber(apikey): Promise<string> {
+  async getLastBlockNumber(apikey: string): Promise<string> {
     const result = await fetch(`https://api.etherscan.io/api?module=proxy&action=eth_blockNumber&apikey=${apikey}`);
     const data = (await result.json()) as { result: string };
     return data.result;
@@ -84,7 +84,7 @@ export class SelfWrittenQueueController {
     return args[0];
   }
 
-  benchmarks(addressBalances, maxAccount, startTime) {
+  benchmarks(addressBalances: Account, maxAccount: Account, startTime: number) {
     const values: number[] = Object.values(addressBalances);
     values.sort((a, b) => b - a);
     console.log('\nexecution time = ', (Date.now() - startTime) / 1000);

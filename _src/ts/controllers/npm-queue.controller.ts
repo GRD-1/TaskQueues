@@ -4,22 +4,22 @@ import { QueueWorker } from '../models/queue-worker.model';
 import { Block, Account, ProcessedData } from '../models/block.model';
 
 export class NpmQueueController {
-  async getTheMaxChangedAccount(req, res) {
+  async getMaxChangedAccount(req, res) {
     const startTime = Date.now();
     const queue = new Queue({ results: [], concurrency: 1, autostart: true });
     const blocksAmount = req.query.blocksAmount || 100;
 
-    this.processTheBlockQueue(queue, blocksAmount);
+    this.processBlockQueue(queue, blocksAmount);
 
-    const { addressBalances, maxAccount } = await this.getTheResults(queue, blocksAmount);
+    const { addressBalances, maxAccount } = await this.getResults(queue, blocksAmount);
 
-    if (process.env.logTheBenchmarks === 'true') {
+    if (process.env.logBenchmarks === 'true') {
       this.benchmarks(addressBalances, maxAccount, startTime);
     }
     res.send(Object.keys(maxAccount)[0] || 'no results were found');
   }
 
-  async processTheBlockQueue(queue, blocksAmount) {
+  async processBlockQueue(queue: Queue, blocksAmount?: number) {
     const lastBlockNumber = await this.getLastBlockNumber();
     const lastBlockNumberDecimal = parseInt(lastBlockNumber.value, 16);
     let i = blocksAmount;
@@ -54,7 +54,7 @@ export class NpmQueueController {
     }
   }
 
-  async getTheResults(queue, blocksAmount) {
+  async getResults(queue: Queue, blocksAmount: number) {
     let addressBalances: Account = { valory: 0 };
     let maxAccount: Account = { ravoly: 0 };
     const delay = await new Promise((resolve) => {
@@ -84,7 +84,7 @@ export class NpmQueueController {
     }
   }
 
-  benchmarks(addressBalances, maxAccount, startTime) {
+  benchmarks(addressBalances: Account, maxAccount: Account, startTime: number) {
     const values: number[] = Object.values(addressBalances);
     values.sort((a, b) => b - a);
     console.log('\nexecution time = ', (Date.now() - startTime) / 1000);

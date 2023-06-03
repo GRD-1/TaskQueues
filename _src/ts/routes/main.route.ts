@@ -12,13 +12,13 @@ mainRoute.get('/max-balance', (req, res) => {
   const npmQueueController = new NpmQueueController();
   switch (req.query.queue) {
     case 'self-written-queue':
-      selfWrittenQueueController.getTheMaxChangedAccount(req, res);
+      selfWrittenQueueController.getMaxChangedAccount(req, res);
       break;
     case 'npm-queue':
-      npmQueueController.getTheMaxChangedAccount(req, res);
+      npmQueueController.getMaxChangedAccount(req, res);
       break;
     default:
-      npmQueueController.getTheMaxChangedAccount(req, res);
+      npmQueueController.getMaxChangedAccount(req, res);
   }
 });
 
