@@ -1,4 +1,3 @@
-import Queue from 'queue';
 import { Account, Block } from './block.model';
 
 export class QueueWorker {
@@ -10,7 +9,7 @@ export class QueueWorker {
     this.value = value;
   }
 
-  handler(queue: Queue) {
+  handler(queue, blocksAmount) {
     const previousResultIndex = queue.results.length > 1 ? queue.results.length - 2 : 0;
     let addressBalances: Account = { '': 0 };
     let maxAccount: Account = { '': 0 };
@@ -26,7 +25,7 @@ export class QueueWorker {
     }, addressBalances);
 
     if (process.env.logTheBenchmarks === 'true') {
-      this.logBenchmarks(queue, previousResultIndex, addressBalances, maxAccount);
+      this.logBenchmarks(addressBalances, maxAccount, previousResultIndex, queue, blocksAmount);
     }
     return { addressBalances, maxAccount };
   }
@@ -41,9 +40,9 @@ export class QueueWorker {
     return args[0];
   }
 
-  logBenchmarks(queue, previousResultIndex, addressBalances, maxAccount) {
+  logBenchmarks(addressBalances, maxAccount, previousResultIndex, queue, blocksAmount: number) {
     const previousResult = queue.results[previousResultIndex];
-    console.log(`\nblock ${101 - queue.results.length}`);
+    console.log(`\nblock ${blocksAmount - queue.results.length}`);
     // console.log('this transactions[0].blockNumber = ', this.value.result.transactions[0].blockNumber);
     console.log('maxAccount = ', maxAccount);
     // console.log(`block ${101 - queue.results.length}`);

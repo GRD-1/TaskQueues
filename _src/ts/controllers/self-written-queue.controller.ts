@@ -3,14 +3,16 @@ import { Block, Account } from '../models/block.model';
 import { DoubleEndedQueue } from '../models/queue.model';
 import { QueueElement } from '../models/queue-element.model';
 
-export class MainController {
-  async getMaxChangedAccount(req, res) {
+export class SelfWrittenQueueController {
+  async getTheMaxChangedAccount(req, res) {
     try {
       const start = Date.now();
       const apikey = 'apikey' in req.query ? req.query.apikey : process.env.apikey;
       const lastBlockNumber = await this.getLastBlockNumber(apikey);
       const lastBlockNumberDecimal = parseInt(lastBlockNumber, 16);
       const addressBalances: Account = {};
+      const blocksAmount = req.query.blocksAmount || 100;
+
       let maxAccount: Account = {};
       let i = 0;
       const queue = new DoubleEndedQueue();
@@ -19,7 +21,7 @@ export class MainController {
         const blockNumber = (lastBlockNumberDecimal - i).toString(16);
         const blockAddedToQueue = await this.addBlockToQueue(blockNumber, apikey, queue);
         if (blockAddedToQueue) ++i;
-        if (i >= 100) clearInterval(timerId);
+        if (i >= blocksAmount) clearInterval(timerId);
       }, 200);
 
       let j = 0;
@@ -41,7 +43,7 @@ export class MainController {
             }, addressBalances);
             queue.removeFromTail();
             j++;
-            if (j >= 100) {
+            if (j >= blocksAmount) {
               clearInterval(timerId2);
               this.benchmarks(addressBalances, maxAccount, start);
               res.send(Object.keys(maxAccount)[0] || 'no results were found');
