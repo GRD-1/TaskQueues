@@ -11,7 +11,7 @@ export class MainController {
 
     this.processBlockQueue(queue, blocksAmount);
     const { addressBalances, maxAccount } = await this.getResults(queue, blocksAmount);
-    if (process.env.logBenchmarks === 'true') this.getBenchmarks(addressBalances, maxAccount, startTime);
+    if (process.env.logBenchmarks === 'true') this.logBenchmarks(addressBalances, maxAccount, startTime);
     res.send(Object.keys(maxAccount)[0] || 'no results were found');
   }
 
@@ -77,7 +77,7 @@ export class MainController {
     }
   }
 
-  getBenchmarks(addressBalances: Account, maxAccount: Account, startTime: number) {
+  logBenchmarks(addressBalances: Account, maxAccount: Account, startTime: number) {
     const values: number[] = Object.values(addressBalances);
     values.sort((a, b) => b - a);
     console.log('\nexecution time = ', (Date.now() - startTime) / 1000);

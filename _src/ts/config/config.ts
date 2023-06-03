@@ -11,5 +11,5 @@ export default function getVariables() {
   process.env.etherscanAPILastBlockNumberRequest = `${etherscanAPI}&action=eth_blockNumber`;
 
   // log
-  process.env.logTheBenchmarks = 'true';
+  process.env.logBenchmarks = 'true';
 }
