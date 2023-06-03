@@ -9,7 +9,7 @@ export class QueueWorker {
     this.value = value;
   }
 
-  handler(queue, blocksAmount) {
+  processBlock(queue, blocksAmount) {
     const previousResultIndex = queue.results.length > 1 ? queue.results.length - 2 : 0;
     let addressBalances: Account = { '': 0 };
     let maxAccount: Account = { '': 0 };

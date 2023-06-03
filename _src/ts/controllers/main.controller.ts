@@ -10,11 +10,8 @@ export class MainController {
     const blocksAmount = req.query.blocksAmount || 100;
 
     this.processBlockQueue(queue, blocksAmount);
-
     const { addressBalances, maxAccount } = await this.getResults(queue, blocksAmount);
-
     if (process.env.logBenchmarks === 'true') this.getBenchmarks(addressBalances, maxAccount, startTime);
-
     res.send(Object.keys(maxAccount)[0] || 'no results were found');
   }
 
@@ -40,7 +37,7 @@ export class MainController {
       if (!('status' in block)) {
         queue.push((cb) => {
           const worker = new QueueWorker(block, blockNumber);
-          const result = worker.handler(queue, blocksAmount);
+          const result = worker.processBlock(queue, blocksAmount);
           cb(null, result);
         });
         return true;
