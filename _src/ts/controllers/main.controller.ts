@@ -1,5 +1,6 @@
 import fetch from 'node-fetch';
 import Queue from 'queue';
+import { ToadScheduler, SimpleIntervalJob, Task } from 'toad-scheduler';
 import { QueueWorker } from '../models/npm-queue-worker.model';
 import { Block, Account, ProcessedData } from '../models/block.model';
 
@@ -9,7 +10,7 @@ export class MainController {
     const queue = new Queue({ results: [], concurrency: 1, autostart: true });
     const blocksAmount = req.query.blocksAmount || 100;
 
-    this.processBlockQueue(queue, blocksAmount);
+    await this.processBlockQueue(queue, blocksAmount);
     const { addressBalances, maxAccount } = await this.getResults(queue, blocksAmount);
     if (process.env.logBenchmarks === 'true') this.logBenchmarks(addressBalances, maxAccount, startTime);
     res.send(Object.keys(maxAccount)[0] || 'no results were found');
@@ -18,16 +19,25 @@ export class MainController {
   async processBlockQueue(queue: Queue, blocksAmount?: number) {
     const lastBlockNumber = await this.getLastBlockNumber();
     const lastBlockNumberDecimal = parseInt(lastBlockNumber.value, 16);
-    let i = blocksAmount;
+    const scheduler = new ToadScheduler();
+    let i = 0;
 
-    const timerId = setInterval(async () => {
+    const task = new Task('download block', async () => {
+      if (i >= blocksAmount) {
+        scheduler.stopById('job1');
+        console.log('\nthe block downloading is completed');
+        return;
+      }
+      console.log(`block №${i}`);
       const blockNumber = (lastBlockNumberDecimal - i).toString(16);
       const blockAddedToQueue = await this.addBlockToQueue(blockNumber, queue, blocksAmount);
       if (blockAddedToQueue) ++i;
-      if (i >= blocksAmount) {
-        clearInterval(timerId);
-      }
-    }, 250);
+    });
+    const job = new SimpleIntervalJob({ milliseconds: 200 }, task, {
+      id: 'job1',
+      preventOverrun: true,
+    });
+    scheduler.addSimpleIntervalJob(job);
   }
 
   async addBlockToQueue(blockNumber: string, queue: Queue, blocksAmount: number) {
@@ -50,18 +60,24 @@ export class MainController {
   }
 
   async getResults(queue: Queue, blocksAmount: number) {
-    let addressBalances: Account = { valory: 0 };
-    let maxAccount: Account = { ravoly: 0 };
-    const delay = await new Promise((resolve) => {
-      setTimeout((val = 0) => {
-        const timerId = setInterval(() => {
-          if (queue.results.length >= blocksAmount) {
-            clearInterval(timerId);
-            ({ addressBalances, maxAccount } = queue.results[queue.results.length - 2][0]);
-            resolve(val);
-          }
-        }, 200);
-      }, 3000);
+    let addressBalances: Account = { address: 0 };
+    let maxAccount: Account = { address: 0 };
+    const scheduler = new ToadScheduler();
+
+    await new Promise((resolve) => {
+      const task = new Task('download block', () => {
+        // console.log('\nqueue.results.length: ', queue.results.length);
+        if (queue.results.length >= blocksAmount) {
+          console.log('\nresults are received!!! ');
+          scheduler.stopById('job2');
+          ({ addressBalances, maxAccount } = queue.results[queue.results.length - 2][0]);
+          resolve({ addressBalances, maxAccount });
+        }
+      });
+      const job = new SimpleIntervalJob({ milliseconds: 250 }, task, {
+        id: 'job2',
+      });
+      scheduler.addSimpleIntervalJob(job);
     });
     return { addressBalances, maxAccount };
   }
@@ -83,6 +99,6 @@ export class MainController {
     console.log('\nexecution time = ', (Date.now() - startTime) / 1000);
     console.log(maxAccount);
     console.log('values.length', values.length);
-    console.log(values);
+    // console.log(values);
   }
 }
