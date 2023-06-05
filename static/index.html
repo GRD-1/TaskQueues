@@ -10,17 +10,10 @@
     <div style="width: 1000px; text-align: left;">
       <br>чтобы получить адрес, баланс которого изменился больше остальных
       используйте запрос: <a href = "http://localhost:3000/max-balance">http://localhost:3000/max-balance</a>
-      <br>источник данных ограничивает количество входящих запросов в мин.
-      время выполнения запроса ~25сек. Наберитесь терпения!
+      <br>источник данных ограничивает количество входящих запросов в мин. Наберитесь терпения!
       <br>
       <br>количество блоков для анализа можно менять через параметр [blocksAmount] строки запроса,
       <br>например: <a href = "http://localhost:3000/max-balance?blocksAmount=2">http://localhost:3000/max-balance?blocksAmount=2</a> (по умолчанию 100)
-      <br>
-      <br>для сравнения производительности метод реализован с использованием разных библиотек для очереди задач.
-      <br>параметр строки запроса [queue] позволяет переключаться между ними, например:
-      <br><a href = "http://localhost:3000/max-balance?queue=self-written-queue">http://localhost:3000/max-balance?queue=self-written-queue</a>
-      <br><a href = "http://localhost:3000/max-balance?queue=npm-queue">http://localhost:3000/max-balance?queue=npm-queue</a>
-      <br>(по умолчанию используется 'npm queue')
     </div>
   </main>
 </body>

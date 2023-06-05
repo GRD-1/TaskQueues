@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import Bull, { Job } from 'bull';
+import Bull from 'bull';
 import bullSettings from '../config/bull';
 import { Block, Account, ProcessedData } from '../models/block.model';
 
@@ -22,17 +22,7 @@ export class MainController {
     const lastBlockNumber = await this.getLastBlockNumber();
     const lastBlockNumberDecimal = parseInt(lastBlockNumber.value, 16);
     let i = 1;
-    downloadQueue.add(
-      'downloadBlocks',
-      {},
-      {
-        repeat: {
-          every: 200,
-          limit: blocksAmount,
-        },
-      },
-    );
-
+    downloadQueue.add('downloadBlocks', {}, { repeat: { every: 200, limit: blocksAmount } });
     downloadQueue.process('downloadBlocks', async (job, done) => {
       try {
         if (process.env.logBenchmarks === 'true') console.log(`\ndownload queue iteration ${i}`);
@@ -44,7 +34,7 @@ export class MainController {
         const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
         done(err);
       } catch (e) {
-        console.log('downloadBlocks Error!', e);
+        console.error('downloadBlocks Error!', e);
         done(e);
       }
     });
@@ -103,11 +93,5 @@ export class MainController {
     console.log(maxAccount);
     console.log('values.length', values.length);
     console.log(values);
-  }
-
-  async getJobCount(queue, jobName: string) {
-    const jobs = await queue.getJobs([]);
-    const filteredJobs = jobs.filter((job) => job.name === jobName);
-    console.log(`jobs[${jobName}].length: ${filteredJobs.length}`);
   }
 }
