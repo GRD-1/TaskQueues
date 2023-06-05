@@ -15,9 +15,9 @@ export interface ProcessedData {
 }
 
 export interface Block {
-  blockNumber: string;
   status: number | string | undefined;
   result: {
+    number: string;
     transactions: Transaction[];
   };
 }

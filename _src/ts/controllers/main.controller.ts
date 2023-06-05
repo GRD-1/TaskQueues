@@ -1,64 +1,78 @@
 import fetch from 'node-fetch';
-import Queue from 'queue';
-import { ToadScheduler, SimpleIntervalJob, Task } from 'toad-scheduler';
-import { QueueWorker } from '../models/npm-queue-worker.model';
+import Bull, { Job } from 'bull';
+import bullSettings from '../config/bull';
 import { Block, Account, ProcessedData } from '../models/block.model';
 
 export class MainController {
   async getMaxChangedAccount(req, res) {
     const startTime = Date.now();
     const blocksAmount = req.query.blocksAmount || 100;
+    const downloadQueue = new Bull('downloadQueue', bullSettings);
+    const processingQueue = new Bull('processingQueue', bullSettings);
 
-    const { addressBalances, maxAccount } = await this.processBlockQueue(blocksAmount);
+    this.downloadData(downloadQueue, processingQueue, blocksAmount);
+    const { addressBalances, maxAccount } = await this.processData(processingQueue, blocksAmount);
+
     if (process.env.logBenchmarks === 'true') this.logBenchmarks(addressBalances, maxAccount, startTime);
     res.send(Object.keys(maxAccount)[0] || 'no results were found');
   }
 
-  async processBlockQueue(blocksAmount?: number): Promise<ProcessedData> {
+  async downloadData(downloadQueue, processingQueue, blocksAmount?: number) {
+    await downloadQueue.empty();
     const lastBlockNumber = await this.getLastBlockNumber();
     const lastBlockNumberDecimal = parseInt(lastBlockNumber.value, 16);
-    const queue = new Queue({ results: [], concurrency: 1, autostart: true });
-    const scheduler = new ToadScheduler();
-    let i = 0;
+    let i = 1;
+    downloadQueue.add(
+      'downloadBlocks',
+      {},
+      {
+        repeat: {
+          every: 200,
+          limit: blocksAmount,
+        },
+      },
+    );
 
-    return new Promise((resolve) => {
-      const task = new Task('download block', async () => {
-        if (i >= blocksAmount) {
-          scheduler.stopById('job1');
-          console.log('\nthe block downloading is completed');
-          resolve(queue.results[queue.results.length - 2][0]);
-          return;
-        }
-        console.log(`block №${i}`);
+    downloadQueue.process('downloadBlocks', async (job, done) => {
+      try {
+        if (process.env.logBenchmarks === 'true') console.log(`\ndownload queue iteration ${i}`);
         const blockNumber = (lastBlockNumberDecimal - i).toString(16);
-        const blockAddedToQueue = await this.addBlockToQueue(blockNumber, queue, blocksAmount);
-        if (blockAddedToQueue) ++i;
-      });
-      const job = new SimpleIntervalJob({ milliseconds: 200 }, task, {
-        id: 'job1',
-        preventOverrun: true,
-      });
-      scheduler.addSimpleIntervalJob(job);
+        const response = await fetch(`${process.env.etherscanAPIBlockRequest}&tag=${blockNumber}`);
+        const block = (await response.json()) as Block;
+        processingQueue.add('processBlocks', { block });
+        ++i;
+        const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
+        done(err);
+      } catch (e) {
+        console.log('downloadBlocks Error!', e);
+        done(e);
+      }
     });
   }
 
-  async addBlockToQueue(blockNumber: string, queue: Queue, blocksAmount: number) {
-    try {
-      const response = await fetch(`${process.env.etherscanAPIBlockRequest}&tag=${blockNumber}`);
-      const block = (await response.json()) as Block;
-      if (!('status' in block)) {
-        queue.push((cb) => {
-          const worker = new QueueWorker(block, blockNumber);
-          const result = worker.processBlock(queue, blocksAmount);
-          cb(null, result);
-        });
-        return true;
-      }
-      return false;
-    } catch (e) {
-      console.warn('Failed to get the data block! reason: ', e.message);
-      return false;
-    }
+  async processData(processingQueue, blocksAmount: number): Promise<ProcessedData> {
+    await processingQueue.empty();
+    let addressBalances: Account = { '': 0 };
+    let maxAccount: Account = { '': 0 };
+    let i = 1;
+
+    await new Promise((resolve) => {
+      processingQueue.process('processBlocks', async (job, done) => {
+        if (process.env.logBenchmarks === 'true') console.log(`\nprocess queue iteration ${i}`);
+        const { transactions } = job.data.block.result;
+        addressBalances = transactions.reduce((accum, item) => {
+          const val = Number(item.value);
+          accum[item.to] = (accum[item.to] || 0) + val;
+          accum[item.from] = (accum[item.from] || 0) - val;
+          maxAccount = this.getMaxAccount({ [item.to]: accum[item.to] }, { [item.from]: accum[item.from] }, maxAccount);
+          return accum;
+        }, {});
+        ++i;
+        if (i > blocksAmount) resolve('work is finished!');
+        done();
+      });
+    });
+    return { addressBalances, maxAccount };
   }
 
   async getLastBlockNumber(): Promise<{ err?: string; value?: string }> {
@@ -67,9 +81,19 @@ export class MainController {
       const data = (await result.json()) as { result: string };
       return { value: data.result };
     } catch (e) {
-      console.warn('Failed to get the last block number! reason: ', e.message);
+      console.error('Failed to get the last block number! reason: ', e);
       return { err: e.message };
     }
+  }
+
+  getMaxAccount(...args: Account[]): Account {
+    args.sort((a, b) => {
+      const item1 = Number.isNaN(Math.abs(Object.values(a)[0])) ? 0 : Math.abs(Object.values(a)[0]);
+      const item2 = Number.isNaN(Math.abs(Object.values(b)[0])) ? 0 : Math.abs(Object.values(b)[0]);
+      if (item1 === item2) return 0;
+      return item1 < item2 ? 1 : -1;
+    });
+    return args[0];
   }
 
   logBenchmarks(addressBalances: Account, maxAccount: Account, startTime: number) {
@@ -78,6 +102,12 @@ export class MainController {
     console.log('\nexecution time = ', (Date.now() - startTime) / 1000);
     console.log(maxAccount);
     console.log('values.length', values.length);
-    // console.log(values);
+    console.log(values);
+  }
+
+  async getJobCount(queue, jobName: string) {
+    const jobs = await queue.getJobs([]);
+    const filteredJobs = jobs.filter((job) => job.name === jobName);
+    console.log(`jobs[${jobName}].length: ${filteredJobs.length}`);
   }
 }
