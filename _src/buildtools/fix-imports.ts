@@ -15,7 +15,7 @@ function fixImportsAtFile(filePath) {
       return l;
     }
 
-    const [_, importPath] = l.split('\'');
+    const [_, importPath] = l.split("'");
     const fullPath = path.join(filePath, '..', importPath);
     const exists = fs.existsSync(fullPath);
     if (exists === false) {
