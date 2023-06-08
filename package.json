@@ -10,7 +10,7 @@
   "scripts": {
     "start:prod": "npm run build && node app/index.js",
     "start:dev": "tsc-watch --onSuccess \"npm run watch\"",
-    "watch": "nodemon --watch '_src/ts/**/*.ts' --exec \"node --experimental-specifier-resolution=node --loader ts-node/esm\" -r dotenv/config _src/ts/index.ts dotenv_config_path=_src/ts/config/.env",
+    "watch": "nodemon --watch '_src/**/*.ts' --exec \"node --experimental-specifier-resolution=node --loader ts-node/esm\" -r dotenv/config _src/index.ts dotenv_config_path=_src/config/.env",
     "run-typescript": "ts-node-transpile-only",
     "build": "tsc && npm run fix-imports",
     "fix-imports": "node buildtools/fix-imports.js"
