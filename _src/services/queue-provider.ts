@@ -1,26 +1,34 @@
-import fetch from 'node-fetch';
 import Bull from 'bull';
+import fetch from 'node-fetch';
 import bullSettings from '../config/bull';
-import { Block, Account, ProcessedData } from '../models/block.model';
+import { Account, Block, ProcessedData } from '../models/block.model';
 
-export class MainController {
-  async getMaxChangedAccount(req, res) {
-    const startTime = Date.now();
-    const blocksAmount = req.query.blocksAmount || 10;
-    const downloadQueue = new Bull('downloadQueue', bullSettings);
-    const processingQueue = new Bull('processingQueue', bullSettings);
+export class Service {
+  async Bull(query) {
+    const { blocksAmount, library, lastBlock } = query;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // import Lib from library;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // import settings from `../config/${library}`;
 
-    this.downloadData(downloadQueue, processingQueue, blocksAmount);
-    const { addressBalances, maxAccount } = await this.processData(processingQueue, blocksAmount);
-
-    if (process.env.logBenchmarks === 'true') this.logBenchmarks(addressBalances, maxAccount, startTime);
-    res.send(Object.keys(maxAccount)[0] || 'no results were found');
+    import Lib from 'bull';
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // import settings from '../config/bull';
+    // const downloadQueue = new Lib('downloadQueue', settings);
+    // const processQueue = new Lib('processQueue', settings);
+    //
+    // this.downloadData(downloadQueue, processQueue, blocksAmount, lastBlock);
+    // return this.processData(processQueue, blocksAmount);
+    return {};
   }
 
-  async downloadData(downloadQueue, processingQueue, blocksAmount?: number) {
+  async downloadData(downloadQueue, processingQueue, blocksAmount?: number, lastBlock?: string) {
     await downloadQueue.empty();
-    const lastBlockNumber = await this.getLastBlockNumber();
-    const lastBlockNumberDecimal = parseInt(lastBlockNumber.value, 16);
+    const lastBlockNumber = lastBlock || (await this.getLastBlockNumber()).value;
+    const lastBlockNumberDecimal = parseInt(lastBlockNumber, 16);
     let i = 1;
     downloadQueue.add('downloadBlocks', {}, { repeat: { every: 200, limit: blocksAmount } });
     downloadQueue.process('downloadBlocks', async (job, done) => {
@@ -84,14 +92,5 @@ export class MainController {
       return item1 < item2 ? 1 : -1;
     });
     return args[0];
-  }
-
-  logBenchmarks(addressBalances: Account, maxAccount: Account, startTime: number) {
-    const values: number[] = Object.values(addressBalances);
-    values.sort((a, b) => b - a);
-    console.log('\nexecution time = ', (Date.now() - startTime) / 1000);
-    console.log(maxAccount);
-    console.log('values.length', values.length);
-    console.log(values);
   }
 }

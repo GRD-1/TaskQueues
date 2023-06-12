@@ -44,8 +44,11 @@ For each library will be performed the following sequence of tasks:
 * To get the most changed balance data use: http://localhost:3000/max-balance
 * To change the block number use the query string parameter [blocksAmount]
   For example: http://localhost:3000/max-balance?blocksAmount=2 (by default blocksAmount = 10)
-* To define the library you want to use the query string parameter [lib]
-  For example: http://localhost:3000/max-balance?lib=bull (by default lib = fastq)
+* To define the library you want to use the query string parameter [library]
+  For example: http://localhost:3000/max-balance?library=bull (by default library = fastq)
+* To define the last block number (e.g. to compare efficiency of different libraries) use the parameter [lastBlock]
+  For example: http://localhost:3000/max-balance?lastBlock=0x10d4f. If the lastBlock = undefined 
+  the application will get the last block number from the blockchain.
 
 ## Comments
 
