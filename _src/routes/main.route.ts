@@ -7,8 +7,8 @@ mainRoute.get('/', (req, res) => {
 });
 
 mainRoute.get('/max-balance', (req, res) => {
-  const npmQueueController = new MainController();
-  npmQueueController.getMaxChangedAccount(req, res);
+  const controller = new MainController();
+  controller.get(req, res);
 });
 
 export default mainRoute;

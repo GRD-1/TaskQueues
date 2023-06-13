@@ -3,32 +3,35 @@ import fetch from 'node-fetch';
 import bullSettings from '../config/bull';
 import { Account, Block, ProcessedData } from '../models/block.model';
 
-export class Service {
-  async Bull(query) {
-    const { blocksAmount, library, lastBlock } = query;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    // import Lib from library;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    // import settings from `../config/${library}`;
+interface Query {
+  library: string;
+  blocksAmount: number;
+  lastBlock: string;
+}
 
-    import Lib from 'bull';
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    // import settings from '../config/bull';
-    // const downloadQueue = new Lib('downloadQueue', settings);
-    // const processQueue = new Lib('processQueue', settings);
-    //
-    // this.downloadData(downloadQueue, processQueue, blocksAmount, lastBlock);
-    // return this.processData(processQueue, blocksAmount);
-    return {};
+export default class QueueProvider {
+  constructor(public query: Query) {}
+
+  async handler() {
+    return { addressBalances: '', maxAccount: '' };
   }
 
-  async downloadData(downloadQueue, processingQueue, blocksAmount?: number, lastBlock?: string) {
+  getQueue(queueName) {
+    switch (this.query?.library) {
+      case 'bull':
+        return Bull(queueName, bullSettings);
+      case 'queue':
+      case 'rabbit':
+      default:
+        // return new Fastq(fastQSettings);
+        return Bull(queueName, bullSettings);
+    }
+  }
+
+  async downloadData(downloadQueue, processingQueue, blocksAmount?: number) {
     await downloadQueue.empty();
-    const lastBlockNumber = lastBlock || (await this.getLastBlockNumber()).value;
-    const lastBlockNumberDecimal = parseInt(lastBlockNumber, 16);
+    const lastBlockNumber = await this.getLastBlockNumber();
+    const lastBlockNumberDecimal = parseInt(lastBlockNumber.value, 16);
     let i = 1;
     downloadQueue.add('downloadBlocks', {}, { repeat: { every: 200, limit: blocksAmount } });
     downloadQueue.process('downloadBlocks', async (job, done) => {
