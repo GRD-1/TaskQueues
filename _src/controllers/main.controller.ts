@@ -1,20 +1,15 @@
-import QueueProvider from '../services/queue-provider';
+import QueueProvider from '../services/queue-provider.service';
 import { Account } from '../models/block.model';
+import BalanceAnalyzer from '../utils/balance-analyzer.util';
 
 export class MainController {
   async get(req, res) {
     const startTime = Date.now();
-    // const blocksAmount = req.query.blocksAmount || 10;
-    // const provider = new QueueProvider(req.query?.library);
-    // const downloadQueue = provider.getQueue('downloadQueue');
-    // const processingQueue = provider.getQueue('processingQueue');
-    //
-    // this.downloadData(downloadQueue, processingQueue, blocksAmount);
-    // const { addressBalances, maxAccount } = await this.processData(processingQueue, blocksAmount);
-
     const provider = new QueueProvider(req.query);
-    const { addressBalances, maxAccount } = await provider.handler();
-    // if (process.env.logBenchmarks === 'true') this.logBenchmarks(addressBalances, maxAccount, startTime);
+    const queue = provider.getQueue();
+    const balanceAnalyzer = new BalanceAnalyzer(queue, req.query);
+    const { addressBalances, maxAccount } = await balanceAnalyzer.getMaxChangedBalance();
+    if (process.env.logBenchmarks === 'true') this.logBenchmarks(addressBalances, maxAccount, startTime);
     res.send(Object.keys(maxAccount)[0] || 'no results were found');
   }
 

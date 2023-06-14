@@ -1,46 +1,32 @@
-import Bull from 'bull';
 import fetch from 'node-fetch';
-import bullSettings from '../config/bull';
 import { Account, Block, ProcessedData } from '../models/block.model';
 
-interface Query {
-  library: string;
+export default class BalanceAnalyzer {
   blocksAmount: number;
   lastBlock: string;
-}
-
-export default class QueueProvider {
-  constructor(public query: Query) {}
-
-  async handler() {
-    return { addressBalances: '', maxAccount: '' };
+  constructor(public taskQueue, query) {
+    this.blocksAmount = query.blocksAmount || 10;
+    this.lastBlock = query.lastBlock;
   }
 
-  getQueue(queueName) {
-    switch (this.query?.library) {
-      case 'bull':
-        return Bull(queueName, bullSettings);
-      case 'queue':
-      case 'rabbit':
-      default:
-        // return new Fastq(fastQSettings);
-        return Bull(queueName, bullSettings);
-    }
+  async getMaxChangedBalance() {
+    this.downloadData();
+    return this.processData();
   }
 
-  async downloadData(downloadQueue, processingQueue, blocksAmount?: number) {
-    await downloadQueue.empty();
+  async downloadData() {
+    // await downloadQueue.empty();
     const lastBlockNumber = await this.getLastBlockNumber();
     const lastBlockNumberDecimal = parseInt(lastBlockNumber.value, 16);
     let i = 1;
-    downloadQueue.add('downloadBlocks', {}, { repeat: { every: 200, limit: blocksAmount } });
-    downloadQueue.process('downloadBlocks', async (job, done) => {
+    this.taskQueue.add('downloadBlocks', {}, { repeat: { every: 200, limit: this.blocksAmount } });
+    this.taskQueue.process('downloadBlocks', async (job, done) => {
       try {
         if (process.env.logBenchmarks === 'true') console.log(`\ndownload queue iteration ${i}`);
         const blockNumber = (lastBlockNumberDecimal - i).toString(16);
         const response = await fetch(`${process.env.etherscanAPIBlockRequest}&tag=${blockNumber}`);
         const block = (await response.json()) as Block;
-        processingQueue.add('processBlocks', { block });
+        this.taskQueue.add('processBlocks', { block });
         ++i;
         const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
         done(err);
@@ -51,14 +37,14 @@ export default class QueueProvider {
     });
   }
 
-  async processData(processingQueue, blocksAmount: number): Promise<ProcessedData> {
-    await processingQueue.empty();
+  async processData(): Promise<ProcessedData> {
+    // await processingQueue.empty();
     let addressBalances: Account = { '': 0 };
     let maxAccount: Account = { '': 0 };
     let i = 1;
 
     await new Promise((resolve) => {
-      processingQueue.process('processBlocks', async (job, done) => {
+      this.taskQueue.process('processBlocks', async (job, done) => {
         if (process.env.logBenchmarks === 'true') console.log(`\nprocess queue iteration ${i}`);
         const { transactions } = job.data.block.result;
         addressBalances = transactions.reduce((accum, item) => {
@@ -69,7 +55,7 @@ export default class QueueProvider {
           return accum;
         }, {});
         ++i;
-        if (i > blocksAmount) resolve('work is finished!');
+        if (i > this.blocksAmount) resolve('work is finished!');
         done();
       });
     });
