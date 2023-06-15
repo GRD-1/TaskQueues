@@ -3,10 +3,10 @@ import bullSettings from '../config/bull';
 import { Query } from '../models/max-balance.model';
 
 export default class QueueProvider {
-  constructor(public query: Query) {}
+  constructor(public library) {}
 
   getQueue() {
-    switch (this.query?.library) {
+    switch (this.library) {
       case 'bull':
         return Bull('queueName', bullSettings);
       case 'queue':

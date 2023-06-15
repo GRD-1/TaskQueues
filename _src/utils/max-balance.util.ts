@@ -1,12 +1,14 @@
 import fetch from 'node-fetch';
-import { Account, Block, ProcessedData } from '../models/max-balance.model';
+import { Account, Block, Data } from '../models/max-balance.model';
 
 export default class BalanceAnalyzer {
   blocksAmount: number;
+
   lastBlock: string;
-  constructor(public taskQueue, query) {
-    this.blocksAmount = query.blocksAmount || 10;
-    this.lastBlock = query.lastBlock;
+
+  constructor(public taskQueue, queryParams) {
+    this.blocksAmount = queryParams.blocksAmount;
+    this.lastBlock = queryParams.lastBlock;
   }
 
   async getMaxChangedBalance() {
@@ -14,10 +16,9 @@ export default class BalanceAnalyzer {
     return this.processData();
   }
 
-  async downloadData() {
+  downloadData() {
     // await downloadQueue.empty();
-    const lastBlockNumber = await this.getLastBlockNumber();
-    const lastBlockNumberDecimal = parseInt(lastBlockNumber.value, 16);
+    const lastBlockNumberDecimal = parseInt(this.lastBlock, 16);
     let i = 1;
     this.taskQueue.add('downloadBlocks', {}, { repeat: { every: 200, limit: this.blocksAmount } });
     this.taskQueue.process('downloadBlocks', async (job, done) => {
@@ -37,17 +38,19 @@ export default class BalanceAnalyzer {
     });
   }
 
-  async processData(): Promise<ProcessedData> {
+  async processData(): Promise<Data> {
     // await processingQueue.empty();
     let addressBalances: Account = { '': 0 };
     let maxAccount: Account = { '': 0 };
     let i = 1;
+    let amountOfTransactions = 0;
 
     await new Promise((resolve) => {
       this.taskQueue.process('processBlocks', async (job, done) => {
         if (process.env.logBenchmarks === 'true') console.log(`\nprocess queue iteration ${i}`);
         const { transactions } = job.data.block.result;
         addressBalances = transactions.reduce((accum, item) => {
+          amountOfTransactions++;
           const val = Number(item.value);
           accum[item.to] = (accum[item.to] || 0) + val;
           accum[item.from] = (accum[item.from] || 0) - val;
@@ -59,18 +62,7 @@ export default class BalanceAnalyzer {
         done();
       });
     });
-    return { addressBalances, maxAccount };
-  }
-
-  async getLastBlockNumber(): Promise<{ err?: string; value?: string }> {
-    try {
-      const result = await fetch(process.env.etherscanAPILastBlockNumberRequest);
-      const data = (await result.json()) as { result: string };
-      return { value: data.result };
-    } catch (e) {
-      console.error('Failed to get the last block number! reason: ', e);
-      return { err: e.message };
-    }
+    return { addressBalances, maxAccount, amountOfTransactions };
   }
 
   getMaxAccount(...args: Account[]): Account {

@@ -4,20 +4,25 @@ export interface Query {
   lastBlock: string;
 }
 
+export interface Account {
+  [address: string]: number;
+}
+
+export interface Data {
+  addressBalances: Account;
+  maxAccount: Account;
+  amountOfTransactions: number;
+}
+
+export interface ProcessedData extends Query, Data {
+  startTime: number;
+}
+
 export interface Transaction {
   blockNumber: number;
   from: string;
   to: string;
   value: number;
-}
-
-export interface Account {
-  [address: string]: number;
-}
-
-export interface ProcessedData {
-  addressBalances: Account;
-  maxAccount: Account;
 }
 
 export interface Block {
