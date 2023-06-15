@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Max balance</title>
+</head>
+<body>
+  <main style="text-align: center; margin: 20vh 0; display: flex; align-items: center; flex-direction: column;">
+    <h1 style="display: block; width: 1000px; text-align: left;">The results of balance analysis</h1>
+    <div style="width: 700px; text-align: left;">
+      <div>incoming query params:</div>
+      <div style="display: flex"><div>* the library: </div><div>$library$</div></div>
+      <div style="display: flex"><div>* the last block number: </div><div>$lastBlock$</div></div>
+      <div style="display: flex"><div>* the number of blocks: </div><div>$blocksAmount$</div></div>
+    </div>
+    <br>
+    <div style="width: 1000px; text-align: left;">
+      <div>the results:</div>
+      <div style="display: flex"><div>* the max modified balance belongs to the wallet address: </div><div>$address$</div></div>
+      <div style="display: flex"><div>* it's changes amounted: </div><div>$finalBalance$</div></div>
+      <div style="display: flex"><div>* the request processing time: </div><div>$processTime$</div></div>
+      <div style="display: flex"><div>* the transaction number: </div><div>$transactionNumber$</div></div>
+    </div>
+  </main>
+</body>
+</html>
