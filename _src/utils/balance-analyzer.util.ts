@@ -1,5 +1,5 @@
 import fetch from 'node-fetch';
-import { Account, Block, ProcessedData } from '../models/block.model';
+import { Account, Block, ProcessedData } from '../models/max-balance.model';
 
 export default class BalanceAnalyzer {
   blocksAmount: number;

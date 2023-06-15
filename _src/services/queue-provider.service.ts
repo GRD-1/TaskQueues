@@ -1,11 +1,6 @@
 import Bull from 'bull';
 import bullSettings from '../config/bull';
-
-interface Query {
-  library: string;
-  blocksAmount: number;
-  lastBlock: string;
-}
+import { Query } from '../models/max-balance.model';
 
 export default class QueueProvider {
   constructor(public query: Query) {}

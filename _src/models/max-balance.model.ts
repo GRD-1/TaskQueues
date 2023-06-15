@@ -1,3 +1,9 @@
+export interface Query {
+  library: string;
+  blocksAmount: number;
+  lastBlock: string;
+}
+
 export interface Transaction {
   blockNumber: number;
   from: string;

@@ -1,5 +1,5 @@
 import express from 'express';
-import { MainController } from '../controllers/main.controller';
+import { MaxBalanceController } from '../controllers/max-balance.controller';
 const mainRoute = express.Router();
 
 mainRoute.get('/', (req, res) => {
@@ -7,7 +7,7 @@ mainRoute.get('/', (req, res) => {
 });
 
 mainRoute.get('/max-balance', (req, res) => {
-  const controller = new MainController();
+  const controller = new MaxBalanceController();
   controller.get(req, res);
 });
 
