@@ -1,10 +1,10 @@
 import fs from 'fs';
 import { Account, Query } from '../models/max-balance.model';
 
-function logBenchmarks(addressBalances: Account, maxAccount: Account, startTime: number) {
+function logBenchmarks(addressBalances: Account, maxAccount: Account, processingTime: number) {
   const values: number[] = Object.values(addressBalances);
   values.sort((a, b) => b - a);
-  console.log('\nexecution time = ', (Date.now() - startTime) / 1000);
+  console.log('\nexecution time = ', processingTime);
   console.log(maxAccount);
   console.log('values.length', values.length);
   console.log(values);
@@ -17,7 +17,7 @@ export default async function balanceView(
   startTime: number,
 ) {
   try {
-    let html = fs.readFileSync(`${process.env.Project_ROOT}/static/max-balance.html`, 'utf8');
+    let html = fs.readFileSync(`${process.env.Project_ROOT}/public/max-balance.html`, 'utf8');
     const maxAccountData = Object.entries(maxAccount);
     const processingTime = (Date.now() - startTime) / 1000;
     html = html

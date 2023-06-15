@@ -9,8 +9,8 @@ const urlencodedParser = express.urlencoded({ extended: false });
 // routers
 app.use('/', urlencodedParser, mainRoute);
 
-// static files storage
-app.use(express.static(`${process.env.Project_ROOT}/static`));
+// public files storage
+app.use(express.static(`${process.env.Project_ROOT}/public`));
 
 // #404. page not found
 app.use((request, response) => {
