@@ -17,7 +17,6 @@ export default class BalanceAnalyzer {
   }
 
   downloadData() {
-    // await downloadQueue.empty();
     const lastBlockNumberDecimal = parseInt(this.lastBlock, 16);
     let i = 1;
     this.taskQueue.add('downloadBlocks', {}, { repeat: { every: 200, limit: this.blocksAmount } });
@@ -39,7 +38,6 @@ export default class BalanceAnalyzer {
   }
 
   async processData(): Promise<Data> {
-    // await processingQueue.empty();
     let addressBalances: Account = { '': 0 };
     let maxAccount: Account = { '': 0 };
     let i = 1;
@@ -62,6 +60,7 @@ export default class BalanceAnalyzer {
         done();
       });
     });
+    await this.taskQueue.empty();
     return { addressBalances, maxAccount, amountOfTransactions };
   }
 
