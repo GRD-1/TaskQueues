@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { Account, ProcessedData, Query } from '../models/max-balance.model';
+import { Account, ProcessedData } from '../models/max-balance.model';
 
 function logBenchmarks(addressBalances: Account, maxAccount: Account, processingTime: number) {
   const values: number[] = Object.values(addressBalances);
@@ -13,7 +13,7 @@ function logBenchmarks(addressBalances: Account, maxAccount: Account, processing
 export default async function getBalanceView(args: ProcessedData) {
   try {
     let html = fs.readFileSync(`${process.env.Project_ROOT}/public/max-balance.html`, 'utf8');
-    const maxAccountData = Object.entries(args.maxAccount);
+    const maxAccountData = Object.entries(args.maxAccount)[0];
     const processingTime = (Date.now() - args.startTime) / 1000;
     html = html
       .replace('$library$', args.library)

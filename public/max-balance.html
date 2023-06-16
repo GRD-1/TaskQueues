@@ -2,24 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" href="/styles.css">
   <title>Max balance</title>
 </head>
 <body>
-  <main style="text-align: center; margin: 20vh 0; display: flex; align-items: center; flex-direction: column;">
-    <h1 style="display: block; width: 1000px; text-align: left;">The results of balance analysis</h1>
-    <div style="width: 1000px; text-align: left;">
-      <div>incoming query params:</div>
-      <div style="display: flex"><div>* the library: </div><div>$library$</div></div>
-      <div style="display: flex"><div>* the last block number: </div><div>$lastBlock$</div></div>
-      <div style="display: flex"><div>* the number of blocks: </div><div>$blocksAmount$</div></div>
+  <main class="max-balance">
+    <h1>The results of balance analysis</h1>
+    <div>
+      <div>the query params:</div>
+      <ul>
+        <li class="benchMark"><div>the library: </div><div>$library$</div></li>
+        <li class="benchMark"><div>the last block number: </div><div>$lastBlock$</div></li>
+        <li class="benchMark"><div>the number of blocks: </div><div>$blocksAmount$</div></li>
+      </ul>
     </div>
     <br>
-    <div style="width: 1000px; text-align: left;">
+    <div>
       <div>the results:</div>
-      <div style="display: flex"><div>* the max modified balance belongs to the wallet address: </div><div>$address$</div></div>
-      <div style="display: flex"><div>* it's changes amounted: </div><div>$finalBalance$</div></div>
-      <div style="display: flex"><div>* the request processing time: </div><div>$processTime$</div></div>
-      <div style="display: flex"><div>* the transaction number: </div><div>$transactionNumber$</div></div>
+      <ul>
+        <li class="benchMark"><div>the max modified account: </div><div>$address$</div></li>
+        <li class="benchMark"><div>balance change: </div><div>$finalBalance$</div></li>
+        <li class="benchMark"><div>processing time: </div><div>$processTime$</div></li>
+        <li class="benchMark"><div>amount of transactions: </div><div>$transactionNumber$</div></li>
+      </ul>
     </div>
   </main>
 </body>

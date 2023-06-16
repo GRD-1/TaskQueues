@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" href="/styles.css">
   <title>Home page</title>
 </head>
 <body>
-  <main style="text-align: center; margin: 20vh 0; display: flex; align-items: center; flex-direction: column;">
-    <h1 style="display: block; width: 1000px; text-align: left;">The main page of task-queues application</h1>
-    <div style="width: 1000px; text-align: left;">
+  <main>
+    <h1>The main page of task-queues application</h1>
+    <div>
       <br> This service is designed to compare the performance of the next libraries:
       <a href = "https://www.npmjs.com/package/fastq">fastq</a>,
       <a href = "https://www.npmjs.com/package/queue">queue</a>,
@@ -17,26 +18,30 @@
       <br>To compare them, we will use the <a href = "https://etherscan.io/">https://etherscan.io api</a>. This API allows us to get data from the Ethereum blockchain.
       <br>
       <br>For each library will be performed the following sequence of tasks:
-      <br>* get the last block number using the query
-      <a href = "https://api.etherscan.io/api?module=proxy&action=eth_blockNumber">https://api.etherscan.io/api?module=proxy&action=eth_blockNumber</a>
-      <br>* get the last 10 blocks one by one using the query
-      <br><a href = "https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=0x10d4f&boolean=true">https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=0x10d4f&boolean=true</a>
-      <br>* get all transactions from each block and wallet addresses from each transaction (params: [from] and [to])
-      <br>* find the wallet address whose balance has been changed the most
-      <br>* return the wallet address, the balance and the performing time
+      <ul>
+        <li>get the last block number using the query</li>
+        <li><a href = "https://api.etherscan.io/api?module=proxy&action=eth_blockNumber">https://api.etherscan.io/api?module=proxy&action=eth_blockNumber</a></li>
+        <li>
+          get the last 10 blocks one by one using the query
+          <a href = "https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=0x10d4f&boolean=true">https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=0x10d4f&boolean=true</a>
+        </li>
+        <li>get all transactions from each block and wallet addresses from each transaction (params: <b>[from]</b> and <b>[to])</b></li>
+        <li>find the wallet address whose balance has been changed the most</li>
+        <li>return the wallet address, the balance and the performing time</li>
+      </ul>
     </div>
-    <div style="width: 1000px; text-align: left;">
+    <div>
       <h2>Usage</h2>
       <br>to get the wallet that has changed the most use this request:
       <a href = "http://localhost:3000/max-balance">http://localhost:3000/max-balance</a>
       <br>
-      <br>to change the number of blocks for analysis use the query parameter [blocksAmount],
+      <br>to change the number of blocks for analysis use the query parameter <b>[blocksAmount]</b>,
       <br>for example: <a href = "http://localhost:3000/max-balance?blocksAmount=2">http://localhost:3000/max-balance?blocksAmount=2</a> (default value is 10)
       <br>
-      <br>to define the library you want to use the query string parameter [library],
+      <br>to define the library you want to use the query string parameter <b>[library]</b>,
       <br>for example: <a href = "http://localhost:3000/max-balance?library=bull">http://localhost:3000/max-balance?library=bull</a> (by default library = fastq)
       <br>
-      <br>to define the last block number (e.g. to compare efficiency of different libraries) use the parameter [lastBlock],
+      <br>to define the last block number (e.g. to compare efficiency of different libraries) use the parameter <b>[lastBlock]</b>,
       <br>for example: <a href = "http://localhost:3000/max-balance?lastBlock=0x10d4f">http://localhost:3000/max-balance?lastBlock=0x10d4f</a>
       <br>If the lastBlock = undefined, the application will get the last block number from the blockchain.
     </div>
