@@ -12,6 +12,7 @@ export interface Data {
   addressBalances: Account;
   maxAccount: Account;
   amountOfTransactions: number;
+  error?: { message: string };
 }
 
 export interface ProcessedData extends Query, Data {

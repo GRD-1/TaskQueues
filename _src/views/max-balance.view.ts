@@ -3,11 +3,11 @@ import { Account, ProcessedData } from '../models/max-balance.model';
 
 function logBenchmarks(args: ProcessedData, maxAccountData: [string, number], processingTime: number) {
   console.log('\nBenchmarks:');
-  console.log('max account', maxAccountData[0]);
-  console.log('balance', maxAccountData[1]);
-  console.log('number of blocks', args.blocksAmount);
-  console.log('number of transactions', args.amountOfTransactions);
-  console.log('execution time = ', processingTime);
+  console.log('max account:', maxAccountData[0]);
+  console.log('balance:', maxAccountData[1]);
+  console.log('number of blocks:', args.blocksAmount);
+  console.log('number of transactions:', args.amountOfTransactions);
+  console.log('execution time:', processingTime);
   // const values: number[] = Object.values(args.addressBalances);
   // values.sort((a, b) => b - a);
   // console.log(values);
