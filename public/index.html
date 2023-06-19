@@ -19,31 +19,28 @@
       <br>
       <br>For each library will be performed the following sequence of tasks:
       <ul>
-        <li>get the last block number using the query</li>
-        <li><a href = "https://api.etherscan.io/api?module=proxy&action=eth_blockNumber">https://api.etherscan.io/api?module=proxy&action=eth_blockNumber</a></li>
-        <li>
-          get the last 10 blocks one by one using the query
-          <a href = "https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=0x10d4f&boolean=true">https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=0x10d4f&boolean=true</a>
-        </li>
+        <li>get the last 10 blocks of the blockchain one by one, starting from the specified</li>
         <li>get all transactions from each block and wallet addresses from each transaction (params: <b>[from]</b> and <b>[to])</b></li>
-        <li>find the wallet address whose balance has been changed the most</li>
+        <li>find the wallet address whose balance has been changed the most as a result of transactions</li>
         <li>return the wallet address, the balance and the performing time</li>
       </ul>
     </div>
     <div>
       <h2>Usage</h2>
-      <br>to get the wallet that has changed the most use this request:
+      <br>to evaluate the library efficiency, use this default query:
       <a href = "http://localhost:3000/max-balance">http://localhost:3000/max-balance</a>
       <br>
-      <br>to change the number of blocks for analysis use the query parameter <b>[blocksAmount]</b>,
+      <br>to change the number of blocks for analysis use the query string parameter <b>[blocksAmount]</b>,
       <br>for example: <a href = "http://localhost:3000/max-balance?blocksAmount=2">http://localhost:3000/max-balance?blocksAmount=2</a> (default value is 10)
       <br>
-      <br>to define the library you want to use the query string parameter <b>[library]</b>,
+      <br>to specify the library you want to use, change the parameter <b>[library]</b>,
       <br>for example: <a href = "http://localhost:3000/max-balance?library=bull">http://localhost:3000/max-balance?library=bull</a> (by default library = fastq)
       <br>
-      <br>to define the last block number (e.g. to compare efficiency of different libraries) use the parameter <b>[lastBlock]</b>,
-      <br>for example: <a href = "http://localhost:3000/max-balance?lastBlock=0x10d4f">http://localhost:3000/max-balance?lastBlock=0x10d4f</a>
-      <br>If the lastBlock = undefined, the application will get the last block number from the blockchain.
+      <br>to specify the last block number use the parameter <b>[lastBlock]</b>,
+      <br>for example: <a href = "http://localhost:3000/max-balance?lastBlock=0x10b2feb">http://localhost:3000/max-balance?lastBlock=0x10b2feb</a>
+      <br>by default the application uses the number "0x10b2feb"
+      <br>to start downloading from the last blockchain block use the expression [lastBlock]=last
+      <br>for example: <a href = "http://localhost:3000/max-balance?lastBlock=last">http://localhost:3000/max-balance?lastBlock=last</a>
     </div>
   </main>
 </body>

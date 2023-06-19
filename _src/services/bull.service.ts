@@ -1,8 +1,12 @@
-import fetch from 'node-fetch';
+import Bull from 'bull';
 import { Account, Block, Data } from '../models/max-balance.model';
+import queueSettings from '../config/bull';
 
-export default class BalanceAnalyzer {
-  constructor(public taskQueue, public blocksAmount: number, public lastBlock: string, public startTime: number) {}
+export class BullService {
+  taskQueue: Bull.Queue;
+  constructor(public blocksAmount: number, public lastBlock: string) {
+    this.taskQueue = new Bull('taskQueue', queueSettings);
+  }
 
   async getMaxChangedBalance() {
     // this.taskQueue.add('deadline', {}, { delay: this.blocksAmount * 200 });
@@ -73,10 +77,5 @@ export default class BalanceAnalyzer {
       return item1 < item2 ? 1 : -1;
     });
     return args[0];
-  }
-
-  hasTheTimeExpired() {
-    const processingTime = (Date.now() - this.startTime) / 1000;
-    return processingTime > this.blocksAmount * 0.5;
   }
 }

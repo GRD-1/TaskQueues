@@ -1,19 +1,19 @@
 import Bull from 'bull';
-import bullSettings from '../config/bull';
-import { Query } from '../models/max-balance.model';
+import queueSettings from '../config/bull';
+const Queue = Bull;
 
-export default class QueueProvider {
+export class BullService {
   constructor(public library) {}
 
   getQueue() {
     switch (this.library) {
       case 'bull':
-        return Bull('queueName', bullSettings);
+        return Queue('queueName', queueSettings);
       case 'queue':
       case 'rabbit':
       default:
         // return new Fastq(fastQSettings);
-        return Bull('queueName', bullSettings);
+        return Queue('queueName', queueSettings);
     }
   }
 }

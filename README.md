@@ -7,7 +7,6 @@ This service is designed to compare the performance of the next libraries:
 
 To compare them, we will use the https://etherscan.io/ api. This API allows us to get data from the Ethereum blockchain.
 For each library will be performed the following sequence of tasks: 
-* get the last block number using the query https://api.etherscan.io/api?module=proxy&action=eth_blockNumber
 * get the last 10 blocks one by one using the query https://api.etherscan.io/api?module=proxy&action=eth_getBlockByNumber&tag=0x10d4f&boolean=true
 * get all transactions from each block and wallet addresses from each transaction (params: [from] and [to])
 * find the wallet address whose balance has been changed the most
@@ -32,6 +31,9 @@ For each library will be performed the following sequence of tasks:
 * the environment variables are here: _src/ts/config/config.ts
   * use the process.env.apikey, define the new apikey for queries to https://api.etherscan.io
   * use the process.env.logTheBenchmarks to switch off the console logging;
+  * use the process.env.defaultLibrary to set the default queue library
+  * use the process.env.defaultBlocksAmount to set the number of blocks loaded by default
+  * use the process.env.defaultLastBlock to set the default "last block" number
 
 ## Launch 
 
@@ -41,14 +43,16 @@ For each library will be performed the following sequence of tasks:
 ## Usage
 
 * After the service is launched it is available at http://localhost:3000
-* To get the most changed balance data use: http://localhost:3000/max-balance
-* To change the block number use the query string parameter [blocksAmount]
+* to evaluate the library efficiency, use this default query: http://localhost:3000/max-balance
+* to change the number of blocks for analysis use the query string parameter [blocksAmount]
   For example: http://localhost:3000/max-balance?blocksAmount=2 (by default blocksAmount = 10)
-* To define the library you want to use the query string parameter [library]
+* to specify the library you want to use, change the parameter [library]
   For example: http://localhost:3000/max-balance?library=bull (by default library = fastq)
-* To define the last block number (e.g. to compare efficiency of different libraries) use the parameter [lastBlock]
-  For example: http://localhost:3000/max-balance?lastBlock=0x10d4f. If the lastBlock = undefined 
-  the application will get the last block number from the blockchain.
+* to specify the last block number use the parameter [lastBlock]
+  For example: http://localhost:3000/max-balance?lastBlock=0x10b2feb. 
+  by default the application uses the number "0x10b2feb". 
+  to start downloading from the last blockchain block use the expression [lastBlock]=last
+  for example: <a href = "http://localhost:3000/max-balance?lastBlock=last">http://localhost:3000/max-balance?lastBlock=last</a>
 
 ## Comments
 

@@ -10,6 +10,11 @@ export default function getVariables() {
   process.env.etherscanAPIBlockRequest = `${etherscanAPI}&action=eth_getBlockByNumber`;
   process.env.etherscanAPILastBlockNumberRequest = `${etherscanAPI}&action=eth_blockNumber`;
 
+  // default query params
+  process.env.defaultLibrary = 'bull';
+  process.env.defaultBlocksAmount = '2';
+  process.env.defaultLastBlock = '0x10b2feb';
+
   // log
   process.env.logBenchmarks = 'true';
 }

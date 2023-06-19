@@ -1,18 +1,28 @@
-import QueueProvider from '../services/queue-provider.service';
-import BalanceAnalyzer from '../utils/max-balance.util';
+import { BullService } from '../services/bull.service';
 import getQueryParams from '../utils/query-params-extractor.util';
 import getBalanceView from '../views/max-balance.view';
 
 export class MaxBalanceController {
   async get(req, res) {
-    const startTime = Date.now();
     const queryParams = await getQueryParams(req.query);
-    const provider = new QueueProvider(queryParams.library);
-    const queue = provider.getQueue();
-    const balanceAnalyzer = new BalanceAnalyzer(queue, queryParams.blocksAmount, queryParams.lastBlock, startTime);
-    const data = await balanceAnalyzer.getMaxChangedBalance();
+    const startTime = Date.now();
+    const provider = this.getQueueProvider(queryParams);
+    const data = await provider.getMaxChangedBalance();
+
     if (data.error) res.end(data.error.message);
     const results = await getBalanceView({ ...queryParams, startTime, ...data });
     res.end(results);
+  }
+
+  getQueueProvider(queryParams) {
+    switch (queryParams.library) {
+      case 'bull':
+        return new BullService(queryParams.blocksAmount, queryParams.lastBlock);
+      case 'queue':
+      case 'rabbit':
+      default:
+        // return new Fastq(queryParams);
+        return new BullService(queryParams.blocksAmount, queryParams.lastBlock);
+    }
   }
 }
