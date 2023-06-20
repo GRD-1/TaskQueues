@@ -1,9 +1,10 @@
 import Bull from 'bull';
-import { Account, Block, Data } from '../models/max-balance.model';
+import { Account, Block, Data, ProcessedData } from '../models/max-balance.model';
 import queueSettings from '../config/bull';
 
 export class BullService {
   taskQueue: Bull.Queue;
+
   constructor(public blocksAmount: number, public lastBlock: string) {
     this.taskQueue = new Bull('taskQueue', queueSettings);
   }
@@ -15,18 +16,18 @@ export class BullService {
     // });
     // deadline.then(result => );
 
-    this.downloadData();
+    await this.downloadData();
     const data = await this.processData();
     await this.taskQueue.obliterate({ force: true });
     this.taskQueue.close();
     return data;
   }
 
-  downloadData() {
+  async downloadData() {
     const lastBlockNumberDecimal = parseInt(this.lastBlock, 16);
     let i = 0;
-    this.taskQueue.add('downloadBlocks', {}, { repeat: { every: 200, limit: this.blocksAmount } });
-    this.taskQueue.process('downloadBlocks', async (job, done) => {
+    await this.taskQueue.add('downloadBlocks', {}, { repeat: { every: 200, limit: this.blocksAmount } });
+    await this.taskQueue.process('downloadBlocks', async (job, done) => {
       try {
         ++i;
         if (process.env.logBenchmarks === 'true') console.log(`\ndownload queue iteration ${i}`);
@@ -35,20 +36,25 @@ export class BullService {
         const block = (await response.json()) as Block;
         this.taskQueue.add('processBlocks', { block });
         const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
+        // if (i >= this.blocksAmount) {
+        // }
         done(err);
       } catch (e) {
         console.error('downloadBlocks Error!', e);
         done(e);
       }
     });
+    console.log('\nData downloading completed!');
   }
 
   async processData(): Promise<Data> {
+    const startTime = Date.now();
     let addressBalances: Account = { '': 0 };
     let maxAccount: Account = { '': 0 };
     let i = 0;
     let amountOfTransactions = 0;
 
+    console.log('\nData processing started!');
     await new Promise((resolve) => {
       this.taskQueue.process('processBlocks', async (job, done) => {
         i++;
@@ -66,7 +72,8 @@ export class BullService {
         if (i >= this.blocksAmount) resolve('the blocks processing is finished!');
       });
     });
-    return { addressBalances, maxAccount, amountOfTransactions };
+    const processTime = (Date.now() - startTime) / 1000;
+    return { addressBalances, maxAccount, amountOfTransactions, processTime };
   }
 
   getMaxAccount(...args: Account[]): Account {

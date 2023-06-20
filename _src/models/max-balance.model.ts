@@ -12,12 +12,11 @@ export interface Data {
   addressBalances: Account;
   maxAccount: Account;
   amountOfTransactions: number;
+  processTime: number;
   error?: { message: string };
 }
 
-export interface ProcessedData extends Query, Data {
-  startTime: number;
-}
+export interface ProcessedData extends Query, Data {}
 
 export interface Transaction {
   blockNumber: number;

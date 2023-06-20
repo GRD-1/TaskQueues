@@ -1,13 +1,13 @@
 import fs from 'fs';
 import { Account, ProcessedData } from '../models/max-balance.model';
 
-function logBenchmarks(args: ProcessedData, maxAccountData: [string, number], processingTime: number) {
+function logBenchmarks(args: ProcessedData, maxAccountData: [string, number]) {
   console.log('\nBenchmarks:');
   console.log('max account:', maxAccountData[0]);
   console.log('balance:', maxAccountData[1]);
   console.log('number of blocks:', args.blocksAmount);
   console.log('number of transactions:', args.amountOfTransactions);
-  console.log('execution time:', processingTime);
+  console.log('processing time:', args.processTime);
   // const values: number[] = Object.values(args.addressBalances);
   // values.sort((a, b) => b - a);
   // console.log(values);
@@ -17,7 +17,6 @@ export default async function getBalanceView(args: ProcessedData) {
   try {
     let html = fs.readFileSync(`${process.env.Project_ROOT}/public/max-balance.html`, 'utf8');
     const maxAccountData = Object.entries(args.maxAccount)[0];
-    const processingTime = (Date.now() - args.startTime) / 1000;
     html = html
       .replace('$library$', args.library)
       .replace('$lastBlock$', args.lastBlock)
@@ -26,9 +25,9 @@ export default async function getBalanceView(args: ProcessedData) {
       .replace('$finalBalance$', String(maxAccountData[1]))
       .replace('$blocksNumber$', String(args.blocksAmount))
       .replace('$transactionNumber$', String(args.amountOfTransactions))
-      .replace('$processTime$', String(processingTime));
+      .replace('$processTime$', String(args.processTime));
 
-    if (process.env.logBenchmarks === 'true') logBenchmarks(args, maxAccountData, processingTime);
+    if (process.env.logBenchmarks === 'true') logBenchmarks(args, maxAccountData);
     return html;
   } catch (err) {
     console.error('Error in view handler [getResults]: ', err);

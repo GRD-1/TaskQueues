@@ -5,12 +5,11 @@ import getBalanceView from '../views/max-balance.view';
 export class MaxBalanceController {
   async get(req, res) {
     const queryParams = await getQueryParams(req.query);
-    const startTime = Date.now();
     const provider = this.getQueueProvider(queryParams);
     const data = await provider.getMaxChangedBalance();
 
     if (data.error) res.end(data.error.message);
-    const results = await getBalanceView({ ...queryParams, startTime, ...data });
+    const results = await getBalanceView({ ...queryParams, ...data });
     res.end(results);
   }
 
