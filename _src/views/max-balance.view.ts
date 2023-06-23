@@ -7,7 +7,7 @@ function logBenchmarks(args: ProcessedData, maxAccountData: [string, number]) {
   console.log('balance:', maxAccountData[1]);
   console.log('number of blocks:', args.blocksAmount);
   console.log('number of transactions:', args.amountOfTransactions);
-  console.log('data loading time:', args.processTime);
+  console.log('data loading time:', args.loadingTime);
   console.log('processing time:', args.processTime);
 }
 
