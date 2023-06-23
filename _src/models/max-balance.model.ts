@@ -12,6 +12,7 @@ export interface Data {
   addressBalances?: Account;
   maxAccount?: Account;
   amountOfTransactions?: number;
+  loadingTime?: number;
   processTime?: number;
   error?: { message: string };
 }

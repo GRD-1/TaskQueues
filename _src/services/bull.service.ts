@@ -19,9 +19,9 @@ export class BullService {
       })();
 
       (async () => {
-        await this.downloadData();
+        const loadingTime = await this.downloadData();
         const data = await this.processData();
-        resolve(data);
+        resolve({ ...data, loadingTime });
       })();
     });
     this.cleanQueue();
@@ -33,9 +33,10 @@ export class BullService {
     let i = 0;
 
     return new Promise((resolve) => {
+      const startTime = Date.now();
       this.downloadQueue.on('completed', async () => {
         const jobs = await this.downloadQueue.getJobs(['completed']);
-        if (jobs.length >= this.blocksAmount) resolve(null);
+        if (jobs.length >= this.blocksAmount) resolve((Date.now() - startTime) / 1000);
       });
 
       this.downloadQueue.add('downloadBlocks', {}, { repeat: { every: 200, limit: this.blocksAmount } });
@@ -103,7 +104,7 @@ export class BullService {
     return new Promise((resolve) => {
       this.downloadQueue.add('deadline', {}, { delay: waitingTime });
       this.downloadQueue.process('deadline', () => {
-        resolve({ error: { message: 'the waiting time has expired!!!' } });
+        resolve({ error: { message: `the waiting time has expired! (${waitingTime} sec)` } });
       });
     });
   }

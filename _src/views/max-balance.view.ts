@@ -7,6 +7,7 @@ function logBenchmarks(args: ProcessedData, maxAccountData: [string, number]) {
   console.log('balance:', maxAccountData[1]);
   console.log('number of blocks:', args.blocksAmount);
   console.log('number of transactions:', args.amountOfTransactions);
+  console.log('data loading time:', args.processTime);
   console.log('processing time:', args.processTime);
 }
 
@@ -27,6 +28,7 @@ export default async function getBalanceView(args: ProcessedData) {
       .replace('$finalBalance$', String(maxAccountData[1]))
       .replace('$blocksNumber$', String(args.blocksAmount))
       .replace('$transactionNumber$', String(args.amountOfTransactions))
+      .replace('$loadingTime$', String(args.loadingTime))
       .replace('$processTime$', String(args.processTime));
 
     if (process.env.logBenchmarks === 'true') logBenchmarks(args, maxAccountData);
