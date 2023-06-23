@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { Account, ProcessedData } from '../models/max-balance.model';
+import { ProcessedData } from '../models/max-balance.model';
 
 function logBenchmarks(args: ProcessedData, maxAccountData: [string, number]) {
   console.log('\nBenchmarks:');
@@ -8,15 +8,12 @@ function logBenchmarks(args: ProcessedData, maxAccountData: [string, number]) {
   console.log('number of blocks:', args.blocksAmount);
   console.log('number of transactions:', args.amountOfTransactions);
   console.log('processing time:', args.processTime);
-  // const values: number[] = Object.values(args.addressBalances);
-  // values.sort((a, b) => b - a);
-  // console.log(values);
 }
 
 export default async function getBalanceView(args: ProcessedData) {
   try {
     if (args.error) {
-      console.log('\n', args.error.message);
+      console.log(`${args.error.message}`);
       return args.error.message;
     }
 

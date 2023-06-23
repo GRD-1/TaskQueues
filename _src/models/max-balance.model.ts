@@ -9,10 +9,10 @@ export interface Account {
 }
 
 export interface Data {
-  addressBalances: Account;
-  maxAccount: Account;
-  amountOfTransactions: number;
-  processTime: number;
+  addressBalances?: Account;
+  maxAccount?: Account;
+  amountOfTransactions?: number;
+  processTime?: number;
   error?: { message: string };
 }
 
