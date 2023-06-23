@@ -7,8 +7,6 @@ export class MaxBalanceController {
     const queryParams = await getQueryParams(req.query);
     const provider = this.getQueueProvider(queryParams);
     const data = await provider.getMaxChangedBalance();
-
-    if (data.error) res.end(data.error.message);
     const results = await getBalanceView({ ...queryParams, ...data });
     res.end(results);
   }

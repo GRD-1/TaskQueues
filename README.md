@@ -12,6 +12,8 @@ For each library will be performed the following sequence of tasks:
 * find the wallet address whose balance has been changed the most
 * return the wallet address, the balance and the performing time  
 
+The processing time starts counting from the moment the data is completely loaded. 
+
 ## Environment
 
 - OS Ubuntu-22.04
