@@ -14,7 +14,7 @@ export class BullService {
   async getMaxChangedBalance(): Promise<Data> {
     const result = await new Promise((resolve) => {
       (async () => {
-        const errMsg = await this.setWaitingTime(this.blocksAmount * 1000);
+        const errMsg = await this.setWaitingTime(this.blocksAmount * 1500);
         resolve(errMsg);
       })();
 
@@ -47,7 +47,7 @@ export class BullService {
           const blockNumber = (lastBlockNumberDecimal - i).toString(16);
           const response = await fetch(`${process.env.etherscanAPIBlockRequest}&tag=${blockNumber}`);
           const block = (await response.json()) as Block;
-          this.processQueue.add('processBlocks', { block });
+          await this.processQueue.add('processBlocks', { block });
           const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
           done(err);
         } catch (e) {
@@ -109,10 +109,10 @@ export class BullService {
     });
   }
 
-  cleanQueue() {
-    this.downloadQueue.obliterate({ force: true });
-    this.processQueue.obliterate({ force: true });
-    this.downloadQueue.close();
-    this.processQueue.close();
+  async cleanQueue() {
+    await this.downloadQueue.obliterate({ force: true });
+    await this.processQueue.obliterate({ force: true });
+    await this.downloadQueue.close();
+    await this.processQueue.close();
   }
 }
