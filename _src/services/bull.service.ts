@@ -13,12 +13,12 @@ export class BullService {
 
   async getMaxChangedBalance(): Promise<Data> {
     const result = await new Promise((resolve) => {
-      (async () => {
+      (async (): Promise<void> => {
         const errMsg = await this.setWaitingTime(this.blocksAmount * 1500);
         resolve(errMsg);
       })();
 
-      (async () => {
+      (async (): Promise<void> => {
         const loadingTime = await this.downloadData();
         const data = await this.processData();
         resolve({ ...data, loadingTime });
@@ -28,7 +28,7 @@ export class BullService {
     return result;
   }
 
-  downloadData() {
+  downloadData(): Promise<number> {
     const lastBlockNumberDecimal = parseInt(this.lastBlock, 16);
     let i = 0;
 
@@ -109,7 +109,7 @@ export class BullService {
     });
   }
 
-  async cleanQueue() {
+  async cleanQueue(): Promise<void> {
     await this.downloadQueue.obliterate({ force: true });
     await this.processQueue.obliterate({ force: true });
     await this.downloadQueue.close();

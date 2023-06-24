@@ -58,6 +58,8 @@
     "class-methods-use-this": "off",                                                                  // prohibits the use class method decorators, requires param [this]
     "no-extra-semi": "off",
     "@typescript-eslint/no-extra-semi": "error",
+    "@typescript-eslint/explicit-function-return-type": "error",
+    "@typescript-eslint/explicit-module-boundary-types": "error",
 
     // import/export (https://github.com/import-js/eslint-plugin-import/tree/main/docs/rules)
     "strict": "off",
