@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { ProcessedData } from '../models/max-balance.model';
 
-function logBenchmarks(args: ProcessedData, maxAccountData: [string, number]) {
+function logBenchmarks(args: ProcessedData, maxAccountData: [string, number]): void {
   console.log('\nBenchmarks:');
   console.log('max account:', maxAccountData[0]);
   console.log('balance:', maxAccountData[1]);
@@ -11,7 +11,7 @@ function logBenchmarks(args: ProcessedData, maxAccountData: [string, number]) {
   console.log('processing time:', args.processTime);
 }
 
-export default async function getBalanceView(args: ProcessedData) {
+export default async function getBalanceView(args: ProcessedData): Promise<string> {
   try {
     if (args.error) {
       console.log(`${args.error.message}`);

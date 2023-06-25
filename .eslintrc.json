@@ -62,7 +62,7 @@
     "@typescript-eslint/explicit-module-boundary-types": "error",
 
     // import/export (https://github.com/import-js/eslint-plugin-import/tree/main/docs/rules)
-    "strict": "off",
+//    "strict": "off",
     "import/extensions": "off",
     "import/newline-after-import": "off",
     "import/prefer-default-export": "off",
