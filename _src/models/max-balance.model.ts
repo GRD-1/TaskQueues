@@ -1,3 +1,5 @@
+import { done } from 'fastq';
+
 export interface Query {
   library: string;
   blocksAmount: number;
@@ -24,10 +26,14 @@ export interface Block {
   downloadNumber?: number;
 }
 
-export interface DownloadWorker {
+export interface DownloadTaskArgs {
   downloadNumber: number;
   blockNumberHex: string;
 }
+
+export type DownloadWorker = (args: DownloadTaskArgs, callback: done) => Promise<void>;
+
+export type ProcessWorker = (block: Block, callback: done) => Promise<void>;
 
 export interface Data {
   addressBalances?: Account;

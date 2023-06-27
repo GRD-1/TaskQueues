@@ -1,50 +1,48 @@
 import fastq from 'fastq';
 import type { queue, done } from 'fastq';
-import { Block, Data, Account, DownloadWorker } from '../models/max-balance.model';
+import { Block, Data, Account, DownloadTaskArgs, DownloadWorker, ProcessWorker } from '../models/max-balance.model';
 
 export class FastqService {
-  downloadQueue: queue<DownloadWorker, fastq.done>;
+  downloadQueue: queue<DownloadTaskArgs, fastq.done>;
   processQueue: queue<Block, fastq.done>;
   addressBalances: Account;
   maxAccount: Account;
-  amountOfTransactions: number;
-  workerForDownloadQueue: (args: DownloadWorker, callback: done) => Promise<void>;
-  workerForProcessQueue: (block: Block, callback: done) => Promise<void>;
+  amountOfTransactions = 0;
+
+  workerForDownloadQueue: DownloadWorker = async (args: DownloadTaskArgs, callback: done): Promise<void> => {
+    try {
+      if (process.env.logBenchmarks === 'true') console.log(`\ndownload queue iteration ${args.downloadNumber}`);
+      const response = await fetch(`${process.env.etherscanAPIBlockRequest}&tag=${args.blockNumberHex}`);
+      const block = (await response.json()) as Block;
+      block.downloadNumber = args.downloadNumber;
+      await this.processQueue.push(block);
+      const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
+      callback(err);
+    } catch (e) {
+      console.error('\ndownloadBlocks Error!', e);
+      callback(e);
+    }
+  };
+
+  workerForProcessQueue: ProcessWorker = async (block: Block, callback: done): Promise<void> => {
+    if (process.env.logBenchmarks === 'true') console.log(`\nprocess queue iteration ${block.downloadNumber}`);
+    const { transactions } = block.result;
+    this.addressBalances = transactions.reduce((accum, item) => {
+      this.amountOfTransactions++;
+      const val = Number(item.value);
+      accum[item.to] = (accum[item.to] || 0) + val;
+      accum[item.from] = (accum[item.from] || 0) - val;
+      this.maxAccount = this.getMaxAccount(
+        { [item.to]: accum[item.to] },
+        { [item.from]: accum[item.from] },
+        this.maxAccount,
+      );
+      return accum;
+    }, {});
+    callback(null);
+  };
 
   constructor(public blocksAmount: number, public lastBlock: string) {
-    this.workerForDownloadQueue = async (args: DownloadWorker, callback: done): Promise<void> => {
-      try {
-        if (process.env.logBenchmarks === 'true') console.log(`\ndownload queue iteration ${args.downloadNumber}`);
-        const response = await fetch(`${process.env.etherscanAPIBlockRequest}&tag=${args.blockNumberHex}`);
-        const block = (await response.json()) as Block;
-        block.downloadNumber = args.downloadNumber;
-        await this.processQueue.push(block);
-        const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
-        callback(err);
-      } catch (e) {
-        console.error('\ndownloadBlocks Error!', e);
-        callback(e);
-      }
-    };
-
-    this.workerForProcessQueue = async (block: Block, callback: done): Promise<void> => {
-      if (process.env.logBenchmarks === 'true') console.log(`\nprocess queue iteration ${block.downloadNumber}`);
-      const { transactions } = block.result;
-      this.addressBalances = transactions.reduce((accum, item) => {
-        this.amountOfTransactions++;
-        const val = Number(item.value);
-        accum[item.to] = (accum[item.to] || 0) + val;
-        accum[item.from] = (accum[item.from] || 0) - val;
-        this.maxAccount = this.getMaxAccount(
-          { [item.to]: accum[item.to] },
-          { [item.from]: accum[item.from] },
-          this.maxAccount,
-        );
-        return accum;
-      }, {});
-      callback(null);
-    };
-
     this.downloadQueue = fastq(this.workerForDownloadQueue, 1);
     this.processQueue = fastq(this.workerForProcessQueue, 1);
     this.processQueue.pause();
@@ -59,8 +57,14 @@ export class FastqService {
 
       (async (): Promise<void> => {
         const loadingTime = await this.downloadData();
-        const data = await this.processData();
-        resolve({ ...data, loadingTime });
+        const processTime = await this.processData();
+        resolve({
+          addressBalances: this.addressBalances,
+          maxAccount: this.maxAccount,
+          amountOfTransactions: this.amountOfTransactions,
+          loadingTime,
+          processTime,
+        });
       })();
     });
     // this.cleanQueue();
@@ -83,7 +87,7 @@ export class FastqService {
     });
   }
 
-  async processData(): Promise<Data> {
+  async processData(): Promise<number> {
     const startTime = Date.now();
     await new Promise((resolve) => {
       this.processQueue.drain = (): void => {
@@ -92,13 +96,7 @@ export class FastqService {
       };
       this.processQueue.resume();
     });
-    const processTime = (Date.now() - startTime) / 1000;
-    return {
-      addressBalances: this.addressBalances,
-      maxAccount: this.maxAccount,
-      amountOfTransactions: this.amountOfTransactions,
-      processTime,
-    };
+    return (Date.now() - startTime) / 1000;
   }
 
   getMaxAccount(...args: Account[]): Account {
