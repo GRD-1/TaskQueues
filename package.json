@@ -4,7 +4,7 @@
   "description": "",
   "module": "app/index.js",
   "type": "module",
-  "keywords": [],
+  "keywords": ["async", "rabbibMQ", "bull", "queue", "fastQ"],
   "author": "GRD",
   "license": "ISC",
   "scripts": {

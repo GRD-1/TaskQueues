@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-unresolved
 import { getDirname } from './config-functions';
 
-export default function getVariables() {
+export default function getVariables(): void {
   process.env.Project_ROOT = getDirname(`${import.meta.url}/../../`);
 
   // etherscan api
@@ -11,7 +11,7 @@ export default function getVariables() {
   process.env.etherscanAPILastBlockNumberRequest = `${etherscanAPI}&action=eth_blockNumber`;
 
   // default query params
-  process.env.defaultLibrary = 'bull';
+  process.env.defaultLibrary = 'fastq';
   process.env.defaultBlocksAmount = '2';
   process.env.defaultLastBlock = '0x10b2feb';
 

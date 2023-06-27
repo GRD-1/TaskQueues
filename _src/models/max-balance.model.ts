@@ -8,17 +8,6 @@ export interface Account {
   [address: string]: number;
 }
 
-export interface Data {
-  addressBalances?: Account;
-  maxAccount?: Account;
-  amountOfTransactions?: number;
-  loadingTime?: number;
-  processTime?: number;
-  error?: { message: string };
-}
-
-export interface ProcessedData extends Query, Data {}
-
 export interface Transaction {
   blockNumber: number;
   from: string;
@@ -32,4 +21,21 @@ export interface Block {
     number: string;
     transactions: Transaction[];
   };
+  downloadNumber?: number;
 }
+
+export interface DownloadWorker {
+  downloadNumber: number;
+  blockNumberHex: string;
+}
+
+export interface Data {
+  addressBalances?: Account;
+  maxAccount?: Account;
+  amountOfTransactions?: number;
+  loadingTime?: number;
+  processTime?: number;
+  error?: { message: string };
+}
+
+export interface ProcessedData extends Query, Data {}
