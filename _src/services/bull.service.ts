@@ -14,7 +14,7 @@ export class BullService {
   async getMaxChangedBalance(): Promise<Data> {
     const result = await new Promise((resolve) => {
       (async (): Promise<void> => {
-        const errMsg = await this.setWaitingTime(this.blocksAmount * 1500);
+        const errMsg = await this.setAwaitingTime(this.blocksAmount * 1500);
         resolve(errMsg);
       })();
 
@@ -100,11 +100,11 @@ export class BullService {
     return args[0];
   }
 
-  setWaitingTime(waitingTime: number): Promise<Data> {
+  setAwaitingTime(awaitingTime: number): Promise<Data> {
     return new Promise((resolve) => {
-      this.downloadQueue.add('deadline', {}, { delay: waitingTime });
+      this.downloadQueue.add('deadline', {}, { delay: awaitingTime });
       this.downloadQueue.process('deadline', () => {
-        resolve({ error: { message: `the waiting time has expired! (${waitingTime} sec)` } });
+        resolve({ error: { message: `the waiting time has expired! (${awaitingTime} msec)` } });
       });
     });
   }

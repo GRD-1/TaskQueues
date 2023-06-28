@@ -1,4 +1,5 @@
 import fastq from 'fastq';
+import { ToadScheduler, SimpleIntervalJob, Task } from 'toad-scheduler';
 import type { queue, done } from 'fastq';
 import { Block, Data, Account, DownloadTaskArgs, DownloadWorker, ProcessWorker } from '../models/max-balance.model';
 
@@ -50,10 +51,10 @@ export class FastqService {
 
   async getMaxChangedBalance(): Promise<Data> {
     const result = await new Promise((resolve) => {
-      // (async (): Promise<void> => {
-      //   const errMsg = await this.setWaitingTime(this.blocksAmount * 1500);
-      //   resolve(errMsg);
-      // })();
+      (async (): Promise<void> => {
+        const errMsg = await this.setAwaitingTime(this.blocksAmount * 1000);
+        resolve(errMsg);
+      })();
 
       (async (): Promise<void> => {
         const loadingTime = await this.downloadData();
@@ -67,21 +68,30 @@ export class FastqService {
         });
       })();
     });
-    // this.cleanQueue();
+    this.cleanQueue();
     return result;
   }
 
   downloadData(): Promise<number> {
+    const startTime = Date.now();
     const lastBlockNumberDecimal = parseInt(this.lastBlock, 16);
-    const downloadNumber = 0;
+    let downloadNumber = 1;
+    let blockNumberHex = (lastBlockNumberDecimal - downloadNumber).toString(16);
+
+    const scheduler = new ToadScheduler();
+    const task = new Task('download block', () => {
+      this.downloadQueue.push({ downloadNumber, blockNumberHex });
+      if (downloadNumber >= this.blocksAmount) scheduler.stop();
+      downloadNumber++;
+      blockNumberHex = (lastBlockNumberDecimal - downloadNumber).toString(16);
+    });
+    const job = new SimpleIntervalJob({ milliseconds: 200, runImmediately: true }, task, {
+      id: `toadId_${downloadNumber}`,
+    });
+    scheduler.addSimpleIntervalJob(job);
 
     return new Promise((resolve) => {
-      const startTime = Date.now();
-      const blockNumberHex = (lastBlockNumberDecimal - downloadNumber).toString(16);
-      this.downloadQueue.push({ downloadNumber, blockNumberHex });
-
       this.downloadQueue.drain = (): void => {
-        console.log('\ndownloadBlocks completed!');
         resolve((Date.now() - startTime) / 1000);
       };
     });
@@ -91,7 +101,6 @@ export class FastqService {
     const startTime = Date.now();
     await new Promise((resolve) => {
       this.processQueue.drain = (): void => {
-        console.error('\nprocess Blocks completed!');
         resolve(null);
       };
       this.processQueue.resume();
@@ -109,19 +118,22 @@ export class FastqService {
     return args[0];
   }
 
-  // setWaitingTime(waitingTime: number): Promise<Data> {
-  //   return new Promise((resolve) => {
-  //     this.downloadQueue.add('deadline', {}, { delay: waitingTime });
-  //     this.downloadQueue.process('deadline', () => {
-  //       resolve({ error: { message: `the waiting time has expired! (${waitingTime} sec)` } });
-  //     });
-  //   });
-  // }
+  setAwaitingTime(awaitingTime: number): Promise<Data> {
+    return new Promise((resolve) => {
+      console.log('\nsetAwaitingTime');
+      const scheduler = new ToadScheduler();
+      const task = new Task('deadline', () => {
+        resolve({ error: { message: `the waiting time has expired! (${awaitingTime} msec)` } });
+        scheduler.stop();
+      });
+      const job = new SimpleIntervalJob({ milliseconds: awaitingTime, runImmediately: false }, task);
+      scheduler.addSimpleIntervalJob(job);
+      console.log('setAwaitingTime end');
+    });
+  }
 
-  // async cleanQueue(): Promise<void> {
-  //   await this.downloadQueue.obliterate({ force: true });
-  //   await this.processQueue.obliterate({ force: true });
-  //   await this.downloadQueue.close();
-  //   await this.processQueue.close();
-  // }
+  async cleanQueue(): Promise<void> {
+    await this.downloadQueue.kill();
+    await this.processQueue.kill();
+  }
 }
