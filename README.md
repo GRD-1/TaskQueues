@@ -1,7 +1,6 @@
 # Task Queues
 This service is designed to compare the performance of the next libraries:
 * fastq https://www.npmjs.com/package/fastq
-* queue https://www.npmjs.com/package/queue
 * bull https://www.npmjs.com/package/bull
 * rabbitMQ https://www.rabbitmq.com/
 
@@ -20,7 +19,8 @@ The processing time starts counting from the moment the data is completely loade
 - Node.js (version 18.16.0)
 - npm (version 9.5.1)
 - Redis server v=6.0.16 (for Bull and RabbitMQ)
-- the rest in the package.json
+- Docker (version 24.0.2)
+- the other dependencies described in the package.json
 
 ## Deploy
 

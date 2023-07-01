@@ -6,10 +6,10 @@
   "type": "module",
   "keywords": [
     "async",
-    "rabbibMQ",
+    "fastQ",
     "bull",
-    "queue",
-    "fastQ"
+    "rabbibMQ",
+    "docker"
   ],
   "author": "GRD",
   "license": "ISC",
@@ -22,6 +22,7 @@
     "fix-imports": "node app/utils/fix-imports.util.js"
   },
   "dependencies": {
+    "amqplib": "^0.10.3",
     "body-parser": "^1.19.0",
     "bull": "^4.10.4",
     "dotenv": "^16.0.3",

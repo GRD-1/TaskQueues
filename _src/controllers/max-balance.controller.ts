@@ -18,7 +18,6 @@ export class MaxBalanceController {
     switch (queryParams.library) {
       case 'bull':
         return new BullService(queryParams.blocksAmount, queryParams.lastBlock);
-      case 'queue':
       case 'rabbit':
       default:
         return new FastqService(queryParams.blocksAmount, queryParams.lastBlock);
