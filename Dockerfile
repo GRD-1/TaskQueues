@@ -1,11 +1,21 @@
-# Base image for RabbitMQ
-FROM rabbitmq:3.12-management AS rabbitmq
+# Base image for Node
+FROM node:18.16.0 as node
 
-# Expose RabbitMQ ports
-EXPOSE 5672 15672
+# Copy project files
+WORKDIR /projectFiles
+COPY _src ./_src
+COPY package.json package-lock.json ./
+COPY tsconfig.json ./
+COPY public ./public
 
-# Base image for Redis
-FROM redis:6.0.16 AS redis
+# Install dependencies
+RUN npm install
 
-# Expose Redis port
-EXPOSE 6379
+# build the project
+RUN npm run build
+
+# Expose necessary ports
+EXPOSE 3000
+
+# Define the startup command
+ENTRYPOINT ["node", "app/index.js"]

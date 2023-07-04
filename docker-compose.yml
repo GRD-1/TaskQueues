@@ -1,5 +1,15 @@
 version: '3'
 services:
+  node:
+    image: node:18.16.0
+    ports:
+      - "3000:3000"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2gb
+
   rabbitmq:
     image: rabbitmq:3.12-management
     ports:
