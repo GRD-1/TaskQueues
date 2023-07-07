@@ -16,17 +16,23 @@ The processing time starts counting from the moment the data is completely loade
 ## Environment
 
 - OS Ubuntu-22.04
-- Node.js (version 18.16.0)
-- npm (version 9.5.1)
-- Redis server v=6.0.16 (for Bull and RabbitMQ)
-- Docker (version 24.0.2)
+- Node.js 18.16.0
+- npm 9.5.1
+- Redis server 6.0.16
+- fastq 1.15.0
+- Bull 4.10.4
+- RabbitMQ 3.12
+- Docker 24.0.2
 - the other dependencies described in the package.json
 
 ## Deploy
 
 1. Download the project: bash git clone https://github.com/GRD-1/balance-rating.git
-2. Set up the dependencies. Call the command in the project root: bash npm install
-3. Set up the Redis server (for Bull and RabbitMQ libraries)
+2. Install docker to your local operating system
+3. ~~Get the credentials file from your system administrator, add it to the "project/config~~ (in-build for this project)
+4. Using the terminal go to the docker directory: project/docker
+5. Build the docker image using the command [docker build -t task-queue-img .]
+6. run the project using the [docker-compose up] command
 
 ## Settings
 

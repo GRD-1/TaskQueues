@@ -1,32 +1,24 @@
 version: '3'
 services:
-  node:
-    image: node:18.16.0
+  nodeapp:
+    image: nodepp-img
+    volumes:
+      - \\wsl$\Ubuntu-22.04\home\developer\balance-rating\public:public
+    env_file:
+      - _src/config/credentials.env
+    build:
+#      context: ..
+      dockerfile: Dockerfile
     ports:
-      - "3000:3000"
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 2gb
+      - '3000:3000'
 
-  rabbitmq:
-    image: rabbitmq:3.12-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-
-  redis:
-    image: redis:6.0.16
-    ports:
-      - "6379:6379"
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
+#  rabbitmq:
+#    image: rabbitmq:3.12-management
+#    ports:
+#      - '5672:5672'
+#      - '15672:15672'
+#
+#  redis:
+#    image: redis:6.0.16
+#    ports:
+#      - '6379:6379'
