@@ -13,7 +13,7 @@ RUN npm install && npm run build
 EXPOSE 3000
 
 # External data storage
-VOLUME /public
+VOLUME /projectFiles/public
 
 # Define the startup command
 ENTRYPOINT ["node", "app/index.js"]

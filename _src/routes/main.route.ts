@@ -3,7 +3,8 @@ import { MaxBalanceController } from '../controllers/max-balance.controller';
 const mainRoute = express.Router();
 
 mainRoute.get('/', (req, res) => {
-  res.sendFile(`${process.env.Project_ROOT}/public/index.html`);
+  // res.sendFile(`${process.env.Project_ROOT}/public/index.html`);
+  res.sendFile('/projectFiles/public/index.html');
 });
 
 mainRoute.get('/max-balance', (req, res) => {
