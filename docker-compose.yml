@@ -1,24 +1,27 @@
 version: '3'
 services:
-  node-app:
-    image: node-app-img
+  rabbitmq:
+    image: rabbitmq
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+
+  redis:
+    image: redis
+    ports:
+      - '6379:6379'
+
+  node:
+    image: nodeapp
     volumes:
       - ./public:/projectFiles/public
     env_file:
       - _src/config/credentials.env
     build:
       context: .
-      dockerfile: Dockerfile
+#      dockerfile: Dockerfile
     ports:
       - '3000:3000'
-
-#  rabbitmq:
-#    image: rabbitmq:3.12-management
-#    ports:
-#      - '5672:5672'
-#      - '15672:15672'
-#
-#  redis:
-#    image: redis:6.0.16
-#    ports:
-#      - '6379:6379'
+    depends_on:
+      - redis
+      - rabbitmq

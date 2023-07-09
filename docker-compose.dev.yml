@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+
+  redis:
+    image: redis:6.0.16
+    ports:
+      - '6379:6379'
+

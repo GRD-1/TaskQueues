@@ -23,14 +23,15 @@ The processing time starts counting from the moment the data is completely loade
 - Bull 4.10.4
 - RabbitMQ 3.12
 - Docker 24.0.2
+- Docker-compose 2.18.1
 - the other dependencies described in the package.json
 
 ## Deploy
 
 1. Download the project: bash git clone https://github.com/GRD-1/balance-rating.git
-2. Install docker to your local operating system
+2. Install docker + docker-compose to your local operating system
 3. ~~Get the credentials file from your system administrator, add it to the "project/config~~ (in-build for this project)
-4. Using the terminal go to the docker directory: project/docker
+4. Using the terminal go to the project root
 5. Build the docker image using the command [docker build -t task-queue-img .]
 6. run the project using the [docker-compose up] command
 
