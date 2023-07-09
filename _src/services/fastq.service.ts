@@ -120,7 +120,6 @@ export class FastqService {
 
   setAwaitingTime(awaitingTime: number): Promise<Data> {
     return new Promise((resolve) => {
-      console.log('\nsetAwaitingTime');
       const scheduler = new ToadScheduler();
       const task = new Task('deadline', () => {
         resolve({ error: { message: `the waiting time has expired! (${awaitingTime} msec)` } });
@@ -128,7 +127,6 @@ export class FastqService {
       });
       const job = new SimpleIntervalJob({ milliseconds: awaitingTime, runImmediately: false }, task);
       scheduler.addSimpleIntervalJob(job);
-      console.log('setAwaitingTime end');
     });
   }
 

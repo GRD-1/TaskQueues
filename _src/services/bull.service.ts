@@ -1,4 +1,6 @@
 import Bull from 'bull';
+import net from 'net';
+import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
 import { Account, Block, Data } from '../models/max-balance.model';
 import queueSettings from '../config/bull';
 
@@ -12,6 +14,7 @@ export class BullService {
   }
 
   async getMaxChangedBalance(): Promise<Data> {
+    if (await this.isRedisUnavailable()) return { error: new Error('Error connecting to Redis!') };
     const result = await new Promise((resolve) => {
       (async (): Promise<void> => {
         const errMsg = await this.setAwaitingTime(this.blocksAmount * 1500);
@@ -102,10 +105,13 @@ export class BullService {
 
   setAwaitingTime(awaitingTime: number): Promise<Data> {
     return new Promise((resolve) => {
-      this.downloadQueue.add('deadline', {}, { delay: awaitingTime });
-      this.downloadQueue.process('deadline', () => {
+      const scheduler = new ToadScheduler();
+      const task = new Task('deadline', () => {
         resolve({ error: { message: `the waiting time has expired! (${awaitingTime} msec)` } });
+        scheduler.stop();
       });
+      const job = new SimpleIntervalJob({ milliseconds: awaitingTime, runImmediately: false }, task);
+      scheduler.addSimpleIntervalJob(job);
     });
   }
 
@@ -114,5 +120,22 @@ export class BullService {
     await this.processQueue.obliterate({ force: true });
     await this.downloadQueue.close();
     await this.processQueue.close();
+  }
+
+  async isRedisUnavailable(): Promise<boolean> {
+    const redisServerHost = 'localhost';
+    const redisServerPort = 6379;
+    const socket = net.createConnection(redisServerPort, redisServerHost);
+
+    return new Promise((resolve) => {
+      socket.on('connect', () => {
+        socket.end();
+        resolve(false);
+      });
+
+      socket.on('error', (error) => {
+        resolve(true);
+      });
+    });
   }
 }
