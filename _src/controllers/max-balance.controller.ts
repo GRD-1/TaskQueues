@@ -21,7 +21,6 @@ export class MaxBalanceController {
       case 'rabbit':
       default:
         return new FastqService(queryParams.blocksAmount, queryParams.lastBlock);
-      // return new BullService(queryParams.blocksAmount, queryParams.lastBlock);
     }
   }
 }

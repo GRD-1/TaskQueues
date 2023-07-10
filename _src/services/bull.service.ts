@@ -2,6 +2,7 @@ import Bull from 'bull';
 import net from 'net';
 import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
 import { Account, Block, Data } from '../models/max-balance.model';
+import redisSettings from '../config/redis';
 import queueSettings from '../config/bull';
 
 export class BullService {
@@ -123,8 +124,8 @@ export class BullService {
   }
 
   async isRedisUnavailable(): Promise<boolean> {
-    const redisServerHost = 'localhost';
-    const redisServerPort = 6379;
+    const redisServerHost = redisSettings.host;
+    const redisServerPort = redisSettings.port;
     const socket = net.createConnection(redisServerPort, redisServerHost);
 
     return new Promise((resolve) => {

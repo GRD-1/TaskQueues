@@ -1,9 +1,4 @@
-const redis = {
-  host: 'localhost',
-  port: 6379,
-  maxRetriesPerRequest: null,
-  connectTimeout: 180000,
-};
+import redis from './redis';
 
 const defaultJobOptions = {
   removeOnComplete: false,
