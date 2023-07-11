@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -7,9 +5,14 @@ import { fileURLToPath } from 'url';
  * the Node.js global variables __dirname and __filename are not supported by ES module scope
  * this functions allows us to replace it and fix this problem
  */
-export function getFilename(metaUrl: string): string {
+function getFilename(metaUrl: string): string {
   return fileURLToPath(metaUrl);
 }
-export function getDirname(metaUrl: string): string {
+function getDirname(metaUrl: string): string {
   return path.dirname(getFilename(metaUrl));
 }
+function setProjectRoot(): string {
+  process.env.PROJECT_ROOT = getDirname(`${import.meta.url}/../../`);
+  return process.env.PROJECT_ROOT;
+}
+export default setProjectRoot();

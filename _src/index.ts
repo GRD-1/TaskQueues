@@ -1,8 +1,8 @@
 import express from 'express';
-import config from './config/config';
+import config from 'config';
+import PROJECT_ROOT from './utils/set-project-root.util';
 import mainRoute from './routes/main.route';
 
-config();
 const app = express();
 const urlencodedParser = express.urlencoded({ extended: false });
 
@@ -10,7 +10,7 @@ const urlencodedParser = express.urlencoded({ extended: false });
 app.use('/', urlencodedParser, mainRoute);
 
 // public files storage
-app.use(express.static(`${process.env.Project_ROOT}/public`));
+app.use(express.static(`${PROJECT_ROOT}/public`));
 
 // #404. page not found
 app.use((request, response) => {
@@ -18,3 +18,4 @@ app.use((request, response) => {
 });
 
 app.listen(3000, () => console.log('The server started on port 3000 ...'));
+console.log('config = ', config);

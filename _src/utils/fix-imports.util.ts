@@ -7,7 +7,7 @@ const JUST_ADD_AN_EXTENSION = "$1.js'";
 const ADD_INDEX_FILE = "$1/index.js'";
 const JS_EXT = '.js';
 
-function fixImportsAtFile(filePath) {
+function fixImportsAtFile(filePath): void {
   const content = fs.readFileSync(filePath).toString('utf8');
   const lines = content.split('\n');
   const fixedLines = lines.map((l) => {
@@ -34,7 +34,7 @@ function fixImportsAtFile(filePath) {
   fs.writeFileSync(filePath, withFixedImports);
 }
 
-function fixImportsAtFolder(rootPath) {
+function fixImportsAtFolder(rootPath): void {
   const entries = fs.readdirSync(rootPath);
 
   entries.forEach((entry) => {
