@@ -3,14 +3,18 @@ import net from 'net';
 import config from 'config';
 import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
 import { Account, Block, Data } from '../models/max-balance.model';
-import redisSettings from '../config/redis';
-import queueSettings from '../config/bull';
 
 export class BullService {
   downloadQueue: Bull.Queue;
   processQueue: Bull.Queue;
 
   constructor(public blocksAmount: number, public lastBlock: string) {
+    const queueSettings = {
+      redis: config.REDIS,
+      defaultJobOptions: config.BULL.JOB_OPTIONS,
+      settings: config.BULL.SETTINGS,
+      limiter: config.BULL.LIMITER,
+    };
     this.downloadQueue = new Bull('downloadQueue', queueSettings);
     this.processQueue = new Bull('processQueue', queueSettings);
   }
@@ -126,8 +130,8 @@ export class BullService {
   }
 
   async isRedisUnavailable(): Promise<boolean> {
-    const redisServerHost = redisSettings.host;
-    const redisServerPort = redisSettings.port;
+    const redisServerHost = config.REDIS.host;
+    const redisServerPort = config.REDIS.port;
     const socket = net.createConnection(redisServerPort, redisServerHost);
 
     return new Promise((resolve) => {

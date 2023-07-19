@@ -3,8 +3,12 @@ module.exports = {
 
   ETHERSCAN_API: {
     ETHERSCAN: 'https://api.etherscan.io/api?module=proxy&boolean=true',
-    GET_BLOCK: `${this.ETHERSCAN}&action=eth_getBlockByNumber`,
-    LAST_BLOCK_NUMBER: `${this.ETHERSCAN}&action=eth_blockNumber`,
+    get GET_BLOCK(){
+      return `${this.ETHERSCAN}&action=eth_getBlockByNumber`;
+    },
+    get LAST_BLOCK_NUMBER(){
+      return `${this.ETHERSCAN}&action=eth_blockNumber`;
+    },
   },
 
   DEFAULT_QUERY: {
