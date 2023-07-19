@@ -1,9 +1,9 @@
 import { done } from 'fastq';
 
 export interface Query {
-  library: string;
-  blocksAmount: number;
-  lastBlock: string;
+  library?: string;
+  blocksAmount?: number;
+  lastBlock?: string;
 }
 
 export interface Account {

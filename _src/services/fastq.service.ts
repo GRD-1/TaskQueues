@@ -1,4 +1,5 @@
 import fastq from 'fastq';
+import config from 'config';
 import { ToadScheduler, SimpleIntervalJob, Task } from 'toad-scheduler';
 import type { queue, done } from 'fastq';
 import { Block, Data, Account, DownloadTaskArgs, DownloadWorker, ProcessWorker } from '../models/max-balance.model';
@@ -12,8 +13,9 @@ export class FastqService {
 
   workerForDownloadQueue: DownloadWorker = async (args: DownloadTaskArgs, callback: done): Promise<void> => {
     try {
-      if (process.env.logBenchmarks === 'true') console.log(`\ndownload queue iteration ${args.downloadNumber}`);
-      const response = await fetch(`${process.env.etherscanAPIBlockRequest}&tag=${args.blockNumberHex}`);
+      if (config.LOG_BENCHMARKS === 'true') console.log(`\ndownload queue iteration ${args.downloadNumber}`);
+      const request = `${config.ETHERSCAN_API.GET_BLOCK}&tag=${args.blockNumberHex}&apikey=${config.ETHERSCAN_APIKEY}`;
+      const response = await fetch(request);
       const block = (await response.json()) as Block;
       block.downloadNumber = args.downloadNumber;
       await this.processQueue.push(block);
@@ -26,7 +28,7 @@ export class FastqService {
   };
 
   workerForProcessQueue: ProcessWorker = async (block: Block, callback: done): Promise<void> => {
-    if (process.env.logBenchmarks === 'true') console.log(`\nprocess queue iteration ${block.downloadNumber}`);
+    if (config.LOG_BENCHMARKS === 'true') console.log(`\nprocess queue iteration ${block.downloadNumber}`);
     const { transactions } = block.result;
     this.addressBalances = transactions.reduce((accum, item) => {
       this.amountOfTransactions++;

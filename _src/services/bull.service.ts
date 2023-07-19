@@ -1,5 +1,6 @@
 import Bull from 'bull';
 import net from 'net';
+import config from 'config';
 import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
 import { Account, Block, Data } from '../models/max-balance.model';
 import redisSettings from '../config/redis';
@@ -47,9 +48,10 @@ export class BullService {
       this.downloadQueue.process('downloadBlocks', async (job, done) => {
         try {
           ++i;
-          if (process.env.logBenchmarks === 'true') console.log(`\ndownload queue iteration ${i}`);
+          if (config.LOG_BENCHMARKS === 'true') console.log(`\ndownload queue iteration ${i}`);
           const blockNumber = (lastBlockNumberDecimal - i).toString(16);
-          const response = await fetch(`${process.env.etherscanAPIBlockRequest}&tag=${blockNumber}`);
+          const request = `${config.ETHERSCAN_API.GET_BLOCK}&tag=${blockNumber}&apikey=${config.ETHERSCAN_APIKEY}`;
+          const response = await fetch(request);
           const block = (await response.json()) as Block;
           await this.processQueue.add('processBlocks', { block });
           const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
@@ -77,7 +79,7 @@ export class BullService {
 
       this.processQueue.process('processBlocks', async (job, done) => {
         i++;
-        if (process.env.logBenchmarks === 'true') console.log(`\nprocess queue iteration ${i}`);
+        if (config.LOG_BENCHMARKS === 'true') console.log(`\nprocess queue iteration ${i}`);
         const { transactions } = job.data.block.result;
         addressBalances = transactions.reduce((accum, item) => {
           amountOfTransactions++;

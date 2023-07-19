@@ -1,10 +1,12 @@
+import config from 'config';
 import { Query } from '../models/max-balance.model';
 
 async function getLastBlockNumber(query): Promise<string> {
   try {
-    if (!query.lastBlock) return process.env.defaultLastBlock;
+    if (!query.lastBlock) return config.DEFAULT_QUERY.LAST_BLOCK;
     if (query.lastBlock === 'last') {
-      const result = await fetch(process.env.etherscanAPILastBlockNumberRequest);
+      const request = `${config.ETHERSCAN_API.LAST_BLOCK_NUMBER}&apikey=${config.ETHERSCAN_APIKEY}`;
+      const result = await fetch(request);
       const data = (await result.json()) as { result: string };
       return data.result;
     }
@@ -15,9 +17,9 @@ async function getLastBlockNumber(query): Promise<string> {
   }
 }
 
-export default async function getQueryParams(query): Promise<Query> {
-  const library = query.library || process.env.defaultLibrary;
-  const blocksAmount = query.blocksAmount || process.env.defaultBlocksAmount;
+export default async function getQueryParams(query: Query): Promise<Query> {
+  const library = query.library || config.DEFAULT_QUERY.LIBRARY;
+  const blocksAmount = query.blocksAmount || config.DEFAULT_QUERY.BLOCKS_AMOUNT;
   const lastBlock = await getLastBlockNumber(query);
   return { library, blocksAmount, lastBlock };
 }

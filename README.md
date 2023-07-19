@@ -37,7 +37,7 @@ The processing time starts counting from the moment the data is completely loade
 
 ## Settings
 
-* the environment variables are here: _src/ts/config/config.ts
+* the environment variables are here: config/config.ts
   * use the process.env.apikey, define the new apikey for queries to https://api.etherscan.io
   * use the process.env.logTheBenchmarks to switch off the console logging;
   * use the process.env.defaultLibrary to set the default queue library
