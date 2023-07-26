@@ -1,5 +1,4 @@
 import express from 'express';
-import config from 'config';
 import PROJECT_ROOT from './utils/set-project-root.util';
 import mainRoute from './routes/main.route';
 
