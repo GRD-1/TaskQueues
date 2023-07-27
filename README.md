@@ -46,8 +46,9 @@ The processing time starts counting from the moment the data is completely loade
 
 ## Launch 
 
-* to launch the project in development mode use: bash npm run start:dev
-* to launch the project in product mode use: bash npm run start:prod
+* make sure, that you have docker and docker-compose installed
+* to build the project in product mode use the command: [docker compose -f docker-compose.yml up --build]
+* to build the project in development mode use the command: [docker compose -f docker-compose.dev.yml up --build]
 
 ## Usage
 
