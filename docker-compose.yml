@@ -22,7 +22,7 @@ services:
       - ./config:/projectFiles/config
     build:
       context: .
-#      dockerfile: Dockerfile-prod
+      dockerfile: Dockerfile
     ports:
       - '3000:3000'
     depends_on:
