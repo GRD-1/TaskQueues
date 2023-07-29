@@ -1,6 +1,3 @@
-# when we call container inside docker-compose we need to use the same host names as in docker-compose.yml
-# for example: redis:6379 instead of localhost:6379
-
 version: '3'
 services:
   rabbitmq:
@@ -18,11 +15,12 @@ services:
   node:
     image: nodeapp
     volumes:
+      - ./_src:/projectFiles/_src
       - ./public:/projectFiles/public
       - ./config:/projectFiles/config
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: _src/Dockerfile
     ports:
       - '3000:3000'
     depends_on:

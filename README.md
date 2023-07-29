@@ -1,5 +1,5 @@
 # Task Queues
-This service is designed to compare the performance of the next libraries:
+This service is designed to compare the performance of the following libraries:
 * fastq https://www.npmjs.com/package/fastq
 * bull https://www.npmjs.com/package/bull
 * rabbitMQ https://www.rabbitmq.com/
@@ -26,14 +26,14 @@ The processing time starts counting from the moment the data is completely loade
 - Docker-compose 2.18.1
 - the other dependencies described in the package.json
 
-## Deploy
+## Deploy <a id="deploy"></a>
 
 1. Download the project: bash git clone https://github.com/GRD-1/balance-rating.git
 2. Install docker + docker-compose to your local operating system
 3. ~~Get the credentials file from your system administrator, add it to the "project/config~~ (in-build for this project)
 4. Using the terminal go to the project root
-5. Build the docker image using the command [docker build -t task-queue-img .]
-6. run the project using the [docker-compose up] command
+5. Build project in product mode using the command [ docker-compose -p task-queues-prod -f docker-compose-prod.yml up --build ]
+6. Build project in development mode using the command [ docker-compose -p task-queues-dev -f docker-compose-dev.yml up --build ]
 
 ## Settings
 
@@ -46,9 +46,14 @@ The processing time starts counting from the moment the data is completely loade
 
 ## Launch 
 
-* make sure, that you have docker and docker-compose installed
-* to build the project in product mode use the command: [docker compose -f docker-compose.yml up --build]
-* to build the project in development mode use the command: [docker compose -f docker-compose.dev.yml up --build]
+* if you launch the project for the first time, you just need to follow the instructions from chapter [Deploy](#deploy), 
+project will be launched automatically
+* if you already have the built docker container set use the command:
+  * [ docker-compose -p <task-queues-prod> start ] for product mode
+  * [ docker-compose -p <task-queues-dev> start ] for development mode
+* to stop the project use the command:
+  * [ docker-compose -p <task-queues-prod> stop ] for product mode
+  * [ docker-compose -p <task-queues-dev> stop ] for development mode
 
 ## Usage
 

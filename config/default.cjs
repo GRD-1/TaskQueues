@@ -19,7 +19,7 @@ module.exports = {
 
   REDIS: {
     get host(){
-        return process.env.NODE_ENV === 'production' && process.env.DOCKER_BUILD? 'redis' : 'localhost';
+        return process.env.DOCKER_BUILD? 'redis' : 'localhost';
     },
     port: 6379,
     maxRetriesPerRequest: null,

@@ -2,6 +2,4 @@
 node_modules/
 git
 package-lock.json
-_src/config/.env
-app
-_src/ts/temp.*
+app/*/
