@@ -11,8 +11,9 @@ export class MaxBalanceController {
     const queryParams = await getQueryParams(req.query);
     const provider = this.getQueueProvider(queryParams);
     const data = await provider.getMaxChangedBalance();
-    const results = await getBalanceView({ ...queryParams, ...data });
-    res.end(results);
+    // const results = await getBalanceView({ ...queryParams, ...data });
+    // res.end(results);
+    res.end('results!!!');
   }
 
   getQueueProvider(queryParams: Query): BullService | FastqService | RabbitService {

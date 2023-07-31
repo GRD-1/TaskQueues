@@ -9,7 +9,7 @@ It is defined in the application start script: npm run start-dev (start-prod).
 
 * Files in the config directory are loaded in the following order:
   * default.EXT             - base configuration parameters
-  * {deployment}.EXT        - parameters specified for deployment
+  * {deployment}.EXT        - parameters specified for deployment (development, production e t.c.)
   * local-{deployment}.EXT  - credentials. Not tracked by the version control system
 
 
@@ -18,8 +18,8 @@ For example: parameter __[Host]__ from default.ext will be overwritten by parame
 The details are here: https://github.com/node-config/node-config/wiki/Configuration-Files
 
 
-* To get the configs from the code import it: import config from 'config'
-* To get the specific value use: config.get('VariableName')   
+* To get the configs from the code import it: [ import config from 'config' ]
+* To get the specific value use: [ config.get('VariableName') ] or you can use the dot notation [ config.VariableName ]
 * To check if the config parameter exists use: config.has('VariableName') 
 
 
@@ -31,7 +31,7 @@ git tracking has been disabled for these files:
 
 It was done not by the gitignore file, but with the help of a special git command
 Otherwise, git will delete such files while downloading the updates from the repository.
-So, the current files will not be updated from git, but if we change it, git will not allow to update the project using the [pull] command.
+So, the current files will not be updated from git, but if we change it, git will not allow to update the project using the [ pull ] command.
 it will warn us, that there are unsaved files. In order to avoid it:
 • before changes enable the change tracking using the command:
 

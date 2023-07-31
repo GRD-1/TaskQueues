@@ -32,28 +32,28 @@ The processing time starts counting from the moment the data is completely loade
 2. Install docker + docker-compose to your local operating system
 3. ~~Get the credentials file from your system administrator, add it to the "project/config~~ (in-build for this project)
 4. Using the terminal go to the project root
-5. Build project in product mode using the command [ docker-compose -p task-queues-prod -f docker-compose-prod.yml up --build ]
-6. Build project in development mode using the command [ docker-compose -p task-queues-dev -f docker-compose-dev.yml up --build ]
+5. Build project in product mode using the command [ docker-compose -f docker-prod.yml up --build ]
+6. Build project in development mode using the command [ docker-compose -f docker-dev.yml up --build ]
 
 ## Settings
 
-* the environment variables are here: config/config.ts
-  * use the process.env.apikey, define the new apikey for queries to https://api.etherscan.io
-  * use the process.env.logTheBenchmarks to switch off the console logging;
-  * use the process.env.defaultLibrary to set the default queue library
-  * use the process.env.defaultBlocksAmount to set the number of blocks loaded by default
-  * use the process.env.defaultLastBlock to set the default "last block" number
+* the environment variables are here: config/
+  * to set new apikey for https://api.etherscan.io, change the variable __[ ETHERSCAN_APIKEY ]__ in config/local-*.cjs
+  * to switch off the logging, change the variable __[ LOG_BENCHMARKS ]__ in config/default.cjs
+  * to set the default queue library use the variable __[ DEFAULT_QUERY.LIBRARY ]__ in config/default.cjs
+  * to set the number of blocks loaded by default use the variable __[ DEFAULT_QUERY.BLOCKS_AMOUNT ]__ in config/default.cjs
+  * to set the default "last block" number use the variable __[ DEFAULT_QUERY.LAST_BLOCK ]__ in config/default.cjs
 
 ## Launch 
 
 * if you launch the project for the first time, you just need to follow the instructions from chapter [Deploy](#deploy), 
 project will be launched automatically
-* if you already have the built docker container set use the command:
-  * [ docker-compose -p <task-queues-prod> start ] for product mode
-  * [ docker-compose -p <task-queues-dev> start ] for development mode
+* if you already have the built docker image set use the command:
+  * [ docker-compose -f docker-prod.yml up ] for product mode
+  * [ docker-compose -f docker-dev.yml up ] for development mode
 * to stop the project use the command:
-  * [ docker-compose -p <task-queues-prod> stop ] for product mode
-  * [ docker-compose -p <task-queues-dev> stop ] for development mode
+  * [ docker-compose -f docker-prod.yml down ] for product mode
+  * [ docker-compose -f docker-dev.yml down ] for development mode
 
 ## Usage
 
@@ -75,4 +75,4 @@ project will be launched automatically
 I configured request frequency according to that rule. So, now the minimal time for one block handling is about 250 ms. 
 Do not ask the service to process too many blocks, it will take a long time. 
 * To monitor the process I consciously leave the console logs on. You can see it in the server terminal, 
-or you can switch it off in the config file: _src/ts/config/config.ts   process.env.logBenchmarks = 'false';   
+or you can switch it off in the config file: config/default.cjs LOG_BENCHMARKS = 'false';   

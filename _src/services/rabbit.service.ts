@@ -1,23 +1,7 @@
-import amqp from 'amqplib';
+import amqp from 'amqplib/callback_api';
+import amqp2 from 'amqplib';
 import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
 import { Block, Data, Account, DownloadTaskArgs, DownloadWorker, ProcessWorker } from '../models/max-balance.model';
-
-async function connectToRabbitMQ(): Promise<void> {
-  try {
-    // Replace 'rabbitmq' with the service name you defined in docker-compose.yml
-    const connection = await amqp.connect('amqp://rabbitmq');
-    // Create a channel
-    const channel = await connection.createChannel();
-    // Now you have a connection and a channel to interact with RabbitMQ
-
-    // ... Do more operations with RabbitMQ ...
-
-    // Don't forget to close the connection when you're done
-    await connection.close();
-  } catch (error) {
-    console.error('Error occurred:', error.message);
-  }
-}
 
 export class RabbitService {
   // downloadQueue: Bull.Queue;
@@ -42,47 +26,92 @@ export class RabbitService {
         resolve(errMsg);
       })();
 
-      // (async (): Promise<void> => {
-      //   const loadingTime = await this.downloadData();
-      //   const data = await this.processData();
-      //   resolve({ ...data, loadingTime });
-      // })();
+      (async (): Promise<void> => {
+        const loadingTime = await this.downloadData();
+        // const data = await this.processData();
+        const data = {};
+        resolve({ ...data, loadingTime });
+      })();
     });
     // this.cleanQueue();
     return result;
   }
 
-  // downloadData(): Promise<number> {
-  //   const lastBlockNumberDecimal = parseInt(this.lastBlock, 16);
-  //   let i = 0;
-  //
-  //   return new Promise((resolve) => {
-  //     const startTime = Date.now();
-  //     this.downloadQueue.on('completed', async () => {
-  //       const jobs = await this.downloadQueue.getJobs(['completed']);
-  //       if (jobs.length >= this.blocksAmount) resolve((Date.now() - startTime) / 1000);
-  //     });
-  //
-  //     this.downloadQueue.add('downloadBlocks', {}, { repeat: { every: 200, limit: this.blocksAmount } });
-  //     this.downloadQueue.process('downloadBlocks', async (job, done) => {
-  //       try {
-  //         ++i;
-  //         if (config.LOG_BENCHMARKS === 'true') console.log(`\ndownload queue iteration ${i}`);
-  //         const blockNumber = (lastBlockNumberDecimal - i).toString(16);
-  //         const request = `${config.ETHERSCAN_API.GET_BLOCK}&tag=${blockNumber}&apikey=${config.ETHERSCAN_APIKEY}`;
-  //         const response = await fetch(request);
-  //         const block = (await response.json()) as Block;
-  //         await this.processQueue.add('processBlocks', { block });
-  //         const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
-  //         done(err);
-  //       } catch (e) {
-  //         console.error('downloadBlocks Error!', e);
-  //         done(e);
-  //       }
-  //     });
-  //   });
-  // }
-  //
+  async downloadData(): Promise<number> {
+    await amqp.connect('amqp://rabbitmq', (error0, connection) => {
+      if (error0) {
+        throw error0;
+      }
+      connection.createChannel((error1, channel) => {
+        if (error1) {
+          throw error1;
+        }
+
+        channel.assertQueue('downloadQueue', {
+          durable: true,
+        });
+
+        channel.sendToQueue('downloadQueue', Buffer.from('ravol'), {
+          persistent: true,
+        });
+        channel.sendToQueue('downloadQueue', Buffer.from('valor'), {
+          persistent: true,
+        });
+        channel.sendToQueue('downloadQueue', Buffer.from('latepia'), {
+          persistent: true,
+        });
+
+        channel.consume(
+          'downloadQueue',
+          (message) => {
+            setTimeout(() => {
+              console.log(' [x] Received %s', message.content.toString());
+            }, 1500);
+          },
+          {
+            noAck: true,
+          },
+        );
+      });
+      // setTimeout(() => {
+      //   connection.close();
+      //   process.exit(0);
+      // }, 500);
+    });
+    return new Promise((resolve) => {
+      resolve(666);
+    });
+
+    //   const lastBlockNumberDecimal = parseInt(this.lastBlock, 16);
+    //   let i = 0;
+    //
+    //   return new Promise((resolve) => {
+    //     const startTime = Date.now();
+    //     this.downloadQueue.on('completed', async () => {
+    //       const jobs = await this.downloadQueue.getJobs(['completed']);
+    //       if (jobs.length >= this.blocksAmount) resolve((Date.now() - startTime) / 1000);
+    //     });
+    //
+    //     this.downloadQueue.add('downloadBlocks', {}, { repeat: { every: 200, limit: this.blocksAmount } });
+    //     this.downloadQueue.process('downloadBlocks', async (job, done) => {
+    //       try {
+    //         ++i;
+    //         if (config.LOG_BENCHMARKS === 'true') console.log(`\ndownload queue iteration ${i}`);
+    //         const blockNumber = (lastBlockNumberDecimal - i).toString(16);
+    //         const request = `${config.ETHERSCAN_API.GET_BLOCK}&tag=${blockNumber}&apikey=${config.ETHERSCAN_APIKEY}`;
+    //         const response = await fetch(request);
+    //         const block = (await response.json()) as Block;
+    //         await this.processQueue.add('processBlocks', { block });
+    //         const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
+    //         done(err);
+    //       } catch (e) {
+    //         console.error('downloadBlocks Error!', e);
+    //         done(e);
+    //       }
+    //     });
+    //   });
+  }
+
   // async processData(): Promise<Data> {
   //   const startTime = Date.now();
   //   let addressBalances: Account = { '': 0 };
@@ -137,17 +166,25 @@ export class RabbitService {
     });
   }
 
-  // async cleanQueue(): Promise<void> {
-  //   await this.downloadQueue.obliterate({ force: true });
-  //   await this.processQueue.obliterate({ force: true });
-  //   await this.downloadQueue.close();
-  //   await this.processQueue.close();
-  // }
+  async cleanQueue(): Promise<void> {
+    try {
+      const connection = await amqp2.connect('amqp://rabbitmq');
+      const channel = await connection.createChannel();
+      await channel.deleteQueue('ravoly');
+      await channel.deleteQueue('valory');
+      await channel.deleteQueue('downloadQueue');
+      await channel.close();
+      await connection.close();
+    } catch (error) {
+      console.error('Error occurred while deleting the queue:', error.message);
+    }
+  }
 
   async isRabbitUnavailable(): Promise<boolean> {
     try {
-      const connection = await amqp.connect('amqp://rabbitmq');
-      await connection.close();
+      amqp.connect('amqp://rabbitmq', (error0, connection) => {
+        connection.close();
+      });
       return false;
     } catch (error) {
       return true;
