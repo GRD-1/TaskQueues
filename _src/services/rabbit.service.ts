@@ -1,5 +1,4 @@
-import amqp from 'amqplib/callback_api';
-import amqp2 from 'amqplib';
+import amqp from 'amqplib';
 import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
 import { Block, Data, Account, DownloadTaskArgs, DownloadWorker, ProcessWorker } from '../models/max-balance.model';
 
@@ -33,51 +32,48 @@ export class RabbitService {
         resolve({ ...data, loadingTime });
       })();
     });
-    // this.cleanQueue();
+    this.cleanQueue();
     return result;
   }
 
   async downloadData(): Promise<number> {
-    await amqp.connect('amqp://rabbitmq', (error0, connection) => {
-      if (error0) {
-        throw error0;
-      }
-      connection.createChannel((error1, channel) => {
-        if (error1) {
-          throw error1;
-        }
-
-        channel.assertQueue('downloadQueue', {
-          durable: true,
-        });
-
-        channel.sendToQueue('downloadQueue', Buffer.from('ravol'), {
-          persistent: true,
-        });
-        channel.sendToQueue('downloadQueue', Buffer.from('valor'), {
-          persistent: true,
-        });
-        channel.sendToQueue('downloadQueue', Buffer.from('latepia'), {
-          persistent: true,
-        });
-
-        channel.consume(
-          'downloadQueue',
-          (message) => {
-            setTimeout(() => {
-              console.log(' [x] Received %s', message.content.toString());
-            }, 1500);
-          },
-          {
-            noAck: true,
-          },
-        );
+    try {
+      const connection = await amqp.connect('amqp://rabbitmq');
+      const channel = await connection.createChannel();
+      await channel.assertQueue('downloadQueue', {
+        durable: true,
       });
+      await channel.sendToQueue('downloadQueue', Buffer.from('ravol'), {
+        persistent: true,
+      });
+      await channel.sendToQueue('downloadQueue', Buffer.from('valor'), {
+        persistent: true,
+      });
+      await channel.sendToQueue('downloadQueue', Buffer.from('latepia'), {
+        persistent: true,
+      });
+
+      await channel.consume(
+        'downloadQueue',
+        (message) => {
+          setTimeout(() => {
+            console.log(' [x] Received %s', message.content.toString());
+          }, 200);
+        },
+        {
+          noAck: true,
+        },
+      );
+      connection.close();
       // setTimeout(() => {
-      //   connection.close();
-      //   process.exit(0);
-      // }, 500);
-    });
+      // channel.deleteQueue('downloadQueue');
+      // connection.close();
+      // process.exit(0);
+      // }, 1500);
+    } catch (error) {
+      console.error('Error occurred while downloading data:', error.message);
+    }
+
     return new Promise((resolve) => {
       resolve(666);
     });
@@ -168,10 +164,8 @@ export class RabbitService {
 
   async cleanQueue(): Promise<void> {
     try {
-      const connection = await amqp2.connect('amqp://rabbitmq');
+      const connection = await amqp.connect('amqp://rabbitmq');
       const channel = await connection.createChannel();
-      await channel.deleteQueue('ravoly');
-      await channel.deleteQueue('valory');
       await channel.deleteQueue('downloadQueue');
       await channel.close();
       await connection.close();
