@@ -31,7 +31,7 @@ export interface DownloadTaskArgs {
   blockNumberHex: string;
 }
 
-export type DownloadDataCallback = (a: number, b: string) => void;
+export type DownloadQueueFiller = (a: number, b: string) => void;
 
 export type DownloadWorker = (args: DownloadTaskArgs, callback: done) => Promise<void>;
 

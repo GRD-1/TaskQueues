@@ -1,8 +1,8 @@
 import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
-import { downloadDataCallback, Query } from '../models/max-balance.model';
+import { DownloadQueueFiller } from '../models/max-balance.model';
 
 export default async function scheduleDownloads(
-  callback: downloadDataCallback,
+  queueFiller: DownloadQueueFiller,
   lastBlock: string,
   blocksAmount: number,
 ): Promise<void> {
@@ -12,7 +12,7 @@ export default async function scheduleDownloads(
 
   const scheduler = new ToadScheduler();
   const task = new Task('download block', () => {
-    callback(downloadNumber, blockNumberHex);
+    queueFiller(downloadNumber, blockNumberHex);
     if (downloadNumber >= blocksAmount) scheduler.stop();
     downloadNumber++;
     blockNumberHex = (lastBlockNumberDecimal - downloadNumber).toString(16);

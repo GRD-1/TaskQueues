@@ -17,10 +17,9 @@ export class EtherscanService {
       throw e;
     }
   }
-  async getBlock(blockNumberDecimal: number): Promise<Block> {
+  async getBlock(blockNumberHex: string): Promise<Block> {
     try {
-      const blockNumber = blockNumberDecimal.toString(16);
-      const request = `${config.ETHERSCAN_API.GET_BLOCK}&tag=${blockNumber}&apikey=${config.ETHERSCAN_APIKEY}`;
+      const request = `${config.ETHERSCAN_API.GET_BLOCK}&tag=${blockNumberHex}&apikey=${config.ETHERSCAN_APIKEY}`;
       const response = await fetch(request);
       return (await response.json()) as Block;
     } catch (e) {

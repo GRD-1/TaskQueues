@@ -8,7 +8,7 @@ import {
   DownloadTaskArgs,
   DownloadWorker,
   ProcessWorker,
-  DownloadDataCallback,
+  DownloadQueueFiller,
 } from '../models/max-balance.model';
 import scheduleDownloads from '../utils/schedule-downloads';
 import setTimer from '../utils/timer';
@@ -22,40 +22,6 @@ export class FastqService {
   addressBalances: Account;
   maxAccount: Account;
   amountOfTransactions = 0;
-
-  workerForDownloadQueue: DownloadWorker = async (args: DownloadTaskArgs, callback: done): Promise<void> => {
-    try {
-      if (config.LOG_BENCHMARKS === 'true') console.log(`\ndownload queue iteration ${args.downloadNumber}`);
-      const request = `${config.ETHERSCAN_API.GET_BLOCK}&tag=${args.blockNumberHex}&apikey=${config.ETHERSCAN_APIKEY}`;
-      const response = await fetch(request);
-      const block = (await response.json()) as Block;
-      block.downloadNumber = args.downloadNumber;
-      await this.processQueue.push(block);
-      const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
-      callback(err);
-    } catch (e) {
-      console.error('\ndownloadBlocks Error!', e);
-      callback(e);
-    }
-  };
-
-  workerForProcessQueue: ProcessWorker = async (block: Block, callback: done): Promise<void> => {
-    if (config.LOG_BENCHMARKS === 'true') console.log(`\nprocess queue iteration ${block.downloadNumber}`);
-    const { transactions } = block.result;
-    this.addressBalances = transactions.reduce((accum, item) => {
-      this.amountOfTransactions++;
-      const val = Number(item.value);
-      accum[item.to] = (accum[item.to] || 0) + val;
-      accum[item.from] = (accum[item.from] || 0) - val;
-      this.maxAccount = getMaxAccount(
-        { [item.to]: accum[item.to] },
-        { [item.from]: accum[item.from] },
-        this.maxAccount,
-      );
-      return accum;
-    }, {});
-    callback(null);
-  };
 
   constructor(public blocksAmount: number, public lastBlock: string) {
     this.downloadQueue = fastq(this.workerForDownloadQueue, 1);
@@ -88,10 +54,10 @@ export class FastqService {
 
   downloadData(): Promise<number> {
     const startTime = Date.now();
-    const callback: DownloadDataCallback = (downloadNumber, blockNumberHex) => {
+    const queueFiller: DownloadQueueFiller = (downloadNumber, blockNumberHex) => {
       this.downloadQueue.push({ downloadNumber, blockNumberHex });
     };
-    scheduleDownloads(callback, this.lastBlock, this.blocksAmount);
+    scheduleDownloads(queueFiller, this.lastBlock, this.blocksAmount);
     return new Promise((resolve) => {
       this.downloadQueue.drain = (): void => {
         resolve((Date.now() - startTime) / 1000);
@@ -109,6 +75,38 @@ export class FastqService {
     });
     return (Date.now() - startTime) / 1000;
   }
+
+  workerForDownloadQueue: DownloadWorker = async (args: DownloadTaskArgs, callback: done): Promise<void> => {
+    try {
+      if (config.LOG_BENCHMARKS === 'true') console.log(`\ndownload queue iteration ${args.downloadNumber}`);
+      const block = await etherscan.getBlock(args.blockNumberHex);
+      block.downloadNumber = args.downloadNumber;
+      await this.processQueue.push(block);
+      const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
+      callback(err);
+    } catch (e) {
+      console.error('\ndownloadBlocks Error!', e);
+      callback(e);
+    }
+  };
+
+  workerForProcessQueue: ProcessWorker = async (block: Block, callback: done): Promise<void> => {
+    if (config.LOG_BENCHMARKS === 'true') console.log(`\nprocess queue iteration ${block.downloadNumber}`);
+    const { transactions } = block.result;
+    this.addressBalances = transactions.reduce((accum, item) => {
+      this.amountOfTransactions++;
+      const val = Number(item.value);
+      accum[item.to] = (accum[item.to] || 0) + val;
+      accum[item.from] = (accum[item.from] || 0) - val;
+      this.maxAccount = getMaxAccount(
+        { [item.to]: accum[item.to] },
+        { [item.from]: accum[item.from] },
+        this.maxAccount,
+      );
+      return accum;
+    }, {});
+    callback(null);
+  };
 
   async cleanQueue(): Promise<void> {
     await this.downloadQueue.kill();

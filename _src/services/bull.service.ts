@@ -56,7 +56,8 @@ export class BullService {
         try {
           ++i;
           if (config.LOG_BENCHMARKS === 'true') console.log(`\ndownload queue iteration ${i}`);
-          const block = await etherscan.getBlock(lastBlockNumberDecimal - i);
+          const blockNumberHex = (lastBlockNumberDecimal - i).toString(16);
+          const block = await etherscan.getBlock(blockNumberHex);
           await this.processQueue.add('processBlocks', { block });
           const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
           done(err);
