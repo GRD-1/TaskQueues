@@ -1,8 +1,18 @@
 import fastq from 'fastq';
 import config from 'config';
-import { ToadScheduler, SimpleIntervalJob, Task } from 'toad-scheduler';
 import type { queue, done } from 'fastq';
-import { Block, Data, Account, DownloadTaskArgs, DownloadWorker, ProcessWorker } from '../models/max-balance.model';
+import {
+  Block,
+  Data,
+  Account,
+  DownloadTaskArgs,
+  DownloadWorker,
+  ProcessWorker,
+  downloadDataCallback,
+} from '../models/max-balance.model';
+import scheduleDownloads from '../utils/schedule-downloads';
+import setTimer from '../utils/timer';
+import getMaxAccount from '../utils/get-max-account';
 
 export class FastqService {
   downloadQueue: queue<DownloadTaskArgs, fastq.done>;
@@ -35,7 +45,7 @@ export class FastqService {
       const val = Number(item.value);
       accum[item.to] = (accum[item.to] || 0) + val;
       accum[item.from] = (accum[item.from] || 0) - val;
-      this.maxAccount = this.getMaxAccount(
+      this.maxAccount = getMaxAccount(
         { [item.to]: accum[item.to] },
         { [item.from]: accum[item.from] },
         this.maxAccount,
@@ -54,7 +64,7 @@ export class FastqService {
   async getMaxChangedBalance(): Promise<Data> {
     const result = await new Promise((resolve) => {
       (async (): Promise<void> => {
-        const errMsg = await this.setAwaitingTime(this.blocksAmount * 1000);
+        const errMsg = await setTimer(this.blocksAmount * 1000);
         resolve(errMsg);
       })();
 
@@ -76,22 +86,10 @@ export class FastqService {
 
   downloadData(): Promise<number> {
     const startTime = Date.now();
-    const lastBlockNumberDecimal = parseInt(this.lastBlock, 16);
-    let downloadNumber = 1;
-    let blockNumberHex = (lastBlockNumberDecimal - downloadNumber).toString(16);
-
-    const scheduler = new ToadScheduler();
-    const task = new Task('download block', () => {
+    const callback: downloadDataCallback = (downloadNumber, blockNumberHex) => {
       this.downloadQueue.push({ downloadNumber, blockNumberHex });
-      if (downloadNumber >= this.blocksAmount) scheduler.stop();
-      downloadNumber++;
-      blockNumberHex = (lastBlockNumberDecimal - downloadNumber).toString(16);
-    });
-    const job = new SimpleIntervalJob({ milliseconds: 200, runImmediately: true }, task, {
-      id: `toadId_${downloadNumber}`,
-    });
-    scheduler.addSimpleIntervalJob(job);
-
+    };
+    scheduleDownloads(callback, this.lastBlock, this.blocksAmount);
     return new Promise((resolve) => {
       this.downloadQueue.drain = (): void => {
         resolve((Date.now() - startTime) / 1000);
@@ -108,28 +106,6 @@ export class FastqService {
       this.processQueue.resume();
     });
     return (Date.now() - startTime) / 1000;
-  }
-
-  getMaxAccount(...args: Account[]): Account {
-    args.sort((a, b) => {
-      const item1 = Number.isNaN(Math.abs(Object.values(a)[0])) ? 0 : Math.abs(Object.values(a)[0]);
-      const item2 = Number.isNaN(Math.abs(Object.values(b)[0])) ? 0 : Math.abs(Object.values(b)[0]);
-      if (item1 === item2) return 0;
-      return item1 < item2 ? 1 : -1;
-    });
-    return args[0];
-  }
-
-  setAwaitingTime(awaitingTime: number): Promise<Data> {
-    return new Promise((resolve) => {
-      const scheduler = new ToadScheduler();
-      const task = new Task('deadline', () => {
-        resolve({ error: { message: `the waiting time has expired! (${awaitingTime} msec)` } });
-        scheduler.stop();
-      });
-      const job = new SimpleIntervalJob({ milliseconds: awaitingTime, runImmediately: false }, task);
-      scheduler.addSimpleIntervalJob(job);
-    });
   }
 
   async cleanQueue(): Promise<void> {

@@ -1,4 +1,5 @@
 import amqp from 'amqplib';
+import config from 'config';
 import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
 import { Block, Data, Account, DownloadTaskArgs, DownloadWorker, ProcessWorker } from '../models/max-balance.model';
 
@@ -38,6 +39,10 @@ export class RabbitService {
 
   async downloadData(): Promise<number> {
     try {
+      const startTime = Date.now();
+      const lastBlockNumberDecimal = parseInt(this.lastBlock, 16);
+      let i = 0;
+
       const connection = await amqp.connect('amqp://rabbitmq');
       const channel = await connection.createChannel();
       await channel.assertQueue('downloadQueue', {
@@ -46,47 +51,47 @@ export class RabbitService {
       await channel.sendToQueue('downloadQueue', Buffer.from('ravol'), {
         persistent: true,
       });
-      await channel.sendToQueue('downloadQueue', Buffer.from('valor'), {
-        persistent: true,
-      });
-      await channel.sendToQueue('downloadQueue', Buffer.from('latepia'), {
-        persistent: true,
-      });
 
-      await channel.consume(
-        'downloadQueue',
-        (message) => {
-          setTimeout(() => {
-            console.log(' [x] Received %s', message.content.toString());
-          }, 200);
-        },
-        {
-          noAck: true,
-        },
-      );
-      connection.close();
-      // setTimeout(() => {
-      // channel.deleteQueue('downloadQueue');
-      // connection.close();
-      // process.exit(0);
-      // }, 1500);
+      return new Promise((resolve) => {
+        channel.consume('downloadQueue', async (message) => {
+          if (message !== null) {
+            console.log('Received message:', message.content.toString());
+            try {
+              ++i;
+              if (config.LOG_BENCHMARKS === 'true') console.log(`\ndownload queue iteration ${i}`);
+              const blockNumber = (lastBlockNumberDecimal - i).toString(16);
+              const request = `${config.ETHERSCAN_API.GET_BLOCK}&tag=${blockNumber}&apikey=${config.ETHERSCAN_APIKEY}`;
+              const response = await fetch(request);
+              const block = (await response.json()) as Block;
+              // await this.processQueue.add('processBlocks', { block });
+              const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
+              // done(err);
+            } catch (e) {
+              console.error('downloadBlocks Error!', e);
+              // done(e);
+            }
+            await channel.ack(message);
+          } else {
+            console.log('Queue is drained.');
+            connection.close();
+          }
+          resolve((Date.now() - startTime) / 1000);
+        });
+      });
     } catch (error) {
       console.error('Error occurred while downloading data:', error.message);
+      return 666;
     }
 
-    return new Promise((resolve) => {
-      resolve(666);
-    });
-
-    //   const lastBlockNumberDecimal = parseInt(this.lastBlock, 16);
-    //   let i = 0;
+    // const lastBlockNumberDecimal = parseInt(this.lastBlock, 16);
+    // let i = 0;
     //
-    //   return new Promise((resolve) => {
-    //     const startTime = Date.now();
-    //     this.downloadQueue.on('completed', async () => {
-    //       const jobs = await this.downloadQueue.getJobs(['completed']);
-    //       if (jobs.length >= this.blocksAmount) resolve((Date.now() - startTime) / 1000);
-    //     });
+    // return new Promise((resolve) => {
+    //   const startTime = Date.now();
+    //   this.downloadQueue.on('completed', async () => {
+    //     const jobs = await this.downloadQueue.getJobs(['completed']);
+    //     if (jobs.length >= this.blocksAmount) resolve((Date.now() - startTime) / 1000);
+    //   });
     //
     //     this.downloadQueue.add('downloadBlocks', {}, { repeat: { every: 200, limit: this.blocksAmount } });
     //     this.downloadQueue.process('downloadBlocks', async (job, done) => {

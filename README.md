@@ -22,6 +22,7 @@ The processing time starts counting from the moment the data is completely loade
 - fastq 1.15.0
 - Bull 4.10.4
 - RabbitMQ 3.12
+- toad-scheduler 3.0.0
 - Docker 24.0.2
 - Docker-compose 2.18.1
 - the other dependencies described in the package.json
