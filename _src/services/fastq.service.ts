@@ -8,11 +8,13 @@ import {
   DownloadTaskArgs,
   DownloadWorker,
   ProcessWorker,
-  downloadDataCallback,
+  DownloadDataCallback,
 } from '../models/max-balance.model';
 import scheduleDownloads from '../utils/schedule-downloads';
 import setTimer from '../utils/timer';
 import getMaxAccount from '../utils/get-max-account';
+import { EtherscanService } from './etherscan.service';
+const etherscan = new EtherscanService();
 
 export class FastqService {
   downloadQueue: queue<DownloadTaskArgs, fastq.done>;
@@ -86,7 +88,7 @@ export class FastqService {
 
   downloadData(): Promise<number> {
     const startTime = Date.now();
-    const callback: downloadDataCallback = (downloadNumber, blockNumberHex) => {
+    const callback: DownloadDataCallback = (downloadNumber, blockNumberHex) => {
       this.downloadQueue.push({ downloadNumber, blockNumberHex });
     };
     scheduleDownloads(callback, this.lastBlock, this.blocksAmount);

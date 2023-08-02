@@ -1,8 +1,11 @@
 import Bull from 'bull';
 import net from 'net';
 import config from 'config';
-import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
-import { Account, Block, Data } from '../models/max-balance.model';
+import { Account, Data } from '../models/max-balance.model';
+import setTimer from '../utils/timer';
+import getMaxAccount from '../utils/get-max-account';
+import { EtherscanService } from './etherscan.service';
+const etherscan = new EtherscanService();
 
 export class BullService {
   downloadQueue: Bull.Queue;
@@ -23,7 +26,7 @@ export class BullService {
     if (await this.isRedisUnavailable()) return { error: new Error('Error connecting to Redis!') };
     const result = await new Promise((resolve) => {
       (async (): Promise<void> => {
-        const errMsg = await this.setAwaitingTime(this.blocksAmount * 1500);
+        const errMsg = await setTimer(this.blocksAmount * 1500);
         resolve(errMsg);
       })();
 
@@ -53,10 +56,7 @@ export class BullService {
         try {
           ++i;
           if (config.LOG_BENCHMARKS === 'true') console.log(`\ndownload queue iteration ${i}`);
-          const blockNumber = (lastBlockNumberDecimal - i).toString(16);
-          const request = `${config.ETHERSCAN_API.GET_BLOCK}&tag=${blockNumber}&apikey=${config.ETHERSCAN_APIKEY}`;
-          const response = await fetch(request);
-          const block = (await response.json()) as Block;
+          const block = await etherscan.getBlock(lastBlockNumberDecimal - i);
           await this.processQueue.add('processBlocks', { block });
           const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
           done(err);
@@ -90,7 +90,7 @@ export class BullService {
           const val = Number(item.value);
           accum[item.to] = (accum[item.to] || 0) + val;
           accum[item.from] = (accum[item.from] || 0) - val;
-          maxAccount = this.getMaxAccount({ [item.to]: accum[item.to] }, { [item.from]: accum[item.from] }, maxAccount);
+          maxAccount = getMaxAccount({ [item.to]: accum[item.to] }, { [item.from]: accum[item.from] }, maxAccount);
           return accum;
         }, {});
         done();
@@ -98,28 +98,6 @@ export class BullService {
     });
     const processTime = (Date.now() - startTime) / 1000;
     return { addressBalances, maxAccount, amountOfTransactions, processTime };
-  }
-
-  getMaxAccount(...args: Account[]): Account {
-    args.sort((a, b) => {
-      const item1 = Number.isNaN(Math.abs(Object.values(a)[0])) ? 0 : Math.abs(Object.values(a)[0]);
-      const item2 = Number.isNaN(Math.abs(Object.values(b)[0])) ? 0 : Math.abs(Object.values(b)[0]);
-      if (item1 === item2) return 0;
-      return item1 < item2 ? 1 : -1;
-    });
-    return args[0];
-  }
-
-  setAwaitingTime(awaitingTime: number): Promise<Data> {
-    return new Promise((resolve) => {
-      const scheduler = new ToadScheduler();
-      const task = new Task('deadline', () => {
-        resolve({ error: { message: `the waiting time has expired! (${awaitingTime} msec)` } });
-        scheduler.stop();
-      });
-      const job = new SimpleIntervalJob({ milliseconds: awaitingTime, runImmediately: false }, task);
-      scheduler.addSimpleIntervalJob(job);
-    });
   }
 
   async cleanQueue(): Promise<void> {

@@ -13,7 +13,6 @@ export class MaxBalanceController {
     const data = await provider.getMaxChangedBalance();
     const results = await getBalanceView({ ...queryParams, ...data });
     res.end(results);
-    // res.end('results!!!');
   }
 
   getQueueProvider(queryParams: Query): BullService | FastqService | RabbitService {
