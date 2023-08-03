@@ -36,38 +36,36 @@ export class RabbitService {
   async downloadData(): Promise<number> {
     try {
       const startTime = Date.now();
-      const lastBlockNumberDecimal = parseInt(this.lastBlock, 16);
       let i = 0;
-
       await this.connectionChannel.assertQueue('downloadQueue', { durable: true });
       await this.connectionChannel.assertQueue('processQueue', { durable: true });
-      await this.connectionChannel.assertQueue('valory', { durable: true });
-      await this.connectionChannel.assertQueue('latepia', { durable: true });
-      await this.connectionChannel.assertQueue('telapia', { durable: true });
 
-      const queueFiller: DownloadQueueFiller = async (blockNumberHex: string) => {
-        await this.connectionChannel.sendToQueue('downloadQueue', Buffer.from(blockNumberHex), { persistent: true });
+      const queueFiller: DownloadQueueFiller = async (blockNumberHex: string, downloadNumber: number) => {
+        const msgContent = JSON.stringify({ blockNumberHex, downloadNumber });
+        await this.connectionChannel.sendToQueue('downloadQueue', Buffer.from(msgContent), { persistent: true });
       };
       await scheduleDownloads(queueFiller, this.lastBlock, this.blocksAmount);
 
       return new Promise((resolve) => {
         this.connectionChannel.consume('downloadQueue', async (message) => {
-          if (message !== null) {
+          const msgContent = JSON.parse(message.content.toString());
+          console.log('\nmsgContent', msgContent);
+          if (msgContent.downloadNumber && msgContent.downloadNumber <= this.blocksAmount) {
+            i++;
             if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${i}`);
             try {
-              ++i;
-              const blockNumberHex = (lastBlockNumberDecimal - i).toString(16);
-              const block = await etherscan.getBlock(blockNumberHex);
+              const block = await etherscan.getBlock(msgContent.blockNumberHex);
               await this.connectionChannel.sendToQueue('processQueue', Buffer.from(JSON.stringify(block)), {
                 persistent: true,
               });
               const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
+              await this.connectionChannel.ack(message);
             } catch (e) {
               console.error('downloadBlocks Error!', e);
             }
-            await this.connectionChannel.ack(message);
-          } else {
-            console.log('downloadQueue is drained.');
+          }
+          if (i >= this.blocksAmount) {
+            console.log('\ndownloadQueue is drained.');
             resolve((Date.now() - startTime) / 1000);
           }
         });
@@ -87,25 +85,26 @@ export class RabbitService {
 
     await new Promise((resolve) => {
       this.connectionChannel.consume('processQueue', async (message) => {
-        if (message !== null) {
-          try {
-            i++;
-            if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${i}`);
-            const { transactions } = message.data.block.result;
-            addressBalances = transactions.reduce((accum, item) => {
-              amountOfTransactions++;
-              const val = Number(item.value);
-              accum[item.to] = (accum[item.to] || 0) + val;
-              accum[item.from] = (accum[item.from] || 0) - val;
-              maxAccount = getMaxAccount({ [item.to]: accum[item.to] }, { [item.from]: accum[item.from] }, maxAccount);
-              return accum;
-            }, {});
-          } catch (e) {
-            console.error('downloadBlocks Error!', e);
-          }
-          await this.connectionChannel.ack(message);
-        } else {
-          console.log('downloadQueue is drained.');
+        const msgContent = JSON.parse(message.content.toString());
+        try {
+          i++;
+          if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${i}`);
+          console.log('msgContent.result.withdrawalsRoot', msgContent.result.withdrawalsRoot);
+          const { transactions } = msgContent.result;
+          addressBalances = transactions.reduce((accum, item) => {
+            amountOfTransactions++;
+            const val = Number(item.value);
+            accum[item.to] = (accum[item.to] || 0) + val;
+            accum[item.from] = (accum[item.from] || 0) - val;
+            maxAccount = getMaxAccount({ [item.to]: accum[item.to] }, { [item.from]: accum[item.from] }, maxAccount);
+            return accum;
+          }, {});
+        } catch (e) {
+          console.error('processBlocks Error!', e);
+        }
+        await this.connectionChannel.ack(message);
+        if (i >= this.blocksAmount) {
+          console.log('\nravoly!!!');
           resolve((Date.now() - startTime) / 1000);
         }
       });
@@ -118,7 +117,10 @@ export class RabbitService {
     try {
       console.log('\ncleanQueue');
       await this.connectionChannel.deleteQueue('downloadQueue');
-      // await this.connectionChannel.deleteQueue('processQueue');
+      await this.connectionChannel.deleteQueue('processQueue');
+      await this.connectionChannel.deleteQueue('valory');
+      await this.connectionChannel.deleteQueue('latepia');
+      await this.connectionChannel.deleteQueue('telapia');
       await this.connectionChannel.close();
       await this.connection.close();
       process.exit(0);
