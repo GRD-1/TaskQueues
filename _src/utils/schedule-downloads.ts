@@ -12,7 +12,7 @@ export default async function scheduleDownloads(
 
   const scheduler = new ToadScheduler();
   const task = new Task('download block', () => {
-    queueFiller(downloadNumber, blockNumberHex);
+    queueFiller(blockNumberHex, downloadNumber);
     if (downloadNumber >= blocksAmount) scheduler.stop();
     downloadNumber++;
     blockNumberHex = (lastBlockNumberDecimal - downloadNumber).toString(16);

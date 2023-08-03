@@ -26,7 +26,7 @@ export class BullService {
     if (await this.isRedisUnavailable()) return { error: new Error('Error connecting to Redis!') };
     const result = await new Promise((resolve) => {
       (async (): Promise<void> => {
-        const errMsg = await setTimer(this.blocksAmount * 1500);
+        const errMsg = await setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
         resolve(errMsg);
       })();
 
@@ -50,12 +50,11 @@ export class BullService {
         const jobs = await this.downloadQueue.getJobs(['completed']);
         if (jobs.length >= this.blocksAmount) resolve((Date.now() - startTime) / 1000);
       });
-
       this.downloadQueue.add('downloadBlocks', {}, { repeat: { every: 200, limit: this.blocksAmount } });
       this.downloadQueue.process('downloadBlocks', async (job, done) => {
         try {
           ++i;
-          if (config.LOG_BENCHMARKS === 'true') console.log(`\ndownload queue iteration ${i}`);
+          if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${i}`);
           const blockNumberHex = (lastBlockNumberDecimal - i).toString(16);
           const block = await etherscan.getBlock(blockNumberHex);
           await this.processQueue.add('processBlocks', { block });
@@ -84,7 +83,7 @@ export class BullService {
 
       this.processQueue.process('processBlocks', async (job, done) => {
         i++;
-        if (config.LOG_BENCHMARKS === 'true') console.log(`\nprocess queue iteration ${i}`);
+        if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${i}`);
         const { transactions } = job.data.block.result;
         addressBalances = transactions.reduce((accum, item) => {
           amountOfTransactions++;

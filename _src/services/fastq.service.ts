@@ -32,7 +32,7 @@ export class FastqService {
   async getMaxChangedBalance(): Promise<Data> {
     const result = await new Promise((resolve) => {
       (async (): Promise<void> => {
-        const errMsg = await setTimer(this.blocksAmount * 1000);
+        const errMsg = await setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
         resolve(errMsg);
       })();
 
@@ -54,8 +54,8 @@ export class FastqService {
 
   downloadData(): Promise<number> {
     const startTime = Date.now();
-    const queueFiller: DownloadQueueFiller = (downloadNumber, blockNumberHex) => {
-      this.downloadQueue.push({ downloadNumber, blockNumberHex });
+    const queueFiller: DownloadQueueFiller = (blockNumberHex, downloadNumber) => {
+      this.downloadQueue.push({ blockNumberHex, downloadNumber });
     };
     scheduleDownloads(queueFiller, this.lastBlock, this.blocksAmount);
     return new Promise((resolve) => {
@@ -78,7 +78,7 @@ export class FastqService {
 
   workerForDownloadQueue: DownloadWorker = async (args: DownloadTaskArgs, callback: done): Promise<void> => {
     try {
-      if (config.LOG_BENCHMARKS === 'true') console.log(`\ndownload queue iteration ${args.downloadNumber}`);
+      if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${args.downloadNumber}`);
       const block = await etherscan.getBlock(args.blockNumberHex);
       block.downloadNumber = args.downloadNumber;
       await this.processQueue.push(block);
@@ -91,7 +91,7 @@ export class FastqService {
   };
 
   workerForProcessQueue: ProcessWorker = async (block: Block, callback: done): Promise<void> => {
-    if (config.LOG_BENCHMARKS === 'true') console.log(`\nprocess queue iteration ${block.downloadNumber}`);
+    if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${block.downloadNumber}`);
     const { transactions } = block.result;
     this.addressBalances = transactions.reduce((accum, item) => {
       this.amountOfTransactions++;

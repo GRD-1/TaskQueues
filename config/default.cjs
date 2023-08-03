@@ -1,5 +1,6 @@
 module.exports = {
   LOG_BENCHMARKS: true,
+  WAITING_TIME_FOR_BLOCK: 1500,
 
   ETHERSCAN_API: {
     ETHERSCAN: 'https://api.etherscan.io/api?module=proxy&boolean=true',
@@ -12,7 +13,7 @@ module.exports = {
   },
 
   DEFAULT_QUERY: {
-    LIBRARY: 'fastq',
+    LIBRARY: 'rabbitmq',
     BLOCKS_AMOUNT: 2,
     LAST_BLOCK: '0x10b2feb',
   },
@@ -50,5 +51,13 @@ module.exports = {
       duration: 3000,
       bounceBack: false,
     },
-  }
+  },
+
+  RABBIT: {
+    get host(){
+      return process.env.DOCKER_BUILD? 'rabbitmq' : 'localhost';
+    },
+    port: 5672,
+  },
+
 };

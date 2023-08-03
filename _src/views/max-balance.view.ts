@@ -32,7 +32,7 @@ export default async function getBalanceView(args: ProcessedData): Promise<strin
       .replace('$loadingTime$', String(args.loadingTime))
       .replace('$processTime$', String(args.processTime));
 
-    if (config.LOG_BENCHMARKS === 'true') logBenchmarks(args, maxAccountData);
+    if (config.LOG_BENCHMARKS === true) logBenchmarks(args, maxAccountData);
     return html;
   } catch (err) {
     console.error('Error in view handler [getResults]: ', err);
