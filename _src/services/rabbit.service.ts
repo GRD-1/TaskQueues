@@ -9,7 +9,8 @@ const etherscan = new EtherscanService();
 
 export class RabbitService {
   private connection: Connection;
-  private connectionChannel: Channel;
+  private downloadChannel: Channel;
+  private processChannel: Channel;
 
   constructor(public blocksAmount: number, public lastBlock: string) {}
 
@@ -25,48 +26,51 @@ export class RabbitService {
       (async (): Promise<void> => {
         const loadingTime = await this.downloadData();
         const data = await this.processData();
-        // const data = {};
         resolve({ ...data, loadingTime });
       })();
     });
-    this.cleanQueue();
+    await this.cleanQueue();
     return result;
   }
 
   async downloadData(): Promise<number> {
     try {
       const startTime = Date.now();
-      let i = 0;
-      await this.connectionChannel.assertQueue('downloadQueue', { durable: true });
-      await this.connectionChannel.assertQueue('processQueue', { durable: true });
+      this.downloadChannel = await this.connection.createChannel();
+      await this.downloadChannel.assertQueue('downloadQueue', { durable: true });
+      await this.downloadChannel.assertQueue('processQueue', { durable: true });
 
-      const queueFiller: DownloadQueueFiller = async (blockNumberHex: string, downloadNumber: number) => {
-        const msgContent = JSON.stringify({ blockNumberHex, downloadNumber });
-        await this.connectionChannel.sendToQueue('downloadQueue', Buffer.from(msgContent), { persistent: true });
+      const queueFiller: DownloadQueueFiller = (blockNumberHex: string, downloadNumber: number) => {
+        let msgContent = JSON.stringify({ blockNumberHex, downloadNumber });
+        this.downloadChannel.sendToQueue('downloadQueue', Buffer.from(msgContent), { persistent: true });
+        if (downloadNumber >= this.blocksAmount) {
+          msgContent = JSON.stringify({ blockNumberHex: 'last message', downloadNumber: downloadNumber + 1 });
+          this.downloadChannel.sendToQueue('downloadQueue', Buffer.from(msgContent), { persistent: true });
+        }
       };
-      await scheduleDownloads(queueFiller, this.lastBlock, this.blocksAmount);
+      scheduleDownloads(queueFiller, this.lastBlock, this.blocksAmount);
 
-      return new Promise((resolve) => {
-        this.connectionChannel.consume('downloadQueue', async (message) => {
-          const msgContent = JSON.parse(message.content.toString());
-          console.log('\nmsgContent', msgContent);
-          if (msgContent.downloadNumber && msgContent.downloadNumber <= this.blocksAmount) {
-            i++;
-            if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${i}`);
+      return new Promise((resolveDownload) => {
+        this.downloadChannel.consume('downloadQueue', async (message) => {
+          const msgContent = message !== null ? JSON.parse(message.content.toString()) : undefined;
+          if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${msgContent.downloadNumber}`);
+          console.log('msgContent ', msgContent);
+          if (msgContent?.downloadNumber <= this.blocksAmount) {
             try {
               const block = await etherscan.getBlock(msgContent.blockNumberHex);
-              await this.connectionChannel.sendToQueue('processQueue', Buffer.from(JSON.stringify(block)), {
+              await this.downloadChannel.sendToQueue('processQueue', Buffer.from(JSON.stringify(block)), {
                 persistent: true,
               });
               const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
-              await this.connectionChannel.ack(message);
+              this.downloadChannel.ack(message);
             } catch (e) {
               console.error('downloadBlocks Error!', e);
             }
           }
-          if (i >= this.blocksAmount) {
-            console.log('\ndownloadQueue is drained.');
-            resolve((Date.now() - startTime) / 1000);
+          if (msgContent?.blockNumberHex === 'last message') {
+            console.log('\ndownloadQueue is drained');
+            console.log('msgContent:', msgContent);
+            resolveDownload((Date.now() - startTime) / 1000);
           }
         });
       });
@@ -78,14 +82,15 @@ export class RabbitService {
 
   async processData(): Promise<Data> {
     const startTime = Date.now();
+    this.processChannel = await this.connection.createChannel();
     let addressBalances: Account = { '': 0 };
     let maxAccount: Account = { '': 0 };
     let i = 0;
     let amountOfTransactions = 0;
 
-    await new Promise((resolve) => {
-      this.connectionChannel.consume('processQueue', async (message) => {
-        const msgContent = JSON.parse(message.content.toString());
+    await new Promise<void>((resolve) => {
+      this.processChannel.consume('processQueue', async (message) => {
+        const msgContent = message !== null ? JSON.parse(message.content.toString()) : undefined;
         try {
           i++;
           if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${i}`);
@@ -102,10 +107,10 @@ export class RabbitService {
         } catch (e) {
           console.error('processBlocks Error!', e);
         }
-        await this.connectionChannel.ack(message);
+        await this.processChannel.ack(message);
         if (i >= this.blocksAmount) {
-          console.log('\nravoly!!!');
-          resolve((Date.now() - startTime) / 1000);
+          console.log('\nprocessQueue is drained ');
+          resolve();
         }
       });
     });
@@ -116,12 +121,13 @@ export class RabbitService {
   async cleanQueue(): Promise<void> {
     try {
       console.log('\ncleanQueue');
-      await this.connectionChannel.deleteQueue('downloadQueue');
-      await this.connectionChannel.deleteQueue('processQueue');
-      await this.connectionChannel.deleteQueue('valory');
-      await this.connectionChannel.deleteQueue('latepia');
-      await this.connectionChannel.deleteQueue('telapia');
-      await this.connectionChannel.close();
+      // await this.connectionChannel.deleteQueue('downloadQueue');
+      // await this.connectionChannel.deleteQueue('processQueue');
+      await this.deleteQueue('downloadQueue');
+      await this.deleteQueue('processQueue');
+      await this.downloadChannel.close();
+      await this.processChannel.close();
+
       await this.connection.close();
       process.exit(0);
     } catch (error) {
@@ -129,10 +135,19 @@ export class RabbitService {
     }
   }
 
+  async deleteQueue(queueName: string): Promise<void> {
+    console.log(`deleteQueue ${queueName}`);
+    return this.downloadChannel.deleteQueue(queueName, null, (err, ok) => {
+      console.log('deleteQueue callback');
+
+      if (err) console.log('error while the queue deletion. reason: ', err.message);
+      if (ok('\nBARABULKA!!!')) console.log(`${queueName} queue successfully deleted`);
+    });
+  }
+
   async connectToRabbitMQ(): Promise<boolean> {
     try {
       this.connection = await connect(`amqp://${config.RABBIT.host}`);
-      this.connectionChannel = await this.connection.createChannel();
       return true;
     } catch (error) {
       return false;

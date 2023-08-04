@@ -1,11 +1,11 @@
 import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
 import { DownloadQueueFiller } from '../models/max-balance.model';
 
-export default async function scheduleDownloads(
+export default function scheduleDownloads(
   queueFiller: DownloadQueueFiller,
   lastBlock: string,
   blocksAmount: number,
-): Promise<void> {
+): void {
   const lastBlockNumberDecimal = parseInt(lastBlock, 16);
   let downloadNumber = 1;
   let blockNumberHex = (lastBlockNumberDecimal - downloadNumber).toString(16);
