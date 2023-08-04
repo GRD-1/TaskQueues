@@ -1,6 +1,6 @@
 module.exports = {
   LOG_BENCHMARKS: true,
-  WAITING_TIME_FOR_BLOCK: 3000,
+  WAITING_TIME_FOR_BLOCK: 1000,
 
   ETHERSCAN_API: {
     ETHERSCAN: 'https://api.etherscan.io/api?module=proxy&boolean=true',
@@ -13,7 +13,7 @@ module.exports = {
   },
 
   DEFAULT_QUERY: {
-    LIBRARY: 'rabbitmq',
+    LIBRARY: 'fastq',
     BLOCKS_AMOUNT: 2,
     LAST_BLOCK: '0x10b2feb',
   },

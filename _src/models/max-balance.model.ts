@@ -26,16 +26,16 @@ export interface Block {
   downloadNumber?: number;
 }
 
-export interface DownloadTaskArgs {
-  downloadNumber: number;
+export interface QueueTaskArgs {
+  taskNumber: number;
   blockNumberHex: string;
+  content?: Block;
+  terminateTask?: boolean;
 }
 
-export type DownloadQueueFiller = (a: string, b?: number) => void;
+export type DownloadQueueFiller = (a: string, b: number) => void;
 
-export type DownloadWorker = (args: DownloadTaskArgs, callback: done) => Promise<void>;
-
-export type ProcessWorker = (block: Block, callback: done) => Promise<void>;
+export type TaskWorker = (args: QueueTaskArgs, callback: done) => Promise<void>;
 
 export interface Data {
   addressBalances?: Account;

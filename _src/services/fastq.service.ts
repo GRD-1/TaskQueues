@@ -1,15 +1,7 @@
 import fastq from 'fastq';
 import config from 'config';
 import type { queue, done } from 'fastq';
-import {
-  Block,
-  Data,
-  Account,
-  DownloadTaskArgs,
-  DownloadWorker,
-  ProcessWorker,
-  DownloadQueueFiller,
-} from '../models/max-balance.model';
+import { Data, Account, QueueTaskArgs, TaskWorker, DownloadQueueFiller } from '../models/max-balance.model';
 import scheduleDownloads from '../utils/schedule-downloads';
 import setTimer from '../utils/timer';
 import getMaxAccount from '../utils/get-max-account';
@@ -17,8 +9,8 @@ import { EtherscanService } from './etherscan.service';
 const etherscan = new EtherscanService();
 
 export class FastqService {
-  downloadQueue: queue<DownloadTaskArgs, fastq.done>;
-  processQueue: queue<Block, fastq.done>;
+  downloadQueue: queue<QueueTaskArgs, fastq.done>;
+  processQueue: queue<QueueTaskArgs, fastq.done>;
   addressBalances: Account;
   maxAccount: Account;
   amountOfTransactions = 0;
@@ -54,8 +46,8 @@ export class FastqService {
 
   downloadData(): Promise<number> {
     const startTime = Date.now();
-    const queueFiller: DownloadQueueFiller = (blockNumberHex, downloadNumber) => {
-      this.downloadQueue.push({ blockNumberHex, downloadNumber });
+    const queueFiller: DownloadQueueFiller = (blockNumberHex, taskNumber) => {
+      this.downloadQueue.push({ blockNumberHex, taskNumber });
     };
     scheduleDownloads(queueFiller, this.lastBlock, this.blocksAmount);
     return new Promise((resolve) => {
@@ -76,12 +68,12 @@ export class FastqService {
     return (Date.now() - startTime) / 1000;
   }
 
-  workerForDownloadQueue: DownloadWorker = async (args: DownloadTaskArgs, callback: done): Promise<void> => {
+  workerForDownloadQueue: TaskWorker = async (args: QueueTaskArgs, callback: done): Promise<void> => {
     try {
-      if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${args.downloadNumber}`);
+      if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${args.taskNumber}`);
       const block = await etherscan.getBlock(args.blockNumberHex);
-      block.downloadNumber = args.downloadNumber;
-      await this.processQueue.push(block);
+      const task: QueueTaskArgs = { ...args, content: block };
+      await this.processQueue.push(task);
       const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
       callback(err);
     } catch (e) {
@@ -90,9 +82,9 @@ export class FastqService {
     }
   };
 
-  workerForProcessQueue: ProcessWorker = async (block: Block, callback: done): Promise<void> => {
-    if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${block.downloadNumber}`);
-    const { transactions } = block.result;
+  workerForProcessQueue: TaskWorker = async (args: QueueTaskArgs, callback: done): Promise<void> => {
+    if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${args.taskNumber}`);
+    const { transactions } = args.content.result;
     this.addressBalances = transactions.reduce((accum, item) => {
       this.amountOfTransactions++;
       const val = Number(item.value);
