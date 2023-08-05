@@ -11,8 +11,11 @@ export class RabbitService {
   private connection: Connection;
   private downloadChannel: Channel;
   private processChannel: Channel;
+  private sessionKey: number;
 
-  constructor(public blocksAmount: number, public lastBlock: string) {}
+  constructor(public blocksAmount: number, public lastBlock: string) {
+    this.sessionKey = Date.now();
+  }
 
   async getMaxChangedBalance(): Promise<Data> {
     const connection = await this.connectToRabbitMQ();
@@ -36,22 +39,20 @@ export class RabbitService {
   async downloadData(): Promise<number> {
     try {
       const startTime = Date.now();
-      this.downloadChannel = await this.connection.createChannel();
       await this.downloadChannel.assertQueue('downloadQueue', { durable: true });
       await this.downloadChannel.assertQueue('processQueue', { durable: true });
 
       const queueFiller: DownloadQueueFiller = (args: QueueTaskArgs) => {
         const terminateTask = args.taskNumber >= this.blocksAmount;
-        const task = JSON.stringify({ ...args, terminateTask });
+        const task = JSON.stringify({ ...args, terminateTask, sessionKey: this.sessionKey });
         this.downloadChannel.sendToQueue('downloadQueue', Buffer.from(task), { persistent: true });
       };
-
       scheduleDownloads(queueFiller, this.lastBlock, this.blocksAmount);
 
       return new Promise((resolveDownload) => {
         this.downloadChannel.consume('downloadQueue', async (message) => {
-          if (message !== null) {
-            const msgContent = JSON.parse(message.content.toString());
+          const msgContent = message !== null ? JSON.parse(message.content.toString()) : null;
+          if (msgContent !== null && msgContent.sessionKey === this.sessionKey) {
             if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${msgContent.taskNumber}`);
             console.log('msgContent ', msgContent);
             try {
@@ -81,15 +82,14 @@ export class RabbitService {
 
   async processData(): Promise<Data> {
     const startTime = Date.now();
-    this.processChannel = await this.connection.createChannel();
     let addressBalances: Account = { '': 0 };
     let maxAccount: Account = { '': 0 };
     let amountOfTransactions = 0;
 
     await new Promise<void>((resolve) => {
       this.processChannel.consume('processQueue', async (message) => {
-        if (message !== null) {
-          const msgContent = JSON.parse(message.content.toString());
+        const msgContent = message !== null ? JSON.parse(message.content.toString()) : null;
+        if (msgContent !== null && msgContent.sessionKey === this.sessionKey) {
           if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${msgContent.taskNumber}`);
           console.log('msgContent', msgContent.blockNumberHex);
           try {
@@ -121,32 +121,22 @@ export class RabbitService {
   async cleanQueue(): Promise<void> {
     try {
       console.log('\ncleanQueue');
-      // await this.connectionChannel.deleteQueue('downloadQueue');
-      // await this.connectionChannel.deleteQueue('processQueue');
-      // await this.deleteQueue('downloadQueue');
-      // await this.deleteQueue('processQueue');
-      // await this.downloadChannel.close();
-      // await this.processChannel.close();
+      let deletedMsgs = await this.downloadChannel.deleteQueue('downloadQueue');
+      console.log('\ndownloadQueue deleted. deleted messages: ', deletedMsgs);
+      deletedMsgs = await this.downloadChannel.deleteQueue('processQueue');
+      console.log('processQueue deleted. deleted messages: ', deletedMsgs);
       await this.connection.close();
     } catch (error) {
       console.error('Error occurred while deleting the queue:', error.message);
     }
   }
 
-  async deleteQueue(queueName: string): Promise<void> {
-    console.log(`deleteQueue ${queueName}`);
-    return this.downloadChannel.deleteQueue(queueName, null, (err, ok) => {
-      console.log('deleteQueue callback');
-
-      if (err) console.log('error while the queue deletion. reason: ', err.message);
-      if (ok('\nBARABULKA!!!')) console.log(`${queueName} queue successfully deleted`);
-    });
-  }
-
   async connectToRabbitMQ(): Promise<boolean> {
     try {
+      console.log('\nconnectToRabbitMQ');
       this.connection = await connect(`amqp://${config.RABBIT.host}`);
-
+      this.downloadChannel = await this.connection.createChannel();
+      this.processChannel = await this.connection.createChannel();
       return true;
     } catch (error) {
       return false;

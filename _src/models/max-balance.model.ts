@@ -29,6 +29,7 @@ export interface Block {
 export interface QueueTaskArgs {
   taskNumber: number;
   blockNumberHex: string;
+  sessionKey?: number;
   content?: Block;
   terminateTask?: boolean;
 }
