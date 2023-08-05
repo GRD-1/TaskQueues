@@ -5,7 +5,6 @@ export default function setTimer(awaitingTime: number): Promise<Data> {
   return new Promise((resolve) => {
     const scheduler = new ToadScheduler();
     const task = new Task('deadline', () => {
-      console.log('\nsetTimer: game over!');
       resolve({ error: { message: `the waiting time has expired! (${awaitingTime} msec)` } });
       scheduler.stop();
     });
