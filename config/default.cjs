@@ -1,6 +1,6 @@
 module.exports = {
   LOG_BENCHMARKS: true,
-  WAITING_TIME_FOR_BLOCK: 1000,
+  WAITING_TIME_FOR_BLOCK: 1500,
 
   ETHERSCAN_API: {
     ETHERSCAN: 'https://api.etherscan.io/api?module=proxy&boolean=true',

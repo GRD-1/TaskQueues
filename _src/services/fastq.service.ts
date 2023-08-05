@@ -46,8 +46,8 @@ export class FastqService {
 
   downloadData(): Promise<number> {
     const startTime = Date.now();
-    const queueFiller: DownloadQueueFiller = (blockNumberHex, taskNumber) => {
-      this.downloadQueue.push({ blockNumberHex, taskNumber });
+    const queueFiller: DownloadQueueFiller = (args: QueueTaskArgs) => {
+      this.downloadQueue.push({ ...args });
     };
     scheduleDownloads(queueFiller, this.lastBlock, this.blocksAmount);
     return new Promise((resolve) => {

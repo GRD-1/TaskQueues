@@ -33,7 +33,7 @@ export interface QueueTaskArgs {
   terminateTask?: boolean;
 }
 
-export type DownloadQueueFiller = (a: string, b: number) => void;
+export type DownloadQueueFiller = (args: QueueTaskArgs) => void;
 
 export type TaskWorker = (args: QueueTaskArgs, callback: done) => Promise<void>;
 
