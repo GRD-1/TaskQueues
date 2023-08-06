@@ -6,46 +6,66 @@ import setTimer from '../utils/timer';
 import getMaxAccount from '../utils/get-max-account';
 import { EtherscanService } from './etherscan.service';
 const etherscan = new EtherscanService();
+const queueSettings = {
+  redis: config.REDIS,
+  defaultJobOptions: config.BULL.JOB_OPTIONS,
+  settings: config.BULL.SETTINGS,
+  limiter: config.BULL.LIMITER,
+};
 
 export class BullService {
   downloadQueue: Bull.Queue;
   processQueue: Bull.Queue;
 
-  constructor(public blocksAmount: number, public lastBlock: string) {
-    const queueSettings = {
-      redis: config.REDIS,
-      defaultJobOptions: config.BULL.JOB_OPTIONS,
-      settings: config.BULL.SETTINGS,
-      limiter: config.BULL.LIMITER,
-    };
-    this.downloadQueue = new Bull('downloadQueue', queueSettings);
-    this.processQueue = new Bull('processQueue', queueSettings);
-  }
+  constructor(public blocksAmount: number, public lastBlock: string) {}
 
   async getMaxChangedBalance(): Promise<Data> {
-    if (await this.isRedisUnavailable()) return { error: new Error('Error connecting to Redis!') };
-    const result = await new Promise((resolve) => {
-      (async (): Promise<void> => {
-        const errMsg = await setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
-        resolve(errMsg);
-      })();
+    try {
+      await this.connectToServer();
+      const result = await new Promise((resolve) => {
+        (async (): Promise<void> => {
+          const errMsg = await setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
+          resolve(errMsg);
+        })();
 
-      (async (): Promise<void> => {
-        const loadingTime = await this.downloadData();
-        const data = await this.processData();
-        resolve({ ...data, loadingTime });
-      })();
+        (async (): Promise<void> => {
+          const loadingTime = await this.downloadData();
+          const data = await this.processData();
+          resolve({ ...data, loadingTime });
+        })();
+      });
+      this.cleanQueue();
+      return result;
+    } catch (err) {
+      return { error: err.message };
+    }
+  }
+
+  async connectToServer(): Promise<void | Error> {
+    const redisServerHost = config.REDIS.host;
+    const redisServerPort = config.REDIS.port;
+    const socket = net.createConnection(redisServerPort, redisServerHost);
+
+    return new Promise((resolve, reject) => {
+      socket.on('connect', () => {
+        socket.end();
+        resolve();
+      });
+
+      socket.on('error', () => {
+        reject(new Error('Error connecting to the Redis server!'));
+      });
     });
-    this.cleanQueue();
-    return result;
   }
 
   downloadData(): Promise<number> {
+    const startTime = Date.now();
+    this.downloadQueue = new Bull('downloadQueue', queueSettings);
+    this.processQueue = new Bull('processQueue', queueSettings);
     const lastBlockNumberDecimal = parseInt(this.lastBlock, 16);
     let i = 0;
 
     return new Promise((resolve) => {
-      const startTime = Date.now();
       this.downloadQueue.on('completed', async () => {
         const jobs = await this.downloadQueue.getJobs(['completed']);
         if (jobs.length >= this.blocksAmount) resolve((Date.now() - startTime) / 1000);
@@ -105,22 +125,5 @@ export class BullService {
     await this.processQueue.obliterate({ force: true });
     await this.downloadQueue.close();
     await this.processQueue.close();
-  }
-
-  async isRedisUnavailable(): Promise<boolean> {
-    const redisServerHost = config.REDIS.host;
-    const redisServerPort = config.REDIS.port;
-    const socket = net.createConnection(redisServerPort, redisServerHost);
-
-    return new Promise((resolve) => {
-      socket.on('connect', () => {
-        socket.end();
-        resolve(false);
-      });
-
-      socket.on('error', (error) => {
-        resolve(true);
-      });
-    });
   }
 }

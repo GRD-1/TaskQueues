@@ -18,22 +18,34 @@ export class RabbitService {
   }
 
   async getMaxChangedBalance(): Promise<Data> {
-    const connection = await this.connectToRabbitMQ();
-    if (!connection) return { error: new Error('Error connecting to RabbitMQ!') };
-    const result = await new Promise((resolve) => {
-      (async (): Promise<void> => {
-        const errMsg = await setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
-        resolve(errMsg);
-      })();
+    try {
+      await this.connectToServer();
+      const result = await new Promise((resolve) => {
+        (async (): Promise<void> => {
+          const errMsg = await setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
+          resolve(errMsg);
+        })();
+        (async (): Promise<void> => {
+          const loadingTime = await this.downloadData();
+          const data = await this.processData();
+          resolve({ ...data, loadingTime });
+        })();
+      });
+      this.cleanQueue();
+      return result;
+    } catch (err) {
+      return { error: err.message };
+    }
+  }
 
-      (async (): Promise<void> => {
-        const loadingTime = await this.downloadData();
-        const data = await this.processData();
-        resolve({ ...data, loadingTime });
-      })();
-    });
-    await this.cleanQueue();
-    return result;
+  async connectToServer(): Promise<void | Error> {
+    try {
+      this.connection = await connect(`amqp://${config.RABBIT.host}`);
+      this.downloadChannel = await this.connection.createChannel();
+      this.processChannel = await this.connection.createChannel();
+    } catch (err) {
+      throw new Error('Error connecting to the RabbitMQ server!');
+    }
   }
 
   async downloadData(): Promise<number> {
@@ -120,17 +132,6 @@ export class RabbitService {
       this.connection.close();
     } catch (error) {
       console.error('Error occurred while deleting the queue:', error.message);
-    }
-  }
-
-  async connectToRabbitMQ(): Promise<boolean> {
-    try {
-      this.connection = await connect(`amqp://${config.RABBIT.host}`);
-      this.downloadChannel = await this.connection.createChannel();
-      this.processChannel = await this.connection.createChannel();
-      return true;
-    } catch (error) {
-      return false;
     }
   }
 }

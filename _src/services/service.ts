@@ -1,6 +1,6 @@
 import config from 'config';
 import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
-import { Data, Account, DownloadQueueFiller, QueueTaskArgs, Query } from '../models/max-balance.model';
+import { Data, Account, DownloadQueueFiller, Query } from '../models/max-balance.model';
 import setTimer from '../utils/timer';
 import { EtherscanService } from './etherscan.service';
 const etherscan = new EtherscanService();

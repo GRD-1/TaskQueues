@@ -4,6 +4,9 @@ import { ProcessedData } from '../models/max-balance.model';
 
 function logBenchmarks(args: ProcessedData, maxAccountData: [string, number]): void {
   console.log('\nBenchmarks:');
+  console.log('library:', args.library);
+  console.log('lastBlock:', args.lastBlock);
+  console.log('blocksAmount:', args.blocksAmount);
   console.log('max account:', maxAccountData[0]);
   console.log('balance:', maxAccountData[1]);
   console.log('number of blocks:', args.blocksAmount);

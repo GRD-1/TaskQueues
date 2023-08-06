@@ -15,41 +15,44 @@ export class FastqService {
   maxAccount: Account;
   amountOfTransactions = 0;
 
-  constructor(public blocksAmount: number, public lastBlock: string) {
-    this.downloadQueue = fastq(this.workerForDownloadQueue, 1);
-    this.processQueue = fastq(this.workerForProcessQueue, 1);
-    this.processQueue.pause();
-  }
+  constructor(public blocksAmount: number, public lastBlock: string) {}
 
   async getMaxChangedBalance(): Promise<Data> {
-    const result = await new Promise((resolve) => {
-      (async (): Promise<void> => {
-        const errMsg = await setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
-        resolve(errMsg);
-      })();
+    try {
+      await this.connectToServer();
+      const result = await new Promise((resolve) => {
+        (async (): Promise<void> => {
+          const errMsg = await setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
+          resolve(errMsg);
+        })();
+        (async (): Promise<void> => {
+          const loadingTime = await this.downloadData();
+          const data = await this.processData();
+          resolve({ ...data, loadingTime });
+        })();
+      });
+      this.cleanQueue();
+      return result;
+    } catch (err) {
+      return { error: err.message };
+    }
+  }
 
-      (async (): Promise<void> => {
-        const loadingTime = await this.downloadData();
-        const processTime = await this.processData();
-        resolve({
-          addressBalances: this.addressBalances,
-          maxAccount: this.maxAccount,
-          amountOfTransactions: this.amountOfTransactions,
-          loadingTime,
-          processTime,
-        });
-      })();
-    });
-    this.cleanQueue();
-    return result;
+  async connectToServer(): Promise<void | Error> {
+    return null;
   }
 
   downloadData(): Promise<number> {
     const startTime = Date.now();
+    this.downloadQueue = fastq(this.workerForDownloadQueue, 1);
+    this.processQueue = fastq(this.workerForProcessQueue, 1);
+    this.processQueue.pause();
+
     const queueFiller: DownloadQueueFiller = (args: QueueTaskArgs) => {
       this.downloadQueue.push({ ...args });
     };
     scheduleDownloads(queueFiller, this.lastBlock, this.blocksAmount);
+
     return new Promise((resolve) => {
       this.downloadQueue.drain = (): void => {
         resolve((Date.now() - startTime) / 1000);
@@ -57,7 +60,7 @@ export class FastqService {
     });
   }
 
-  async processData(): Promise<number> {
+  async processData(): Promise<Data> {
     const startTime = Date.now();
     await new Promise((resolve) => {
       this.processQueue.drain = (): void => {
@@ -65,7 +68,13 @@ export class FastqService {
       };
       this.processQueue.resume();
     });
-    return (Date.now() - startTime) / 1000;
+    const processTime = (Date.now() - startTime) / 1000;
+    return {
+      addressBalances: this.addressBalances,
+      maxAccount: this.maxAccount,
+      amountOfTransactions: this.amountOfTransactions,
+      processTime,
+    };
   }
 
   workerForDownloadQueue: TaskWorker = async (args: QueueTaskArgs, callback: done): Promise<void> => {
