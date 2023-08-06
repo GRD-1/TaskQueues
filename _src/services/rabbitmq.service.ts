@@ -1,4 +1,4 @@
-import { Connection, connect, Channel, Message } from 'amqplib';
+import { Connection, connect, Channel } from 'amqplib';
 import config from 'config';
 import { Data, Account, DownloadQueueFiller, QueueTaskArgs, QueueWorkerArgs } from '../models/max-balance.model';
 import scheduleDownloads from '../utils/schedule-downloads';
@@ -7,7 +7,7 @@ import getMaxAccount from '../utils/get-max-account';
 import { EtherscanService } from './etherscan.service';
 const etherscan = new EtherscanService();
 
-export class RabbitService {
+export class RabbitmqService {
   private connection: Connection;
   private downloadChannel: Channel;
   private processChannel: Channel;
@@ -34,7 +34,7 @@ export class RabbitService {
           resolve({
             addressBalances: this.addressBalances,
             maxAccount: this.maxAccount,
-            amountOfTransactions: this.maxAccount,
+            amountOfTransactions: this.amountOfTransactions,
             processTime,
             loadingTime,
           });
@@ -71,8 +71,8 @@ export class RabbitService {
       scheduleDownloads(queueFiller, this.lastBlock, this.blocksAmount);
 
       return new Promise((resolve, reject) => {
-        this.downloadChannel.consume('downloadQueue', async (message) => {
-          await this.downloadQueueWorker({ message, startTime, resolve, reject });
+        this.downloadChannel.consume('downloadQueue', async (task) => {
+          await this.downloadQueueWorker({ task, startTime, resolve, reject });
         });
       });
     } catch (error) {
@@ -82,17 +82,17 @@ export class RabbitService {
   }
 
   async downloadQueueWorker(args: QueueWorkerArgs): Promise<void> {
-    const { message, startTime, resolve, reject } = args;
-    const msgContent = message !== null ? JSON.parse(message.content.toString()) : null;
+    const { task, startTime, resolve, reject } = args;
+    const msgContent = task !== null ? JSON.parse(task.content.toString()) : null;
     if (msgContent !== null && msgContent.sessionKey === this.sessionKey) {
       if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${msgContent.taskNumber}`);
       try {
         const block = await etherscan.getBlock(msgContent.blockNumberHex);
-        const task = JSON.stringify({ ...msgContent, content: block });
-        await this.downloadChannel.sendToQueue('processQueue', Buffer.from(task), {
+        const dataProcessTask = JSON.stringify({ ...msgContent, content: block });
+        await this.downloadChannel.sendToQueue('processQueue', Buffer.from(dataProcessTask), {
           persistent: true,
         });
-        this.downloadChannel.ack(message);
+        this.downloadChannel.ack(task);
       } catch (e) {
         console.error('downloadBlocks Error!', e);
         reject(e);
@@ -108,8 +108,8 @@ export class RabbitService {
     try {
       const startTime = Date.now();
       return new Promise((resolve, reject) => {
-        this.processChannel.consume('processQueue', async (message) => {
-          await this.processQueueWorker({ message, startTime, resolve, reject });
+        this.processChannel.consume('processQueue', async (task) => {
+          await this.processQueueWorker({ task, startTime, resolve, reject });
         });
       });
     } catch (error) {
@@ -119,8 +119,8 @@ export class RabbitService {
   }
 
   async processQueueWorker(args: QueueWorkerArgs): Promise<void> {
-    const { message, startTime, resolve, reject } = args;
-    const msgContent = message !== null ? JSON.parse(message.content.toString()) : null;
+    const { task, startTime, resolve, reject } = args;
+    const msgContent = task !== null ? JSON.parse(task.content.toString()) : null;
     if (msgContent !== null && msgContent.sessionKey === this.sessionKey) {
       if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${msgContent.taskNumber}`);
       try {
@@ -141,7 +141,7 @@ export class RabbitService {
         console.error('processBlocks Error!', e);
         reject(e);
       }
-      await this.processChannel.ack(message);
+      await this.processChannel.ack(task);
       if (msgContent?.terminateTask) {
         await this.processChannel.deleteQueue('processQueue');
         resolve((Date.now() - startTime) / 1000);

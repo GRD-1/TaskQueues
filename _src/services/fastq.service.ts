@@ -27,8 +27,14 @@ export class FastqService {
         })();
         (async (): Promise<void> => {
           const loadingTime = await this.downloadData();
-          const data = await this.processData();
-          resolve({ ...data, loadingTime });
+          const processTime = await this.processData();
+          resolve({
+            addressBalances: this.addressBalances,
+            maxAccount: this.maxAccount,
+            amountOfTransactions: this.amountOfTransactions,
+            processTime,
+            loadingTime,
+          });
         })();
       });
       this.cleanQueue();

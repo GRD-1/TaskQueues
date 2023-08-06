@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { BullService } from '../services/bull.service';
-import { RabbitService } from '../services/rabbit.service';
+import { RabbitmqService } from '../services/rabbitmq.service';
 import { FastqService } from '../services/fastq.service';
 import getQueryParams from '../utils/query-params-extractor.util';
 import getBalanceView from '../views/max-balance.view';
@@ -15,12 +15,12 @@ export class MaxBalanceController {
     res.end(results);
   }
 
-  getQueueProvider(queryParams: Query): BullService | FastqService | RabbitService {
+  getQueueProvider(queryParams: Query): BullService | FastqService | RabbitmqService {
     switch (queryParams.library) {
       case 'bull':
         return new BullService(queryParams.blocksAmount, queryParams.lastBlock);
       case 'rabbitmq':
-        return new RabbitService(queryParams.blocksAmount, queryParams.lastBlock);
+        return new RabbitmqService(queryParams.blocksAmount, queryParams.lastBlock);
       case 'fastq':
         return new FastqService(queryParams.blocksAmount, queryParams.lastBlock);
       default:

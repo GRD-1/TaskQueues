@@ -40,10 +40,10 @@ export type DownloadQueueFiller = (args: QueueTaskArgs) => void;
 export type TaskWorker = (args: QueueTaskArgs, callback: done) => Promise<void>;
 
 export interface QueueWorkerArgs {
-  message: Message | null;
+  task: Message | null;
   startTime: number;
   resolve: (timeTaken: number) => void;
-  reject: (reason?: any) => void;
+  reject: <T>(reason?: T) => void;
 }
 
 // export type RejectDownload = (reason?: any) => void;
