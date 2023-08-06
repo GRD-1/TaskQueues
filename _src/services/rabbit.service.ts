@@ -1,6 +1,6 @@
-import { Connection, connect, Channel } from 'amqplib';
+import { Connection, connect, Channel, Message } from 'amqplib';
 import config from 'config';
-import { Data, Account, DownloadQueueFiller, QueueTaskArgs } from '../models/max-balance.model';
+import { Data, Account, DownloadQueueFiller, QueueTaskArgs, QueueWorkerArgs } from '../models/max-balance.model';
 import scheduleDownloads from '../utils/schedule-downloads';
 import setTimer from '../utils/timer';
 import getMaxAccount from '../utils/get-max-account';
@@ -11,7 +11,10 @@ export class RabbitService {
   private connection: Connection;
   private downloadChannel: Channel;
   private processChannel: Channel;
-  private sessionKey: number;
+  readonly sessionKey: number;
+  private addressBalances: Account;
+  private maxAccount: Account;
+  private amountOfTransactions = 0;
 
   constructor(public blocksAmount: number, public lastBlock: string) {
     this.sessionKey = Date.now();
@@ -27,8 +30,14 @@ export class RabbitService {
         })();
         (async (): Promise<void> => {
           const loadingTime = await this.downloadData();
-          const data = await this.processData();
-          resolve({ ...data, loadingTime });
+          const processTime = await this.processData();
+          resolve({
+            addressBalances: this.addressBalances,
+            maxAccount: this.maxAccount,
+            amountOfTransactions: this.maxAccount,
+            processTime,
+            loadingTime,
+          });
         })();
       });
       this.cleanQueue();
@@ -61,26 +70,9 @@ export class RabbitService {
       };
       scheduleDownloads(queueFiller, this.lastBlock, this.blocksAmount);
 
-      return new Promise((resolveDownload) => {
+      return new Promise((resolve, reject) => {
         this.downloadChannel.consume('downloadQueue', async (message) => {
-          const msgContent = message !== null ? JSON.parse(message.content.toString()) : null;
-          if (msgContent !== null && msgContent.sessionKey === this.sessionKey) {
-            if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${msgContent.taskNumber}`);
-            try {
-              const block = await etherscan.getBlock(msgContent.blockNumberHex);
-              const task = JSON.stringify({ ...msgContent, content: block });
-              await this.downloadChannel.sendToQueue('processQueue', Buffer.from(task), {
-                persistent: true,
-              });
-              this.downloadChannel.ack(message);
-            } catch (e) {
-              console.error('downloadBlocks Error!', e);
-            }
-            if (msgContent?.terminateTask) {
-              this.downloadChannel.deleteQueue('downloadQueue');
-              resolveDownload((Date.now() - startTime) / 1000);
-            }
-          }
+          await this.downloadQueueWorker({ message, startTime, resolve, reject });
         });
       });
     } catch (error) {
@@ -89,40 +81,72 @@ export class RabbitService {
     }
   }
 
-  async processData(): Promise<Data> {
-    const startTime = Date.now();
-    let addressBalances: Account = { '': 0 };
-    let maxAccount: Account = { '': 0 };
-    let amountOfTransactions = 0;
+  async downloadQueueWorker(args: QueueWorkerArgs): Promise<void> {
+    const { message, startTime, resolve, reject } = args;
+    const msgContent = message !== null ? JSON.parse(message.content.toString()) : null;
+    if (msgContent !== null && msgContent.sessionKey === this.sessionKey) {
+      if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${msgContent.taskNumber}`);
+      try {
+        const block = await etherscan.getBlock(msgContent.blockNumberHex);
+        const task = JSON.stringify({ ...msgContent, content: block });
+        await this.downloadChannel.sendToQueue('processQueue', Buffer.from(task), {
+          persistent: true,
+        });
+        this.downloadChannel.ack(message);
+      } catch (e) {
+        console.error('downloadBlocks Error!', e);
+        reject(e);
+      }
+      if (msgContent?.terminateTask) {
+        this.downloadChannel.deleteQueue('downloadQueue');
+        resolve((Date.now() - startTime) / 1000);
+      }
+    }
+  }
 
-    await new Promise<void>((resolve) => {
-      this.processChannel.consume('processQueue', async (message) => {
-        const msgContent = message !== null ? JSON.parse(message.content.toString()) : null;
-        if (msgContent !== null && msgContent.sessionKey === this.sessionKey) {
-          if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${msgContent.taskNumber}`);
-          try {
-            const { transactions } = msgContent.content.result;
-            addressBalances = transactions.reduce((accum, item) => {
-              amountOfTransactions++;
-              const val = Number(item.value);
-              accum[item.to] = (accum[item.to] || 0) + val;
-              accum[item.from] = (accum[item.from] || 0) - val;
-              maxAccount = getMaxAccount({ [item.to]: accum[item.to] }, { [item.from]: accum[item.from] }, maxAccount);
-              return accum;
-            }, {});
-          } catch (e) {
-            console.error('processBlocks Error!', e);
-          }
-          await this.processChannel.ack(message);
-          if (msgContent?.terminateTask) {
-            await this.processChannel.deleteQueue('processQueue');
-            resolve();
-          }
-        }
+  async processData(): Promise<number> {
+    try {
+      const startTime = Date.now();
+      return new Promise((resolve, reject) => {
+        this.processChannel.consume('processQueue', async (message) => {
+          await this.processQueueWorker({ message, startTime, resolve, reject });
+        });
       });
-    });
-    const processTime = (Date.now() - startTime) / 1000;
-    return { addressBalances, maxAccount, amountOfTransactions, processTime };
+    } catch (error) {
+      console.error('Error occurred while downloading data:', error.message);
+      throw error;
+    }
+  }
+
+  async processQueueWorker(args: QueueWorkerArgs): Promise<void> {
+    const { message, startTime, resolve, reject } = args;
+    const msgContent = message !== null ? JSON.parse(message.content.toString()) : null;
+    if (msgContent !== null && msgContent.sessionKey === this.sessionKey) {
+      if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${msgContent.taskNumber}`);
+      try {
+        const { transactions } = msgContent.content.result;
+        this.addressBalances = transactions.reduce((accum, item) => {
+          this.amountOfTransactions++;
+          const val = Number(item.value);
+          accum[item.to] = (accum[item.to] || 0) + val;
+          accum[item.from] = (accum[item.from] || 0) - val;
+          this.maxAccount = getMaxAccount(
+            { [item.to]: accum[item.to] },
+            { [item.from]: accum[item.from] },
+            this.maxAccount,
+          );
+          return accum;
+        }, {});
+      } catch (e) {
+        console.error('processBlocks Error!', e);
+        reject(e);
+      }
+      await this.processChannel.ack(message);
+      if (msgContent?.terminateTask) {
+        await this.processChannel.deleteQueue('processQueue');
+        resolve((Date.now() - startTime) / 1000);
+      }
+    }
   }
 
   async cleanQueue(): Promise<void> {

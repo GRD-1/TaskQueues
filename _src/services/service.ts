@@ -25,21 +25,8 @@ export class Service {
     return result;
   }
 
-  async downloadData(): Promise<number> {
-    try {
-      const startTime = Date.now();
-      return (Date.now() - startTime) / 1000;
-    } catch (error) {
-      console.error('Error occurred while downloading data:', error.message);
-      throw error;
-    }
-  }
-
-  async processData(): Promise<Data> {
-    const startTime = Date.now();
-    const processTime = (Date.now() - startTime) / 1000;
-    return { processTime };
-  }
+  downloadData: () => Promise<number>;
+  processData: () => Promise<Data>;
 
   getMaxAccount(...args: Account[]): Account {
     args.sort((a, b) => {

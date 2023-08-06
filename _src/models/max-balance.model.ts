@@ -1,4 +1,5 @@
 import { done } from 'fastq';
+import { Message } from 'amqplib';
 
 export interface Query {
   library?: string;
@@ -37,6 +38,15 @@ export interface QueueTaskArgs {
 export type DownloadQueueFiller = (args: QueueTaskArgs) => void;
 
 export type TaskWorker = (args: QueueTaskArgs, callback: done) => Promise<void>;
+
+export interface QueueWorkerArgs {
+  message: Message | null;
+  startTime: number;
+  resolve: (timeTaken: number) => void;
+  reject: (reason?: any) => void;
+}
+
+// export type RejectDownload = (reason?: any) => void;
 
 export interface Data {
   addressBalances?: Account;
