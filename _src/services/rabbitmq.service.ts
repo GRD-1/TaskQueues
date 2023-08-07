@@ -83,12 +83,12 @@ export class RabbitmqService {
 
   async downloadQueueWorker(args: QueueWorkerArgs): Promise<void> {
     const { task, startTime, resolve, reject } = args;
-    const msgContent = task !== null ? JSON.parse(task.content.toString()) : null;
-    if (msgContent !== null && msgContent.sessionKey === this.sessionKey) {
-      if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${msgContent.taskNumber}`);
+    const taskContent = task !== null ? JSON.parse(task.content.toString()) : null;
+    if (taskContent !== null && taskContent.sessionKey === this.sessionKey) {
+      if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${taskContent.taskNumber}`);
       try {
-        const block = await etherscan.getBlock(msgContent.blockNumberHex);
-        const dataProcessTask = JSON.stringify({ ...msgContent, content: block });
+        const block = await etherscan.getBlock(taskContent.blockNumberHex);
+        const dataProcessTask = JSON.stringify({ ...taskContent, content: block });
         await this.downloadChannel.sendToQueue('processQueue', Buffer.from(dataProcessTask), {
           persistent: true,
         });
@@ -97,7 +97,7 @@ export class RabbitmqService {
         console.error('downloadBlocks Error!', e);
         reject(e);
       }
-      if (msgContent?.terminateTask) {
+      if (taskContent?.terminateTask) {
         this.downloadChannel.deleteQueue('downloadQueue');
         resolve((Date.now() - startTime) / 1000);
       }
@@ -120,11 +120,11 @@ export class RabbitmqService {
 
   async processQueueWorker(args: QueueWorkerArgs): Promise<void> {
     const { task, startTime, resolve, reject } = args;
-    const msgContent = task !== null ? JSON.parse(task.content.toString()) : null;
-    if (msgContent !== null && msgContent.sessionKey === this.sessionKey) {
-      if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${msgContent.taskNumber}`);
+    const taskContent = task !== null ? JSON.parse(task.content.toString()) : null;
+    if (taskContent !== null && taskContent.sessionKey === this.sessionKey) {
+      if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${taskContent.taskNumber}`);
       try {
-        const { transactions } = msgContent.content.result;
+        const { transactions } = taskContent.content.result;
         this.addressBalances = transactions.reduce((accum, item) => {
           this.amountOfTransactions++;
           const val = Number(item.value);
@@ -142,7 +142,7 @@ export class RabbitmqService {
         reject(e);
       }
       await this.processChannel.ack(task);
-      if (msgContent?.terminateTask) {
+      if (taskContent?.terminateTask) {
         await this.processChannel.deleteQueue('processQueue');
         resolve((Date.now() - startTime) / 1000);
       }
