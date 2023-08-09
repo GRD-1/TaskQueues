@@ -16,6 +16,7 @@ module.exports = {
     LIBRARY: 'fastq',
     BLOCKS_AMOUNT: 2,
     LAST_BLOCK: '0x10b2feb',
+    REQUEST_INTERVAL: 200,
   },
 
   REDIS: {

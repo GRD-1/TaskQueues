@@ -1,4 +1,5 @@
 import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
+import config from 'config';
 import { DownloadQueueFiller } from '../models/max-balance.model';
 
 export default function scheduleDownloads(
@@ -17,7 +18,8 @@ export default function scheduleDownloads(
     taskNumber++;
     blockNumberHex = (lastBlockNumberDecimal - taskNumber).toString(16);
   });
-  const job = new SimpleIntervalJob({ milliseconds: 200, runImmediately: true }, task, {
+  const interval = config.DEFAULT_QUERY.REQUEST_INTERVAL;
+  const job = new SimpleIntervalJob({ milliseconds: interval, runImmediately: true }, task, {
     id: `toadId_${taskNumber}`,
   });
   scheduler.addSimpleIntervalJob(job);

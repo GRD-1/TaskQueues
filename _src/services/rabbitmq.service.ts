@@ -83,13 +83,13 @@ export class RabbitmqService {
 
   async downloadQueueWorker(args: QueueWorkerArgs): Promise<void> {
     const { task, startTime, resolve, reject } = args;
-    const taskContent = task !== null ? JSON.parse(task.content.toString()) : null;
+    const taskContent = task !== null ? JSON.parse(task.content) : null;
     if (taskContent !== null && taskContent.sessionKey === this.sessionKey) {
       if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${taskContent.taskNumber}`);
       try {
         const block = await etherscan.getBlock(taskContent.blockNumberHex);
-        const dataProcessTask = JSON.stringify({ ...taskContent, content: block });
-        await this.downloadChannel.sendToQueue('processQueue', Buffer.from(dataProcessTask), {
+        const processQueueTask = JSON.stringify({ ...taskContent, content: block });
+        await this.downloadChannel.sendToQueue('processQueue', Buffer.from(processQueueTask), {
           persistent: true,
         });
         this.downloadChannel.ack(task);
@@ -113,14 +113,14 @@ export class RabbitmqService {
         });
       });
     } catch (error) {
-      console.error('Error occurred while downloading data:', error.message);
+      console.error('Error occurred while process data:', error.message);
       throw error;
     }
   }
 
   async processQueueWorker(args: QueueWorkerArgs): Promise<void> {
     const { task, startTime, resolve, reject } = args;
-    const taskContent = task !== null ? JSON.parse(task.content.toString()) : null;
+    const taskContent = task !== null ? JSON.parse(task.content) : null;
     if (taskContent !== null && taskContent.sessionKey === this.sessionKey) {
       if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${taskContent.taskNumber}`);
       try {
@@ -138,7 +138,7 @@ export class RabbitmqService {
           return accum;
         }, {});
       } catch (e) {
-        console.error('processBlocks Error!', e);
+        console.error('processQueue Error!', e);
         reject(e);
       }
       await this.processChannel.ack(task);
