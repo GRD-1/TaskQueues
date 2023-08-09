@@ -13,7 +13,7 @@ export class RabbitmqService {
   private processChannel: Channel;
   readonly sessionKey: number;
   private addressBalances: Account;
-  private maxAccount: Account;
+  private maxAccount: Account = { undefined };
   private amountOfTransactions = 0;
 
   constructor(public blocksAmount: number, public lastBlock: string) {

@@ -4,14 +4,10 @@ import { Block, Query } from '../models/max-balance.model';
 export class EtherscanService {
   async getLastBlockNumber(query: Query): Promise<string> {
     try {
-      if (!query.lastBlock) return config.DEFAULT_QUERY.LAST_BLOCK;
-      if (query.lastBlock === 'last') {
-        const request = `${config.ETHERSCAN_API.LAST_BLOCK_NUMBER}&apikey=${config.ETHERSCAN_APIKEY}`;
-        const result = await fetch(request);
-        const data = (await result.json()) as { result: string };
-        return data.result;
-      }
-      return query.lastBlock;
+      const request = `${config.ETHERSCAN_API.LAST_BLOCK_NUMBER}&apikey=${config.ETHERSCAN_APIKEY}`;
+      const result = await fetch(request);
+      const data = (await result.json()) as { result: string };
+      return data.result;
     } catch (e) {
       console.error('Failed to get the last block number! reason: ', e);
       throw e;

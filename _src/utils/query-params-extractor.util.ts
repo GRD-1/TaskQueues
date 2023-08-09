@@ -4,8 +4,23 @@ import { EtherscanService } from '../services/etherscan.service';
 const etherscan = new EtherscanService();
 
 export default async function getQueryParams(query: Query): Promise<Query> {
-  const library = query.library || config.DEFAULT_QUERY.LIBRARY;
-  const blocksAmount = query.blocksAmount || config.DEFAULT_QUERY.BLOCKS_AMOUNT;
-  const lastBlock = await etherscan.getLastBlockNumber(query);
+  let { library, blocksAmount, lastBlock } = query;
+
+  if (library === undefined) library = config.DEFAULT_QUERY.LIBRARY;
+  else if (!config.LIBRARY_LIST.includes(query.library)) {
+    throw Error('incorrect library name!');
+  }
+
+  if (blocksAmount === undefined) blocksAmount = config.DEFAULT_QUERY.BLOCKS_AMOUNT;
+  else if (Number(blocksAmount) <= 0) throw Error('incorrect number of blocks!');
+  else if (Number(blocksAmount) >= 20) throw Error('to much blocks! process will take a lot of time!');
+
+  if (lastBlock === undefined) lastBlock = config.DEFAULT_QUERY.LAST_BLOCK;
+  else if (query.lastBlock === 'last') lastBlock = await etherscan.getLastBlockNumber(query);
+  else {
+    const lastBlockNumberDecimal = parseInt(lastBlock, 16);
+    if (lastBlockNumberDecimal < 1) throw Error('wrong last block number!');
+  }
+
   return { library, blocksAmount, lastBlock };
 }

@@ -1,6 +1,7 @@
 module.exports = {
   LOG_BENCHMARKS: true,
   WAITING_TIME_FOR_BLOCK: 1500,
+  LIBRARY_LIST: ['fastq', 'bull', 'rabbitmq'],
 
   ETHERSCAN_API: {
     ETHERSCAN: 'https://api.etherscan.io/api?module=proxy&boolean=true',

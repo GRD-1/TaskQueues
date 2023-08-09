@@ -19,7 +19,7 @@ export class BullService {
   processQueue: Bull.Queue;
   readonly sessionKey: number;
   private addressBalances: Account;
-  private maxAccount: Account;
+  private maxAccount: Account = { undefined };
   private amountOfTransactions = 0;
 
   constructor(public blocksAmount: number, public lastBlock: string) {

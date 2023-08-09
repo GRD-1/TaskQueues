@@ -8,11 +8,15 @@ import { Query } from '../models/max-balance.model';
 
 export class MaxBalanceController {
   async get(req: Request, res: Response): Promise<void> {
-    const queryParams = await getQueryParams(req.query);
-    const provider = this.getQueueProvider(queryParams);
-    const data = await provider.getMaxChangedBalance();
-    const results = await getBalanceView({ ...queryParams, ...data });
-    res.end(results);
+    try {
+      const queryParams = await getQueryParams(req.query);
+      const provider = this.getQueueProvider(queryParams);
+      const data = await provider.getMaxChangedBalance();
+      const results = await getBalanceView({ ...queryParams, ...data });
+      res.end(results);
+    } catch (e) {
+      res.end(e.message);
+    }
   }
 
   getQueueProvider(queryParams: Query): BullService | FastqService | RabbitmqService {
@@ -21,8 +25,6 @@ export class MaxBalanceController {
         return new BullService(queryParams.blocksAmount, queryParams.lastBlock);
       case 'rabbitmq':
         return new RabbitmqService(queryParams.blocksAmount, queryParams.lastBlock);
-      case 'fastq':
-        return new FastqService(queryParams.blocksAmount, queryParams.lastBlock);
       default:
         return new FastqService(queryParams.blocksAmount, queryParams.lastBlock);
     }

@@ -13,7 +13,7 @@ export class FastqService {
   private processQueue: queue<QueueTaskArgs, fastq.done>;
   readonly sessionKey: number;
   private addressBalances: Account;
-  private maxAccount: Account;
+  private maxAccount: Account = { undefined };
   private amountOfTransactions = 0;
 
   constructor(public blocksAmount: number, public lastBlock: string) {
@@ -98,19 +98,22 @@ export class FastqService {
 
   async processQueueWorker(args: QueueTaskArgs, callback: done): Promise<void> {
     if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${args.taskNumber}`);
-    const { transactions } = args.content.result;
-    this.addressBalances = transactions.reduce((accum, item) => {
-      this.amountOfTransactions++;
-      const val = Number(item.value);
-      accum[item.to] = (accum[item.to] || 0) + val;
-      accum[item.from] = (accum[item.from] || 0) - val;
-      this.maxAccount = getMaxAccount(
-        { [item.to]: accum[item.to] },
-        { [item.from]: accum[item.from] },
-        this.maxAccount,
-      );
-      return accum;
-    }, {});
+    console.log('\nargs.content.result:', args.content.result);
+    const transactions = args.content?.result ? args.content.result.transactions : undefined;
+    if (transactions) {
+      this.addressBalances = transactions.reduce((accum, item) => {
+        this.amountOfTransactions++;
+        const val = Number(item.value);
+        accum[item.to] = (accum[item.to] || 0) + val;
+        accum[item.from] = (accum[item.from] || 0) - val;
+        this.maxAccount = getMaxAccount(
+          { [item.to]: accum[item.to] },
+          { [item.from]: accum[item.from] },
+          this.maxAccount,
+        );
+        return accum;
+      }, {});
+    }
     callback(null);
   }
 
