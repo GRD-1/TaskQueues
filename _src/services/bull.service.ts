@@ -1,7 +1,14 @@
 import Bull from 'bull';
 import net from 'net';
 import config from 'config';
-import { Account, Block, Data, DownloadQueueFiller, QueueTaskArgs, QueueWorkerArgs } from '../models/max-balance.model';
+import {
+  Account,
+  Data,
+  DownloadQueueFiller,
+  QueueTaskArgs,
+  DownloadWorkerArgs,
+  ProcessWorkerArgs,
+} from '../models/max-balance.model';
 import setTimer from '../utils/timer';
 import getMaxAccount from '../utils/get-max-account';
 import { EtherscanService } from './etherscan.service';
@@ -34,9 +41,10 @@ export class BullService {
           const errMsg = await setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
           resolve(errMsg);
         })();
+
         (async (): Promise<void> => {
-          const loadingTime = await this.downloadData();
-          const processTime = await this.processData();
+          const loadingTime = await this.downloadData().catch((err) => resolve({ error: err.message }));
+          const processTime = await this.processData().catch((err) => resolve({ error: err.message }));
           resolve({
             addressBalances: this.addressBalances,
             maxAccount: this.maxAccount,
@@ -89,14 +97,20 @@ export class BullService {
     });
   }
 
-  async downloadQueueWorker(args: QueueWorkerArgs, callback: Bull.DoneCallback): Promise<void> {
+  async downloadQueueWorker(args: DownloadWorkerArgs, callback: Bull.DoneCallback): Promise<void> {
     const { task, startTime, resolve, reject } = args;
     const taskContent = task !== null ? JSON.parse(task.data) : null;
     if (taskContent !== null && taskContent.sessionKey === this.sessionKey) {
       if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${taskContent.taskNumber}`);
       try {
         const block = await etherscan.getBlock(taskContent.blockNumberHex);
-        const processQueueTask = JSON.stringify({ ...taskContent, data: block });
+        const processQueueTask = JSON.stringify({ ...taskContent, content: block });
+
+        if ('error' in block) {
+          console.log('\ndownloadQueueWorker error: ', block.error);
+          throw Error(block.error.toString());
+        }
+
         await this.processQueue.add('processQueue', processQueueTask);
       } catch (e) {
         console.error('downloadQueue Error!', e);
@@ -112,45 +126,48 @@ export class BullService {
   }
 
   async processData(): Promise<number> {
-    try {
-      const startTime = Date.now();
-      return new Promise((resolve, reject) => {
-        this.processQueue.process('processQueue', async (job, done) => {
-          await this.processQueueWorker({ task: job, startTime, resolve, reject }, done);
-        });
+    const startTime = Date.now();
+    await new Promise((resolve, reject) => {
+      this.processQueue.process('processQueue', async (task, done) => {
+        const taskContent = JSON.parse(task?.data);
+        if (taskContent) {
+          await this.processQueueWorker({ ...taskContent, startTime, taskCallback: done, resolve, reject });
+        }
       });
-    } catch (error) {
-      console.error('Error occurred while process data:', error.message);
-      throw error;
-    }
+    }).catch((e) => {
+      throw e;
+    });
+    return (Date.now() - startTime) / 1000;
   }
 
-  async processQueueWorker(args: QueueWorkerArgs, callback: Bull.DoneCallback): Promise<void> {
-    const { task, startTime, resolve, reject } = args;
-    const taskContent = task !== null ? JSON.parse(task.data) : null;
-    if (taskContent !== null && taskContent.sessionKey === this.sessionKey) {
-      if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${taskContent.taskNumber}`);
+  async processQueueWorker(args: ProcessWorkerArgs): Promise<void> {
+    const { taskNumber, sessionKey, terminateTask, content, startTime } = args;
+    const { taskCallback, resolve, reject } = args;
+    if (content && sessionKey === this.sessionKey) {
+      if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${taskNumber}`);
       try {
-        const { transactions } = taskContent.data.result;
-        this.addressBalances = transactions.reduce((accum, item) => {
-          this.amountOfTransactions++;
-          const val = Number(item.value);
-          accum[item.to] = (accum[item.to] || 0) + val;
-          accum[item.from] = (accum[item.from] || 0) - val;
-          this.maxAccount = getMaxAccount(
-            { [item.to]: accum[item.to] },
-            { [item.from]: accum[item.from] },
-            this.maxAccount,
-          );
-          return accum;
-        }, {});
+        if ('error' in content) throw Error(content.error.message);
+        const transactions = content?.result?.transactions;
+        if (transactions) {
+          this.addressBalances = transactions.reduce((accum, item) => {
+            this.amountOfTransactions++;
+            const val = Number(item.value);
+            accum[item.to] = (accum[item.to] || 0) + val;
+            accum[item.from] = (accum[item.from] || 0) - val;
+            this.maxAccount = getMaxAccount(
+              { [item.to]: accum[item.to] },
+              { [item.from]: accum[item.from] },
+              this.maxAccount,
+            );
+            return accum;
+          }, {});
+        }
       } catch (e) {
-        console.error('processQueue Error!', e);
-        callback(e);
+        taskCallback(e);
         reject(e);
       }
-      callback();
-      if (taskContent?.terminateTask) {
+      taskCallback(null);
+      if (terminateTask) {
         console.log('\nprocessQueue is drained!');
         resolve((Date.now() - startTime) / 1000);
       }

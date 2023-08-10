@@ -1,6 +1,6 @@
 import { Connection, connect, Channel } from 'amqplib';
 import config from 'config';
-import { Data, Account, DownloadQueueFiller, QueueTaskArgs, QueueWorkerArgs } from '../models/max-balance.model';
+import { Data, Account, DownloadQueueFiller, QueueTaskArgs, DownloadWorkerArgs } from '../models/max-balance.model';
 import scheduleDownloads from '../utils/schedule-downloads';
 import setTimer from '../utils/timer';
 import getMaxAccount from '../utils/get-max-account';
@@ -81,7 +81,7 @@ export class RabbitmqService {
     }
   }
 
-  async downloadQueueWorker(args: QueueWorkerArgs): Promise<void> {
+  async downloadQueueWorker(args: DownloadWorkerArgs): Promise<void> {
     const { task, startTime, resolve, reject } = args;
     const taskContent = task !== null ? JSON.parse(task.content) : null;
     if (taskContent !== null && taskContent.sessionKey === this.sessionKey) {
@@ -109,7 +109,7 @@ export class RabbitmqService {
       const startTime = Date.now();
       return new Promise((resolve, reject) => {
         this.processChannel.consume('processQueue', async (task) => {
-          await this.processQueueWorker({ task, startTime, resolve, reject });
+          // await this.processQueueWorker({ task, startTime, resolve, reject });
         });
       });
     } catch (error) {
@@ -118,36 +118,36 @@ export class RabbitmqService {
     }
   }
 
-  async processQueueWorker(args: QueueWorkerArgs): Promise<void> {
-    const { task, startTime, resolve, reject } = args;
-    const taskContent = task !== null ? JSON.parse(task.content) : null;
-    if (taskContent !== null && taskContent.sessionKey === this.sessionKey) {
-      if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${taskContent.taskNumber}`);
-      try {
-        const { transactions } = taskContent.content.result;
-        this.addressBalances = transactions.reduce((accum, item) => {
-          this.amountOfTransactions++;
-          const val = Number(item.value);
-          accum[item.to] = (accum[item.to] || 0) + val;
-          accum[item.from] = (accum[item.from] || 0) - val;
-          this.maxAccount = getMaxAccount(
-            { [item.to]: accum[item.to] },
-            { [item.from]: accum[item.from] },
-            this.maxAccount,
-          );
-          return accum;
-        }, {});
-      } catch (e) {
-        console.error('processQueue Error!', e);
-        reject(e);
-      }
-      await this.processChannel.ack(task);
-      if (taskContent?.terminateTask) {
-        await this.processChannel.deleteQueue('processQueue');
-        resolve((Date.now() - startTime) / 1000);
-      }
-    }
-  }
+  // async processQueueWorker(args: QueueTaskArgs, callback): Promise<void> {
+  //   const { task, startTime, resolve, reject } = args;
+  //   const taskContent = task !== null ? JSON.parse(task.content) : null;
+  //   if (taskContent !== null && taskContent.sessionKey === this.sessionKey) {
+  //     if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${taskContent.taskNumber}`);
+  //     try {
+  //       const { transactions } = taskContent.content.result;
+  //       this.addressBalances = transactions.reduce((accum, item) => {
+  //         this.amountOfTransactions++;
+  //         const val = Number(item.value);
+  //         accum[item.to] = (accum[item.to] || 0) + val;
+  //         accum[item.from] = (accum[item.from] || 0) - val;
+  //         this.maxAccount = getMaxAccount(
+  //           { [item.to]: accum[item.to] },
+  //           { [item.from]: accum[item.from] },
+  //           this.maxAccount,
+  //         );
+  //         return accum;
+  //       }, {});
+  //     } catch (e) {
+  //       console.error('processQueue Error!', e);
+  //       reject(e);
+  //     }
+  //     await this.processChannel.ack(task);
+  //     if (taskContent?.terminateTask) {
+  //       await this.processChannel.deleteQueue('processQueue');
+  //       resolve((Date.now() - startTime) / 1000);
+  //     }
+  //   }
+  // }
 
   async cleanQueue(): Promise<void> {
     try {

@@ -17,10 +17,7 @@ function logBenchmarks(args: ProcessedData, maxAccountData: [string, number]): v
 
 export default async function getBalanceView(args: ProcessedData): Promise<string> {
   try {
-    if (args.error) {
-      console.log(`${args.error.message}`);
-      return args.error.message;
-    }
+    if (args.error) throw Error(args.error);
 
     let html = fs.readFileSync(`${process.env.PROJECT_ROOT}/public/max-balance.html`, 'utf8');
     const maxAccountData = Object.entries(args.maxAccount)[0];
@@ -38,7 +35,7 @@ export default async function getBalanceView(args: ProcessedData): Promise<strin
     if (config.LOG_BENCHMARKS === true) logBenchmarks(args, maxAccountData);
     return html;
   } catch (err) {
-    console.error('Error in view handler [getResults]: ', err);
-    return err;
+    console.error('Error in view handler [getResults]: ', err.message);
+    return err.message;
   }
 }

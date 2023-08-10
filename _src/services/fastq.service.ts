@@ -96,9 +96,9 @@ export class FastqService {
     return (Date.now() - startTime) / 1000;
   }
 
-  async processQueueWorker(args: QueueTaskArgs, callback: done): Promise<void> {
+  async processQueueWorker(args: QueueTaskArgs, callback): Promise<void> {
     if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${args.taskNumber}`);
-    console.log('\nargs.content.result:', args.content.result);
+    if ('error' in args.content) throw Error(args.content.error.message);
     const transactions = args.content?.result ? args.content.result.transactions : undefined;
     if (transactions) {
       this.addressBalances = transactions.reduce((accum, item) => {

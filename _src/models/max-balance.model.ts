@@ -1,4 +1,5 @@
 import { done } from 'fastq';
+import { DoneCallback } from 'bull';
 import { Message } from 'amqplib';
 
 export interface Query {
@@ -31,22 +32,25 @@ export interface QueueTaskArgs {
   taskNumber: number;
   blockNumberHex: string;
   sessionKey?: number;
-  content?: Block;
+  content?: Block | { error: { code: number; message: string } };
   terminateTask?: boolean;
 }
 
 export type DownloadQueueFiller = (args: QueueTaskArgs) => void;
 
-export type TaskWorker = (args: QueueTaskArgs, callback: done) => Promise<void>;
-
-export interface QueueWorkerArgs {
+export interface DownloadWorkerArgs {
   task: Message | null;
   startTime: number;
   resolve: (timeTaken: number) => void;
   reject: <T>(reason?: T) => void;
 }
 
-// export type RejectDownload = (reason?: any) => void;
+export interface ProcessWorkerArgs extends QueueTaskArgs {
+  startTime: number;
+  taskCallback: DoneCallback | done | null;
+  resolve: (timeTaken: number) => void;
+  reject: <T>(reason?: T) => void;
+}
 
 export interface Data {
   addressBalances?: Account;
@@ -54,7 +58,7 @@ export interface Data {
   amountOfTransactions?: number;
   loadingTime?: number;
   processTime?: number;
-  error?: { message: string };
+  error?: string;
 }
 
 export interface ProcessedData extends Query, Data {}
