@@ -48,7 +48,7 @@ export interface DownloadWorkerArgs {
 
 export interface ProcessWorkerArgs extends QueueTaskArgs {
   startTime: number;
-  taskCallback: DoneCallback | done | null;
+  taskCallback?: DoneCallback | done;
   resolve?: (timeTaken: number) => void;
   reject?: <T>(reason?: T) => void;
 }

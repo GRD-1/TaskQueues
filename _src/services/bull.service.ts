@@ -123,7 +123,7 @@ export class BullService {
     const startTime = Date.now();
     await new Promise((resolve, reject) => {
       this.processQueue.process('processQueue', async (task, done) => {
-        const taskContent = JSON.parse(task?.data);
+        const taskContent = task !== null ? JSON.parse(task.data) : null;
         if (taskContent) {
           await this.processQueueWorker({ ...taskContent, startTime, taskCallback: done, resolve, reject });
         }
