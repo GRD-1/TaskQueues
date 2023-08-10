@@ -8,7 +8,7 @@ import {
   DownloadWorkerArgs,
   ProcessWorkerArgs,
 } from '../models/max-balance.model';
-import fillOutQueue from '../utils/fill-out-queue';
+import fillTheQueue from '../utils/fill-the-queue';
 import setTimer from '../utils/timer';
 import getMaxAccount from '../utils/get-max-account';
 import { EtherscanService } from './etherscan.service';
@@ -30,21 +30,25 @@ export class RabbitmqService {
   async getMaxChangedBalance(): Promise<Data> {
     try {
       await this.connectToServer();
-      const result = await new Promise((resolve) => {
+      const result = await new Promise((resolve, reject) => {
         (async (): Promise<void> => {
           const errMsg = await setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
           resolve(errMsg);
         })();
         (async (): Promise<void> => {
-          const loadingTime = await this.downloadData();
-          const processTime = await this.processData();
-          resolve({
-            addressBalances: this.addressBalances,
-            maxAccount: this.maxAccount,
-            amountOfTransactions: this.amountOfTransactions,
-            processTime,
-            loadingTime,
-          });
+          try {
+            const loadingTime = await this.downloadData();
+            const processTime = await this.processData();
+            resolve({
+              addressBalances: this.addressBalances,
+              maxAccount: this.maxAccount,
+              amountOfTransactions: this.amountOfTransactions,
+              processTime,
+              loadingTime,
+            });
+          } catch (err) {
+            reject(err);
+          }
         })();
       });
       this.cleanQueue();
@@ -75,16 +79,15 @@ export class RabbitmqService {
         const task = JSON.stringify({ ...args, terminateTask, sessionKey: this.sessionKey });
         this.downloadChannel.sendToQueue('downloadQueue', Buffer.from(task), { persistent: true });
       };
-      fillOutQueue(queueFiller, this.lastBlock, this.blocksAmount);
+      fillTheQueue(queueFiller, this.lastBlock, this.blocksAmount);
 
       return new Promise((resolve, reject) => {
         this.downloadChannel.consume('downloadQueue', async (task) => {
           await this.downloadQueueWorker({ task, startTime, resolve, reject });
         });
       });
-    } catch (error) {
-      console.error('Error occurred while downloading data:', error.message);
-      throw error;
+    } catch (err) {
+      throw Error(`Error! Fail to download data! reason: ${err.message}`);
     }
   }
 
@@ -105,27 +108,24 @@ export class RabbitmqService {
         reject(e);
       }
       if (taskContent?.terminateTask) {
-        this.downloadChannel.deleteQueue('downloadQueue');
         resolve((Date.now() - startTime) / 1000);
       }
     }
   }
 
   async processData(): Promise<number> {
-    try {
-      const startTime = Date.now();
-      return new Promise((resolve, reject) => {
-        this.processChannel.consume('processQueue', async (task) => {
-          const taskContent = task !== null ? JSON.parse(task.content) : null;
-          if (taskContent) {
-            await this.processQueueWorker({ ...taskContent, startTime, resolve, reject });
-          }
-        });
+    const startTime = Date.now();
+    await new Promise((resolve, reject) => {
+      this.processChannel.consume('processQueue', async (task) => {
+        const taskContent = task !== null ? JSON.parse(task.content) : null;
+        if (taskContent) {
+          await this.processQueueWorker({ ...taskContent, startTime, resolve, reject });
+        }
       });
-    } catch (error) {
-      console.error('Error occurred while process data:', error.message);
-      throw error;
-    }
+    }).catch((err) => {
+      throw Error(`Error! Fail to process data! reason: ${err.message}`);
+    });
+    return (Date.now() - startTime) / 1000;
   }
 
   async processQueueWorker(args: ProcessWorkerArgs): Promise<void> {
@@ -155,7 +155,6 @@ export class RabbitmqService {
       }
       if (taskCallback) taskCallback(null);
       if (terminateTask) {
-        console.log('\nprocessQueue is drained!');
         if (resolve) resolve((Date.now() - startTime) / 1000);
       }
     }
@@ -166,8 +165,8 @@ export class RabbitmqService {
       await this.downloadChannel.deleteQueue('downloadQueue');
       await this.downloadChannel.deleteQueue('processQueue');
       this.connection.close();
-    } catch (error) {
-      console.error('Error occurred while deleting the queue:', error.message);
+    } catch (err) {
+      throw Error(`Error! Fail to close the connection! reason: ${err.message}`);
     }
   }
 }

@@ -12,7 +12,7 @@ import {
 import setTimer from '../utils/timer';
 import getMaxAccount from '../utils/get-max-account';
 import { EtherscanService } from './etherscan.service';
-import fillOutQueue from '../utils/fill-out-queue';
+import fillTheQueue from '../utils/fill-the-queue';
 const etherscan = new EtherscanService();
 const queueSettings = {
   redis: config.REDIS,
@@ -36,22 +36,25 @@ export class BullService {
   async getMaxChangedBalance(): Promise<Data> {
     try {
       await this.connectToServer();
-      const result = await new Promise((resolve) => {
+      const result = await new Promise((resolve, reject) => {
         (async (): Promise<void> => {
           const errMsg = await setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
           resolve(errMsg);
         })();
-
         (async (): Promise<void> => {
-          const loadingTime = await this.downloadData().catch((err) => resolve({ error: err.message }));
-          const processTime = await this.processData().catch((err) => resolve({ error: err.message }));
-          resolve({
-            addressBalances: this.addressBalances,
-            maxAccount: this.maxAccount,
-            amountOfTransactions: this.amountOfTransactions,
-            processTime,
-            loadingTime,
-          });
+          try {
+            const loadingTime = await this.downloadData();
+            const processTime = await this.processData();
+            resolve({
+              addressBalances: this.addressBalances,
+              maxAccount: this.maxAccount,
+              amountOfTransactions: this.amountOfTransactions,
+              processTime,
+              loadingTime,
+            });
+          } catch (err) {
+            reject(err);
+          }
         })();
       });
       this.cleanQueue();
@@ -79,22 +82,26 @@ export class BullService {
   }
 
   downloadData(): Promise<number> {
-    const startTime = Date.now();
-    this.downloadQueue = new Bull('downloadQueue', queueSettings);
-    this.processQueue = new Bull('processQueue', queueSettings);
+    try {
+      const startTime = Date.now();
+      this.downloadQueue = new Bull('downloadQueue', queueSettings);
+      this.processQueue = new Bull('processQueue', queueSettings);
 
-    const queueFiller: DownloadQueueFiller = (args: QueueTaskArgs) => {
-      const terminateTask = args.taskNumber >= this.blocksAmount;
-      const task = JSON.stringify({ ...args, terminateTask, sessionKey: this.sessionKey });
-      this.downloadQueue.add('downloadQueue', task, {});
-    };
-    fillOutQueue(queueFiller, this.lastBlock, this.blocksAmount);
+      const queueFiller: DownloadQueueFiller = (args: QueueTaskArgs) => {
+        const terminateTask = args.taskNumber >= this.blocksAmount;
+        const task = JSON.stringify({ ...args, terminateTask, sessionKey: this.sessionKey });
+        this.downloadQueue.add('downloadQueue', task, {});
+      };
+      fillTheQueue(queueFiller, this.lastBlock, this.blocksAmount);
 
-    return new Promise((resolve, reject) => {
-      this.downloadQueue.process('downloadQueue', async (job, done) => {
-        await this.downloadQueueWorker({ task: job, startTime, resolve, reject }, done);
+      return new Promise((resolve, reject) => {
+        this.downloadQueue.process('downloadQueue', async (job, done) => {
+          await this.downloadQueueWorker({ task: job, startTime, resolve, reject }, done);
+        });
       });
-    });
+    } catch (err) {
+      throw Error(`Error! Fail to download data! reason: ${err.message}`);
+    }
   }
 
   async downloadQueueWorker(args: DownloadWorkerArgs, callback: Bull.DoneCallback): Promise<void> {
@@ -113,7 +120,6 @@ export class BullService {
       }
       callback();
       if (taskContent?.terminateTask) {
-        console.log('\ndownloadQueue is drained!');
         resolve((Date.now() - startTime) / 1000);
       }
     }
@@ -128,8 +134,8 @@ export class BullService {
           await this.processQueueWorker({ ...taskContent, startTime, taskCallback: done, resolve, reject });
         }
       });
-    }).catch((e) => {
-      throw e;
+    }).catch((err) => {
+      throw Error(`Error! Fail to process data! reason: ${err.message}`);
     });
     return (Date.now() - startTime) / 1000;
   }
@@ -156,12 +162,11 @@ export class BullService {
           }, {});
         }
       } catch (e) {
-        taskCallback(e);
+        if (taskCallback) taskCallback(e);
         if (reject) reject(e);
       }
-      taskCallback(null);
+      if (taskCallback) taskCallback(null);
       if (terminateTask) {
-        console.log('\nprocessQueue is drained!');
         if (resolve) resolve((Date.now() - startTime) / 1000);
       }
     }

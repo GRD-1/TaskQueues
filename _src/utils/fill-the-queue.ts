@@ -2,7 +2,7 @@ import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
 import config from 'config';
 import { DownloadQueueFiller } from '../models/max-balance.model';
 
-export default function fillOutQueue(queueFiller: DownloadQueueFiller, lastBlock: string, blocksAmount: number): void {
+export default function fillTheQueue(queueFiller: DownloadQueueFiller, lastBlock: string, blocksAmount: number): void {
   const lastBlockNumberDecimal = parseInt(lastBlock, 16);
   let taskNumber = 1;
   let blockNumberHex = (lastBlockNumberDecimal - taskNumber).toString(16);

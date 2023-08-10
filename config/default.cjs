@@ -1,6 +1,6 @@
 module.exports = {
   LOG_BENCHMARKS: true,
-  WAITING_TIME_FOR_BLOCK: 1500,
+  WAITING_TIME_FOR_BLOCK: 1000,
   LIBRARY_LIST: ['fastq', 'bull', 'rabbitmq'],
 
   ETHERSCAN_API: {
