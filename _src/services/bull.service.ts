@@ -12,7 +12,7 @@ import {
 import setTimer from '../utils/timer';
 import getMaxAccount from '../utils/get-max-account';
 import { EtherscanService } from './etherscan.service';
-import scheduleDownloads from '../utils/schedule-downloads';
+import fillOutQueue from '../utils/fill-out-queue';
 const etherscan = new EtherscanService();
 const queueSettings = {
   redis: config.REDIS,
@@ -88,7 +88,7 @@ export class BullService {
       const task = JSON.stringify({ ...args, terminateTask, sessionKey: this.sessionKey });
       this.downloadQueue.add('downloadQueue', task, {});
     };
-    scheduleDownloads(queueFiller, this.lastBlock, this.blocksAmount);
+    fillOutQueue(queueFiller, this.lastBlock, this.blocksAmount);
 
     return new Promise((resolve, reject) => {
       this.downloadQueue.process('downloadQueue', async (job, done) => {
@@ -108,7 +108,6 @@ export class BullService {
 
         await this.processQueue.add('processQueue', processQueueTask);
       } catch (e) {
-        // console.error('downloadQueue Error!', e);
         callback(e);
         reject(e);
       }

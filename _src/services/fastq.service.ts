@@ -2,7 +2,7 @@ import fastq from 'fastq';
 import config from 'config';
 import type { queue, done } from 'fastq';
 import { Data, Account, QueueTaskArgs, DownloadQueueFiller } from '../models/max-balance.model';
-import scheduleDownloads from '../utils/schedule-downloads';
+import fillOutQueue from '../utils/fill-out-queue';
 import setTimer from '../utils/timer';
 import getMaxAccount from '../utils/get-max-account';
 import { EtherscanService } from './etherscan.service';
@@ -62,7 +62,7 @@ export class FastqService {
       const task = { ...args, terminateTask, sessionKey: this.sessionKey };
       this.downloadQueue.push(task);
     };
-    scheduleDownloads(queueFiller, this.lastBlock, this.blocksAmount);
+    fillOutQueue(queueFiller, this.lastBlock, this.blocksAmount);
 
     return new Promise((resolve) => {
       this.downloadQueue.drain = (): void => {

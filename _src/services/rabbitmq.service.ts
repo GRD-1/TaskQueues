@@ -1,7 +1,7 @@
 import { Connection, connect, Channel } from 'amqplib';
 import config from 'config';
 import { Data, Account, DownloadQueueFiller, QueueTaskArgs, DownloadWorkerArgs } from '../models/max-balance.model';
-import scheduleDownloads from '../utils/schedule-downloads';
+import fillOutQueue from '../utils/fill-out-queue';
 import setTimer from '../utils/timer';
 import getMaxAccount from '../utils/get-max-account';
 import { EtherscanService } from './etherscan.service';
@@ -68,7 +68,7 @@ export class RabbitmqService {
         const task = JSON.stringify({ ...args, terminateTask, sessionKey: this.sessionKey });
         this.downloadChannel.sendToQueue('downloadQueue', Buffer.from(task), { persistent: true });
       };
-      scheduleDownloads(queueFiller, this.lastBlock, this.blocksAmount);
+      fillOutQueue(queueFiller, this.lastBlock, this.blocksAmount);
 
       return new Promise((resolve, reject) => {
         this.downloadChannel.consume('downloadQueue', async (task) => {
