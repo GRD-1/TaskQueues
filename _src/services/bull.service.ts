@@ -157,12 +157,12 @@ export class BullService {
         }
       } catch (e) {
         taskCallback(e);
-        reject(e);
+        if (reject) reject(e);
       }
       taskCallback(null);
       if (terminateTask) {
         console.log('\nprocessQueue is drained!');
-        resolve((Date.now() - startTime) / 1000);
+        if (resolve) resolve((Date.now() - startTime) / 1000);
       }
     }
   }

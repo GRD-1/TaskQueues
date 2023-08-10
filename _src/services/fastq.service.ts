@@ -1,7 +1,7 @@
 import fastq from 'fastq';
 import config from 'config';
 import type { queue, done } from 'fastq';
-import { Data, Account, QueueTaskArgs, DownloadQueueFiller } from '../models/max-balance.model';
+import { Data, Account, QueueTaskArgs, DownloadQueueFiller, ProcessWorkerArgs } from '../models/max-balance.model';
 import fillOutQueue from '../utils/fill-out-queue';
 import setTimer from '../utils/timer';
 import getMaxAccount from '../utils/get-max-account';
@@ -54,7 +54,10 @@ export class FastqService {
   downloadData(): Promise<number> {
     const startTime = Date.now();
     this.downloadQueue = fastq((args: QueueTaskArgs, callback: done) => this.downloadQueueWorker(args, callback), 1);
-    this.processQueue = fastq((args: QueueTaskArgs, callback: done) => this.processQueueWorker(args, callback), 1);
+    this.processQueue = fastq(async (args: QueueTaskArgs, callback: done) => {
+      const dataProcessArgs = { ...args, startTime, taskCallback: callback };
+      await this.processQueueWorker(dataProcessArgs);
+    }, 1);
     this.processQueue.pause();
 
     const queueFiller: DownloadQueueFiller = (args: QueueTaskArgs) => {
@@ -96,25 +99,37 @@ export class FastqService {
     return (Date.now() - startTime) / 1000;
   }
 
-  async processQueueWorker(args: QueueTaskArgs, callback): Promise<void> {
-    if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${args.taskNumber}`);
-    if ('error' in args.content) throw Error(args.content.error.message);
-    const transactions = args.content?.result ? args.content.result.transactions : undefined;
-    if (transactions) {
-      this.addressBalances = transactions.reduce((accum, item) => {
-        this.amountOfTransactions++;
-        const val = Number(item.value);
-        accum[item.to] = (accum[item.to] || 0) + val;
-        accum[item.from] = (accum[item.from] || 0) - val;
-        this.maxAccount = getMaxAccount(
-          { [item.to]: accum[item.to] },
-          { [item.from]: accum[item.from] },
-          this.maxAccount,
-        );
-        return accum;
-      }, {});
+  async processQueueWorker(args: ProcessWorkerArgs): Promise<void> {
+    const { taskNumber, sessionKey, terminateTask, content, startTime } = args;
+    const { taskCallback, resolve, reject } = args;
+    if (content && sessionKey === this.sessionKey) {
+      if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${taskNumber}`);
+      try {
+        const transactions = content?.result?.transactions;
+        if (transactions) {
+          this.addressBalances = transactions.reduce((accum, item) => {
+            this.amountOfTransactions++;
+            const val = Number(item.value);
+            accum[item.to] = (accum[item.to] || 0) + val;
+            accum[item.from] = (accum[item.from] || 0) - val;
+            this.maxAccount = getMaxAccount(
+              { [item.to]: accum[item.to] },
+              { [item.from]: accum[item.from] },
+              this.maxAccount,
+            );
+            return accum;
+          }, {});
+        }
+      } catch (e) {
+        taskCallback(e);
+        if (reject) reject(e);
+      }
+      taskCallback(null);
+      if (terminateTask) {
+        console.log('\nprocessQueue is drained!');
+        if (resolve) resolve((Date.now() - startTime) / 1000);
+      }
     }
-    callback(null);
   }
 
   async cleanQueue(): Promise<void> {

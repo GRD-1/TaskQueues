@@ -11,7 +11,6 @@
     <div>
       <br> This service is designed to compare the performance of the next libraries:
       <a href = "https://www.npmjs.com/package/fastq">fastq</a>,
-      <a href = "https://www.npmjs.com/package/queue">queue</a>,
       <a href = "https://www.npmjs.com/package/bullq">bull</a>,
       <a href = "https://www.rabbitmq.com/">rabbitMQ</a>
 
@@ -28,8 +27,12 @@
     <div>
       <h2>Usage</h2>
       <br>to evaluate the library efficiency, use this default query:
-      <a href = "http://localhost:3000/max-balance">http://localhost:3000/max-balance</a>
-      <br>
+      <ul>
+        <li><a href = "http://localhost:3000/max-balance?library=fastq">http://localhost:3000/max-balance?library=fastq</a></li>
+        <li><a href = "http://localhost:3000/max-balance?library=bull">http://localhost:3000/max-balance?library=bull</a></li>
+        <li><a href = "http://localhost:3000/max-balance?library=rabbitmq">http://localhost:3000/max-balance?library=rabbitmq</a></li>
+      </ul>
+
       <br>to change the number of blocks for analysis use the query string parameter <b>[blocksAmount]</b>,
       <br>for example: <a href = "http://localhost:3000/max-balance?blocksAmount=2">http://localhost:3000/max-balance?blocksAmount=2</a> (default value is 10)
       <br>
