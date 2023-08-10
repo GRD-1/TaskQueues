@@ -19,7 +19,7 @@ export default async function getQueryParams(query: Query): Promise<Query> {
   else if (query.lastBlock === 'last') lastBlock = await etherscan.getLastBlockNumber(query);
   else {
     const lastBlockNumberDecimal = parseInt(lastBlock, 16);
-    if (lastBlockNumberDecimal < 1) throw Error('wrong last block number!');
+    if (lastBlockNumberDecimal < 2) throw Error('incorrect last block number! It supposed to be > 1');
   }
 
   return { library, blocksAmount, lastBlock };

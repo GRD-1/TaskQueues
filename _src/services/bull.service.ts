@@ -106,14 +106,9 @@ export class BullService {
         const block = await etherscan.getBlock(taskContent.blockNumberHex);
         const processQueueTask = JSON.stringify({ ...taskContent, content: block });
 
-        if ('error' in block) {
-          console.log('\ndownloadQueueWorker error: ', block.error);
-          throw Error(block.error.toString());
-        }
-
         await this.processQueue.add('processQueue', processQueueTask);
       } catch (e) {
-        console.error('downloadQueue Error!', e);
+        // console.error('downloadQueue Error!', e);
         callback(e);
         reject(e);
       }
@@ -146,7 +141,6 @@ export class BullService {
     if (content && sessionKey === this.sessionKey) {
       if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${taskNumber}`);
       try {
-        if ('error' in content) throw Error(content.error.message);
         const transactions = content?.result?.transactions;
         if (transactions) {
           this.addressBalances = transactions.reduce((accum, item) => {

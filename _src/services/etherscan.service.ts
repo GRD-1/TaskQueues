@@ -9,18 +9,25 @@ export class EtherscanService {
       const data = (await result.json()) as { result: string };
       return data.result;
     } catch (e) {
-      console.error('Failed to get the last block number! reason: ', e);
-      throw e;
+      throw Error(`Error! Failed to get the last block number! reason: ${e.message}`);
     }
   }
   async getBlock(blockNumberHex: string): Promise<Block> {
     try {
       const request = `${config.ETHERSCAN_API.GET_BLOCK}&tag=${blockNumberHex}&apikey=${config.ETHERSCAN_APIKEY}`;
       const response = await fetch(request);
-      return (await response.json()) as Block;
+      const block = (await response.json()) as Block;
+
+      if ('error' in block) {
+        let errMsg = block.error.message;
+        if (block.error.code === -32602) {
+          errMsg = `Invalid block number [${blockNumberHex}] (incorrect hex)`;
+        }
+        throw Error(errMsg);
+      }
+      return block;
     } catch (e) {
-      console.error('Failed to download a block data from https://etherscan.io/! reason: ', e);
-      throw e;
+      throw Error(`Error! Failed to load the block! reason: ${e.message}`);
     }
   }
 }

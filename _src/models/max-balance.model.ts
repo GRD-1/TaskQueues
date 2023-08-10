@@ -26,13 +26,14 @@ export interface Block {
     transactions: Transaction[];
   };
   downloadNumber?: number;
+  error?: { code: number; message: string };
 }
 
 export interface QueueTaskArgs {
   taskNumber: number;
   blockNumberHex: string;
   sessionKey?: number;
-  content?: Block | { error: { code: number; message: string } };
+  content?: Block;
   terminateTask?: boolean;
 }
 
