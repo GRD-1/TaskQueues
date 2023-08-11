@@ -58,7 +58,7 @@ export class RabbitmqService {
     }
   }
 
-  async connectToServer(): Promise<void | Error> {
+  async connectToServer(): Promise<void> {
     try {
       this.connection = await connect(`amqp://${config.RABBIT.host}`);
       this.downloadChannel = await this.connection.createChannel();

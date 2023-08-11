@@ -1,51 +1,55 @@
 import config from 'config';
 import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
-import { Data, Account, DownloadQueueFiller, Query } from '../models/max-balance.model';
-import setTimer from '../utils/timer';
+import { Data, Account, DownloadQueueFiller, DownloadWorkerArgs, ProcessWorkerArgs } from '../models/max-balance.model';
 import { EtherscanService } from './etherscan.service';
 const etherscan = new EtherscanService();
 
 export class Service {
-  constructor(public blocksAmount: number, public lastBlock: string) {}
+  readonly sessionKey: number;
+  private addressBalances: Account;
+  private maxAccount: Account = { undefined };
+  private amountOfTransactions = 0;
+
+  constructor(public blocksAmount: number, public lastBlock: string) {
+    this.sessionKey = Date.now();
+  }
 
   async getMaxChangedBalance(): Promise<Data> {
-    const result = await new Promise((resolve) => {
-      (async (): Promise<void> => {
-        const errMsg = await setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
-        resolve(errMsg);
-      })();
-
-      (async (): Promise<void> => {
-        const loadingTime = await this.downloadData();
-        const data = await this.processData();
-        resolve({ ...data, loadingTime });
-      })();
-    });
-    await this.cleanQueue();
-    return result;
+    try {
+      await this.connectToServer();
+      const result = await new Promise((resolve, reject) => {
+        (async (): Promise<void> => {
+          const errMsg = await this.setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
+          resolve(errMsg);
+        })();
+        (async (): Promise<void> => {
+          try {
+            const loadingTime = await this.downloadData();
+            const processTime = await this.processData();
+            resolve({
+              addressBalances: this.addressBalances,
+              maxAccount: this.maxAccount,
+              amountOfTransactions: this.amountOfTransactions,
+              processTime,
+              loadingTime,
+            });
+          } catch (err) {
+            reject(err);
+          }
+        })();
+      });
+      this.cleanQueue();
+      return result;
+    } catch (err) {
+      return { error: err.message };
+    }
   }
+
+  connectToServer: () => Promise<void>;
 
   downloadData: () => Promise<number>;
-  processData: () => Promise<Data>;
 
-  getMaxAccount(...args: Account[]): Account {
-    args.sort((a, b) => {
-      const item1 = Number.isNaN(Math.abs(Object.values(a)[0])) ? 0 : Math.abs(Object.values(a)[0]);
-      const item2 = Number.isNaN(Math.abs(Object.values(b)[0])) ? 0 : Math.abs(Object.values(b)[0]);
-      if (item1 === item2) return 0;
-      return item1 < item2 ? 1 : -1;
-    });
-    return args[0];
-  }
-
-  async getQueryParams(query: Query): Promise<Query> {
-    const library = query.library || config.DEFAULT_QUERY.LIBRARY;
-    const blocksAmount = query.blocksAmount || config.DEFAULT_QUERY.BLOCKS_AMOUNT;
-    const lastBlock = await etherscan.getLastBlockNumber(query);
-    return { library, blocksAmount, lastBlock };
-  }
-
-  scheduleDownloads(queueFiller: DownloadQueueFiller, lastBlock: string, blocksAmount: number): void {
+  fillTheQueue(queueFiller: DownloadQueueFiller, lastBlock: string, blocksAmount: number): void {
     const lastBlockNumberDecimal = parseInt(lastBlock, 16);
     let taskNumber = 1;
     let blockNumberHex = (lastBlockNumberDecimal - taskNumber).toString(16);
@@ -57,10 +61,47 @@ export class Service {
       taskNumber++;
       blockNumberHex = (lastBlockNumberDecimal - taskNumber).toString(16);
     });
-    const job = new SimpleIntervalJob({ milliseconds: 200, runImmediately: true }, task, {
+    const interval = config.DEFAULT_QUERY.REQUEST_INTERVAL;
+    const job = new SimpleIntervalJob({ milliseconds: interval, runImmediately: true }, task, {
       id: `toadId_${taskNumber}`,
     });
     scheduler.addSimpleIntervalJob(job);
+  }
+
+  downloadQueueWorker: (args: DownloadWorkerArgs) => Promise<void>;
+
+  processData: () => Promise<number>;
+
+  async processQueueWorker(args: ProcessWorkerArgs): Promise<void> {
+    const { taskNumber, sessionKey, terminateTask, content, startTime } = args;
+    const { taskCallback, resolve, reject } = args;
+    if (content && sessionKey === this.sessionKey) {
+      if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${taskNumber}`);
+      try {
+        const transactions = content?.result?.transactions;
+        if (transactions) {
+          this.addressBalances = transactions.reduce((accum, item) => {
+            this.amountOfTransactions++;
+            const val = Number(item.value);
+            accum[item.to] = (accum[item.to] || 0) + val;
+            accum[item.from] = (accum[item.from] || 0) - val;
+            this.maxAccount = this.getMaxAccount(
+              { [item.to]: accum[item.to] },
+              { [item.from]: accum[item.from] },
+              this.maxAccount,
+            );
+            return accum;
+          }, {});
+        }
+        if (taskCallback) taskCallback(null);
+        if (terminateTask) {
+          if (resolve) resolve((Date.now() - startTime) / 1000);
+        }
+      } catch (e) {
+        if (taskCallback) taskCallback(e);
+        if (reject) reject(e);
+      }
+    }
   }
 
   setTimer(awaitingTime: number): Promise<Data> {
@@ -73,6 +114,16 @@ export class Service {
       const job = new SimpleIntervalJob({ milliseconds: awaitingTime, runImmediately: false }, task);
       scheduler.addSimpleIntervalJob(job);
     });
+  }
+
+  getMaxAccount(...args: Account[]): Account {
+    args.sort((a, b) => {
+      const item1 = Number.isNaN(Math.abs(Object.values(a)[0])) ? 0 : Math.abs(Object.values(a)[0]);
+      const item2 = Number.isNaN(Math.abs(Object.values(b)[0])) ? 0 : Math.abs(Object.values(b)[0]);
+      if (item1 === item2) return 0;
+      return item1 < item2 ? 1 : -1;
+    });
+    return args[0];
   }
 
   cleanQueue: () => Promise<void>;
