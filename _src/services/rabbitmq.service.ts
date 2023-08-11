@@ -103,12 +103,11 @@ export class RabbitmqService {
           persistent: true,
         });
         this.downloadChannel.ack(task);
+        if (taskContent?.terminateTask) {
+          resolve((Date.now() - startTime) / 1000);
+        }
       } catch (e) {
-        console.error('downloadBlocks Error!', e);
         reject(e);
-      }
-      if (taskContent?.terminateTask) {
-        resolve((Date.now() - startTime) / 1000);
       }
     }
   }
@@ -149,13 +148,13 @@ export class RabbitmqService {
             return accum;
           }, {});
         }
+        if (taskCallback) taskCallback(null);
+        if (terminateTask) {
+          if (resolve) resolve((Date.now() - startTime) / 1000);
+        }
       } catch (e) {
         if (taskCallback) taskCallback(e);
         if (reject) reject(e);
-      }
-      if (taskCallback) taskCallback(null);
-      if (terminateTask) {
-        if (resolve) resolve((Date.now() - startTime) / 1000);
       }
     }
   }
@@ -164,6 +163,8 @@ export class RabbitmqService {
     try {
       await this.downloadChannel.deleteQueue('downloadQueue');
       await this.downloadChannel.deleteQueue('processQueue');
+      await this.downloadChannel.close();
+      await this.processChannel.close();
       this.connection.close();
     } catch (err) {
       throw Error(`Error! Fail to close the connection! reason: ${err.message}`);
