@@ -34,7 +34,8 @@ export class BullService extends Service {
     });
   }
 
-  downloadData(): Promise<number> {
+  async downloadData(): Promise<number> {
+    await super.downloadData();
     try {
       const startTime = Date.now();
       this.downloadQueue = new Bull('downloadQueue', queueSettings);
@@ -62,23 +63,24 @@ export class BullService extends Service {
     const taskContent = task !== null ? JSON.parse(task.data) : null;
     if (taskContent !== null && taskContent.sessionKey === this.sessionKey) {
       if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${taskContent.taskNumber}`);
+      this.numberOfProcessedTasks++;
       try {
         const block = await etherscan.getBlock(taskContent.blockNumberHex);
         const processQueueTask = JSON.stringify({ ...taskContent, content: block });
-
         await this.processQueue.add('processQueue', processQueueTask);
       } catch (e) {
         callback(e);
         reject(e);
       }
       callback();
-      if (taskContent?.terminateTask) {
+      if (this.numberOfProcessedTasks >= this.blocksAmount) {
         resolve((Date.now() - startTime) / 1000);
       }
     }
   }
 
   async processData(): Promise<number> {
+    await super.processData();
     const startTime = Date.now();
     await new Promise((resolve, reject) => {
       this.processQueue.process('processQueue', async (task, done) => {

@@ -1,6 +1,6 @@
 import { Connection, connect, Channel } from 'amqplib';
 import config from 'config';
-import { QueueTaskArgs, DownloadWorkerArgs, Block } from '../models/max-balance.model';
+import { QueueTaskArgs, DownloadWorkerArgs } from '../models/max-balance.model';
 import { Service } from './service';
 import { EtherscanService } from './etherscan.service';
 const etherscan = new EtherscanService();
@@ -21,7 +21,7 @@ export class RabbitmqService extends Service {
   }
 
   async downloadData(): Promise<number> {
-    await super.processData();
+    await super.downloadData();
     try {
       const startTime = Date.now();
       await this.downloadChannel.assertQueue('downloadQueue', { durable: true });

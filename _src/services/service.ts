@@ -1,15 +1,6 @@
 import config from 'config';
 import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
-import { done } from 'fastq';
-import { DoneCallback } from 'bull';
-import {
-  Data,
-  Account,
-  DownloadQueueFiller,
-  DownloadWorkerArgs,
-  ProcessWorkerArgs,
-  QueueTaskArgs,
-} from '../models/max-balance.model';
+import { Data, Account, DownloadQueueFiller, ProcessWorkerArgs } from '../models/max-balance.model';
 
 export class Service {
   readonly sessionKey: number;
@@ -57,7 +48,7 @@ export class Service {
     return null;
   }
 
-  downloadData(): Promise<number> {
+  async downloadData(): Promise<number> {
     this.numberOfProcessedTasks = 0;
     return null;
   }
@@ -79,10 +70,6 @@ export class Service {
       id: `toadId_${taskNumber}`,
     });
     scheduler.addSimpleIntervalJob(job);
-  }
-
-  downloadQueueWorker(args: DownloadWorkerArgs | QueueTaskArgs, callback: done | DoneCallback): Promise<void> {
-    return null;
   }
 
   processData(): Promise<number> {

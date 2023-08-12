@@ -10,7 +10,8 @@ export class FastqService extends Service {
   private downloadQueue: queue<QueueTaskArgs, fastq.done>;
   private processQueue: queue<QueueTaskArgs, fastq.done>;
 
-  downloadData(): Promise<number> {
+  async downloadData(): Promise<number> {
+    await super.downloadData();
     const startTime = Date.now();
     this.downloadQueue = fastq((args: QueueTaskArgs, callback: done) => this.downloadQueueWorker(args, callback), 1);
     this.processQueue = fastq(async (args: QueueTaskArgs, callback: done) => {
@@ -48,6 +49,7 @@ export class FastqService extends Service {
   }
 
   async processData(): Promise<number> {
+    await super.processData();
     const startTime = Date.now();
     await new Promise((resolve) => {
       this.processQueue.drain = (): void => {
