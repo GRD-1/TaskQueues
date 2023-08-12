@@ -1,8 +1,15 @@
 import config from 'config';
 import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
-import { Data, Account, DownloadQueueFiller, DownloadWorkerArgs, ProcessWorkerArgs } from '../models/max-balance.model';
-import { EtherscanService } from './etherscan.service';
-const etherscan = new EtherscanService();
+import { done } from 'fastq';
+import { DoneCallback } from 'bull';
+import {
+  Data,
+  Account,
+  DownloadQueueFiller,
+  DownloadWorkerArgs,
+  ProcessWorkerArgs,
+  QueueTaskArgs,
+} from '../models/max-balance.model';
 
 export class Service {
   readonly sessionKey: number;
@@ -45,9 +52,13 @@ export class Service {
     }
   }
 
-  connectToServer: () => Promise<void>;
+  async connectToServer(): Promise<void> {
+    return null;
+  }
 
-  downloadData: () => Promise<number>;
+  downloadData(): Promise<number> {
+    return null;
+  }
 
   fillTheQueue(queueFiller: DownloadQueueFiller, lastBlock: string, blocksAmount: number): void {
     const lastBlockNumberDecimal = parseInt(lastBlock, 16);
@@ -68,9 +79,13 @@ export class Service {
     scheduler.addSimpleIntervalJob(job);
   }
 
-  downloadQueueWorker: (args: DownloadWorkerArgs) => Promise<void>;
+  downloadQueueWorker(args: DownloadWorkerArgs | QueueTaskArgs, callback: done | DoneCallback): Promise<void> {
+    return null;
+  }
 
-  processData: () => Promise<number>;
+  processData(): Promise<number> {
+    return null;
+  }
 
   async processQueueWorker(args: ProcessWorkerArgs): Promise<void> {
     const { taskNumber, sessionKey, terminateTask, content, startTime } = args;
@@ -126,5 +141,7 @@ export class Service {
     return args[0];
   }
 
-  cleanQueue: () => Promise<void>;
+  cleanQueue(): Promise<void> {
+    return null;
+  }
 }

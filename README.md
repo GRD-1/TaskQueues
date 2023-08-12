@@ -31,10 +31,9 @@ The processing time starts counting from the moment the data is completely loade
 
 1. Download the project: bash git clone https://github.com/GRD-1/balance-rating.git
 2. Install docker + docker-compose to your local operating system
-3. ~~Get the credentials file from your system administrator, add it to the "project/config~~ (in-build for this project)
-4. Using the terminal go to the project root
-5. Build project in product mode using the command [ docker-compose -f docker-prod.yml up --build ]
-6. Build project in development mode using the command [ docker-compose -f docker-dev.yml up --build ]
+3. Using the terminal go to the project root
+4. Build project in product mode using the command [ docker-compose -f docker-prod.yml up --build ]
+5. Build project in development mode using the command [ docker-compose -f docker-dev.yml up --build ]
 
 ## Settings
 
@@ -59,9 +58,12 @@ project will be launched automatically
 ## Usage
 
 * After the service is launched it is available at http://localhost:3000
-* to evaluate the library efficiency, use this default query: http://localhost:3000/max-balance
+* to evaluate the library efficiency, use this default queries: 
+  * http://localhost:3000/max-balance?library=fastq
+  * http://localhost:3000/max-balance?library=bull
+  * http://localhost:3000/max-balance?library=rabbitmq
 * to change the number of blocks for analysis use the query string parameter [blocksAmount]
-  For example: http://localhost:3000/max-balance?blocksAmount=2 (by default blocksAmount = 10)
+  For example: http://localhost:3000/max-balance?blocksAmount=10 (by default blocksAmount = 3)
 * to specify the library you want to use, change the parameter [library]
   For example: http://localhost:3000/max-balance?library=bull (by default library = fastq)
 * to specify the last block number use the parameter [lastBlock]

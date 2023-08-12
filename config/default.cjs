@@ -1,6 +1,6 @@
 module.exports = {
   LOG_BENCHMARKS: true,
-  WAITING_TIME_FOR_BLOCK: 1000,
+  WAITING_TIME_FOR_BLOCK: 1200,
   LIBRARY_LIST: ['fastq', 'bull', 'rabbitmq'],
 
   ETHERSCAN_API: {
@@ -15,7 +15,7 @@ module.exports = {
 
   DEFAULT_QUERY: {
     LIBRARY: 'fastq',
-    BLOCKS_AMOUNT: 2,
+    BLOCKS_AMOUNT: 3,
     LAST_BLOCK: '0x10b2feb',
     REQUEST_INTERVAL: 200,
   },
@@ -36,15 +36,15 @@ module.exports = {
     },
 
     SETTINGS: {
-      lockDuration: 3000, // Key expiration time for job locks.
-      stalledInterval: 100, // How often check for stalled jobs (use 0 for never checking).
-      maxStalledCount: 10, // Max amount of times a stalled job will be re-processed.
-      guardInterval: 5000, // Poll interval for delayed jobs and added jobs.
-      retryProcessDelay: 10, // delay before processing next job in case of internal error.
-      drainDelay: 1000, // A timeout for when the queue is in drained state (empty waiting for jobs).
+      lockDuration: 3000,
+      stalledInterval: 100,
+      maxStalledCount: 10,
+      guardInterval: 5000,
+      retryProcessDelay: 10,
+      drainDelay: 1000,
       backoff: {
         type: 'fixed',
-        delay: 100, // Initial delay duration in milliseconds
+        delay: 100,
       },
     },
 
