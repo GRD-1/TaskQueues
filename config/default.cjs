@@ -1,6 +1,6 @@
 module.exports = {
   LOG_BENCHMARKS: true,
-  WAITING_TIME_FOR_BLOCK: 1200,
+  WAITING_TIME_FOR_BLOCK: 1000,
   LIBRARY_LIST: ['fastq', 'bull', 'rabbitmq'],
 
   ETHERSCAN_API: {
@@ -15,7 +15,7 @@ module.exports = {
 
   DEFAULT_QUERY: {
     LIBRARY: 'fastq',
-    BLOCKS_AMOUNT: 3,
+    BLOCKS_AMOUNT: 10,
     LAST_BLOCK: '0x10b2feb',
     REQUEST_INTERVAL: 200,
   },
@@ -34,7 +34,6 @@ module.exports = {
       removeOnComplete: false,
       removeOnFail: false,
     },
-
     SETTINGS: {
       lockDuration: 3000,
       stalledInterval: 100,

@@ -16,7 +16,7 @@ export default async function getQueryParams(query: Query): Promise<Query> {
   else if (Number(blocksAmount) >= 20) throw Error('to much blocks! process will take a lot of time!');
 
   if (lastBlock === undefined) lastBlock = config.DEFAULT_QUERY.LAST_BLOCK;
-  else if (query.lastBlock === 'last') lastBlock = await etherscan.getLastBlockNumber(query);
+  else if (query.lastBlock === 'last') lastBlock = await etherscan.getLastBlockNumber();
   else {
     const lastBlockNumberDecimal = parseInt(lastBlock, 16);
     if (lastBlockNumberDecimal < 2) throw Error('incorrect last block number! It supposed to be > 1');

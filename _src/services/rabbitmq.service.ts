@@ -1,6 +1,6 @@
 import { Connection, connect, Channel } from 'amqplib';
 import config from 'config';
-import { DownloadQueueFiller, QueueTaskArgs, DownloadWorkerArgs } from '../models/max-balance.model';
+import { QueueTaskArgs, DownloadWorkerArgs, Block } from '../models/max-balance.model';
 import { Service } from './service';
 import { EtherscanService } from './etherscan.service';
 const etherscan = new EtherscanService();
@@ -21,12 +21,13 @@ export class RabbitmqService extends Service {
   }
 
   async downloadData(): Promise<number> {
+    await super.processData();
     try {
       const startTime = Date.now();
       await this.downloadChannel.assertQueue('downloadQueue', { durable: true });
       await this.downloadChannel.assertQueue('processQueue', { durable: true });
 
-      const queueFiller: DownloadQueueFiller = (args: QueueTaskArgs) => {
+      const queueFiller = (args: QueueTaskArgs): void => {
         const terminateTask = args.taskNumber >= this.blocksAmount;
         const task = JSON.stringify({ ...args, terminateTask, sessionKey: this.sessionKey });
         this.downloadChannel.sendToQueue('downloadQueue', Buffer.from(task), { persistent: true });
@@ -48,6 +49,7 @@ export class RabbitmqService extends Service {
     const taskContent = task !== null ? JSON.parse(task.content) : null;
     if (taskContent !== null && taskContent.sessionKey === this.sessionKey) {
       if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${taskContent.taskNumber}`);
+      this.numberOfProcessedTasks++;
       try {
         const block = await etherscan.getBlock(taskContent.blockNumberHex);
         const processQueueTask = JSON.stringify({ ...taskContent, content: block });
@@ -55,7 +57,7 @@ export class RabbitmqService extends Service {
           persistent: true,
         });
         this.downloadChannel.ack(task);
-        if (taskContent?.terminateTask) {
+        if (this.numberOfProcessedTasks >= this.blocksAmount) {
           resolve((Date.now() - startTime) / 1000);
         }
       } catch (e) {
@@ -65,6 +67,7 @@ export class RabbitmqService extends Service {
   }
 
   async processData(): Promise<number> {
+    await super.processData();
     const startTime = Date.now();
     await new Promise((resolve, reject) => {
       this.processChannel.consume('processQueue', async (task) => {

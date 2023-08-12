@@ -48,6 +48,7 @@
     "lines-between-class-members": "off",
     "no-trailing-spaces": "off",
     "prefer-destructuring": "off",
+    "no-await-in-loop": "off",
 
     // typescript specific
     "no-underscore-dangle": "off",

@@ -16,6 +16,7 @@ export class Service {
   private addressBalances: Account;
   private maxAccount: Account = { undefined };
   private amountOfTransactions = 0;
+  public numberOfProcessedTasks = 0;
 
   constructor(public blocksAmount: number, public lastBlock: string) {
     this.sessionKey = Date.now();
@@ -57,6 +58,7 @@ export class Service {
   }
 
   downloadData(): Promise<number> {
+    this.numberOfProcessedTasks = 0;
     return null;
   }
 
@@ -84,18 +86,19 @@ export class Service {
   }
 
   processData(): Promise<number> {
+    this.numberOfProcessedTasks = 0;
     return null;
   }
 
   async processQueueWorker(args: ProcessWorkerArgs): Promise<void> {
-    const { taskNumber, sessionKey, terminateTask, content, startTime } = args;
+    const { taskNumber, sessionKey, content, startTime } = args;
     const { taskCallback, resolve, reject } = args;
     if (content && sessionKey === this.sessionKey) {
       if (config.LOG_BENCHMARKS === true) console.log(`\nprocess queue iteration ${taskNumber}`);
+      this.numberOfProcessedTasks++;
       try {
-        const transactions = content?.result?.transactions;
-        if (transactions) {
-          this.addressBalances = transactions.reduce((accum, item) => {
+        if (content.result.transactions) {
+          this.addressBalances = content.result.transactions.reduce((accum, item) => {
             this.amountOfTransactions++;
             const val = Number(item.value);
             accum[item.to] = (accum[item.to] || 0) + val;
@@ -109,7 +112,7 @@ export class Service {
           }, {});
         }
         if (taskCallback) taskCallback(null);
-        if (terminateTask) {
+        if (this.numberOfProcessedTasks >= this.blocksAmount) {
           if (resolve) resolve((Date.now() - startTime) / 1000);
         }
       } catch (e) {
