@@ -70,13 +70,13 @@ export class BullService extends Service {
         const block = await etherscan.getBlock(taskContent.blockNumberHex);
         const processQueueTask = JSON.stringify({ ...taskContent, content: block });
         await this.processQueue.add('processQueue', processQueueTask);
+        callback();
+        if (this.numberOfProcessedTasks >= this.blocksAmount) {
+          resolve((Date.now() - startTime) / 1000);
+        }
       } catch (e) {
         callback(e);
         reject(e);
-      }
-      callback();
-      if (this.numberOfProcessedTasks >= this.blocksAmount) {
-        resolve((Date.now() - startTime) / 1000);
       }
     }
   }
@@ -96,9 +96,9 @@ export class BullService extends Service {
   }
 
   async cleanQueue(): Promise<void> {
-    await this.downloadQueue.obliterate({ force: true });
-    await this.processQueue.obliterate({ force: true });
-    await this.downloadQueue.close();
-    await this.processQueue.close();
+    await this.downloadQueue?.obliterate({ force: true });
+    await this.processQueue?.obliterate({ force: true });
+    await this.downloadQueue?.close();
+    await this.processQueue?.close();
   }
 }

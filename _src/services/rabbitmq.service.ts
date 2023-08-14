@@ -18,6 +18,7 @@ export class RabbitmqService extends Service {
     } catch (e) {
       e.message = 'Error! Failed to connect to the RabbitMQ server!';
       globalThis.ERROR_EMITTER.emit('Error', e);
+      throw e;
     }
   }
 
@@ -84,15 +85,10 @@ export class RabbitmqService extends Service {
   }
 
   async cleanQueue(): Promise<void> {
-    try {
-      await this.downloadChannel.deleteQueue('downloadQueue');
-      await this.downloadChannel.deleteQueue('processQueue');
-      await this.downloadChannel.close();
-      await this.processChannel.close();
-      this.connection.close();
-    } catch (e) {
-      e.message = `Error! Fail to close the connection! reason: ${e.message}`;
-      globalThis.ERROR_EMITTER.emit('Error', e);
-    }
+    await this.downloadChannel?.deleteQueue('downloadQueue');
+    await this.downloadChannel?.deleteQueue('processQueue');
+    await this.downloadChannel?.close();
+    await this.processChannel?.close();
+    this.connection?.close();
   }
 }

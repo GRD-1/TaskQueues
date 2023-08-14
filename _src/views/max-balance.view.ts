@@ -18,7 +18,7 @@ function logBenchmarks(args: ProcessedData, maxAccountData: [string, number]): v
 export default async function getBalanceView(args: ProcessedData): Promise<string> {
   try {
     if (args.error) {
-      console.error(args.error);
+      console.error(`\n${args.error}\n`);
       return args.error;
     }
 

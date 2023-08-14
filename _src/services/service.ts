@@ -14,10 +14,12 @@ export class Service {
   }
 
   async getMaxChangedBalance(): Promise<Data> {
+    let result: Data = {};
     try {
       await this.connectToServer();
-      const result = await new Promise((resolve, reject) => {
+      result = await new Promise((resolve, reject) => {
         this.setErrorHandler(reject);
+
         (async (): Promise<void> => {
           const errMsg = await this.setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
           resolve(errMsg);
@@ -39,20 +41,17 @@ export class Service {
           }
         })();
       });
-      this.cleanQueue();
-      return result;
     } catch (err) {
-      console.log('\ngetMaxChangedBalance catch handler!');
-      console.log('err: ', err);
-      this.cleanQueue();
-      return { error: err.message };
+      result = { error: err.message };
     }
+    this.cleanQueue();
+    return result;
   }
 
   setErrorHandler(reject: <T>(reason?: T) => void): void {
     globalThis.ERROR_EMITTER.on('Error', async (e) => {
       console.log('\na local ERROR EMITTER has been launched!');
-      reject({ error: e.message });
+      reject({ message: e.message });
     });
   }
 
@@ -71,12 +70,16 @@ export class Service {
     let blockNumberHex = (lastBlockNumberDecimal - taskNumber).toString(16);
 
     const scheduler = new ToadScheduler();
-    const task = new Task('download block', () => {
-      queueFiller({ taskNumber, blockNumberHex });
-      if (taskNumber >= blocksAmount) scheduler.stop();
-      taskNumber++;
-      blockNumberHex = (lastBlockNumberDecimal - taskNumber).toString(16);
-    });
+    const task = new Task(
+      'download block',
+      () => {
+        queueFiller({ taskNumber, blockNumberHex });
+        if (taskNumber >= blocksAmount) scheduler.stop();
+        taskNumber++;
+        blockNumberHex = (lastBlockNumberDecimal - taskNumber).toString(16);
+      },
+      () => scheduler.stop(),
+    );
     const interval = config.DEFAULT_QUERY.REQUEST_INTERVAL;
     const job = new SimpleIntervalJob({ milliseconds: interval, runImmediately: true }, task, {
       id: `toadId_${taskNumber}`,
