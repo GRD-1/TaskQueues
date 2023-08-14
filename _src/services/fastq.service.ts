@@ -35,17 +35,11 @@ export class FastqService extends Service {
   }
 
   async downloadQueueWorker(args: QueueTaskArgs, callback: done): Promise<void> {
-    try {
-      if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${args.taskNumber}`);
-      const block = await etherscan.getBlock(args.blockNumberHex);
-      const dataProcessTask = { ...args, content: block };
-      await this.processQueue.push(dataProcessTask);
-      const err = 'status' in block || 'error' in block ? Error(JSON.stringify(block.result)) : null;
-      callback(err);
-    } catch (e) {
-      console.error('\ndownloadBlocks Error!', e);
-      callback(e);
-    }
+    if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${args.taskNumber}`);
+    const block = await etherscan.getBlock(args.blockNumberHex);
+    const dataProcessTask = { ...args, content: block };
+    await this.processQueue.push(dataProcessTask);
+    callback(null);
   }
 
   async processData(): Promise<number> {

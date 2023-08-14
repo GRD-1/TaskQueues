@@ -53,8 +53,10 @@ export class BullService extends Service {
           await this.downloadQueueWorker({ task: job, startTime, resolve, reject }, done);
         });
       });
-    } catch (err) {
-      throw Error(`Error! Fail to download data! reason: ${err.message}`);
+    } catch (e) {
+      e.message = `Error! Fail to download data! reason: ${e.message}`;
+      globalThis.ERROR_EMITTER.emit('Error', e);
+      return null;
     }
   }
 
@@ -89,8 +91,6 @@ export class BullService extends Service {
           await this.processQueueWorker({ ...taskContent, startTime, taskCallback: done, resolve, reject });
         }
       });
-    }).catch((err) => {
-      throw Error(`Error! Fail to process data! reason: ${err.message}`);
     });
     return (Date.now() - startTime) / 1000;
   }

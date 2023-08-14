@@ -1,5 +1,5 @@
 module.exports = {
-  LOG_BENCHMARKS: true,
+  LOG_BENCHMARKS: false,
   WAITING_TIME_FOR_BLOCK: 1000,
   LIBRARY_LIST: ['fastq', 'bull', 'rabbitmq'],
 
@@ -15,7 +15,7 @@ module.exports = {
 
   DEFAULT_QUERY: {
     LIBRARY: 'fastq',
-    BLOCKS_AMOUNT: 10,
+    BLOCKS_AMOUNT: 3,
     LAST_BLOCK: '0x10b2feb',
     REQUEST_INTERVAL: 200,
   },

@@ -17,10 +17,12 @@ export class Service {
     try {
       await this.connectToServer();
       const result = await new Promise((resolve, reject) => {
+        this.setErrorHandler(reject);
         (async (): Promise<void> => {
           const errMsg = await this.setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
           resolve(errMsg);
         })();
+
         (async (): Promise<void> => {
           try {
             const loadingTime = await this.downloadData();
@@ -40,8 +42,18 @@ export class Service {
       this.cleanQueue();
       return result;
     } catch (err) {
+      console.log('\ngetMaxChangedBalance catch handler!');
+      console.log('err: ', err);
+      this.cleanQueue();
       return { error: err.message };
     }
+  }
+
+  setErrorHandler(reject: <T>(reason?: T) => void): void {
+    globalThis.ERROR_EMITTER.on('Error', async (e) => {
+      console.log('\na local ERROR EMITTER has been launched!');
+      reject({ error: e.message });
+    });
   }
 
   async connectToServer(): Promise<void> {

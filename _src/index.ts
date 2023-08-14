@@ -1,7 +1,9 @@
 import express from 'express';
 import PROJECT_ROOT from './utils/set-project-root.util';
 import mainRoute from './routes/main.route';
+import ErrorHandler from './errors/handler.error';
 
+const errorHandler = new ErrorHandler();
 const app = express();
 const urlencodedParser = express.urlencoded({ extended: false });
 

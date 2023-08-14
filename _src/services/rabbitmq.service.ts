@@ -15,8 +15,9 @@ export class RabbitmqService extends Service {
       this.connection = await connect(`amqp://${config.RABBIT.host}`);
       this.downloadChannel = await this.connection.createChannel();
       this.processChannel = await this.connection.createChannel();
-    } catch (err) {
-      throw new Error('Error connecting to the RabbitMQ server!');
+    } catch (e) {
+      e.message = 'Error! Failed to connect to the RabbitMQ server!';
+      globalThis.ERROR_EMITTER.emit('Error', e);
     }
   }
 
@@ -39,8 +40,10 @@ export class RabbitmqService extends Service {
           await this.downloadQueueWorker({ task, startTime, resolve, reject });
         });
       });
-    } catch (err) {
-      throw Error(`Error! Fail to download data! reason: ${err.message}`);
+    } catch (e) {
+      e.message = `Error! Fail to download data! reason: ${e.message}`;
+      globalThis.ERROR_EMITTER.emit('Error', e);
+      return null;
     }
   }
 
@@ -76,8 +79,6 @@ export class RabbitmqService extends Service {
           await this.processQueueWorker({ ...taskContent, startTime, resolve, reject });
         }
       });
-    }).catch((err) => {
-      throw Error(`Error! Fail to process data! reason: ${err.message}`);
     });
     return (Date.now() - startTime) / 1000;
   }
@@ -89,8 +90,9 @@ export class RabbitmqService extends Service {
       await this.downloadChannel.close();
       await this.processChannel.close();
       this.connection.close();
-    } catch (err) {
-      throw Error(`Error! Fail to close the connection! reason: ${err.message}`);
+    } catch (e) {
+      e.message = `Error! Fail to close the connection! reason: ${e.message}`;
+      globalThis.ERROR_EMITTER.emit('Error', e);
     }
   }
 }

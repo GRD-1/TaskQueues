@@ -9,21 +9,23 @@ export class EtherscanService {
       const data = (await result.json()) as { result: string };
       return data.result;
     } catch (e) {
-      throw Error(`Error! Failed to get the last block number! reason: ${e.message}`);
+      e.message = `Error! Failed to get the last block number! reason: ${e.message}`;
+      globalThis.ERROR_EMITTER.emit('Error', e);
+      return null;
     }
   }
   async getBlock(blockNumberHex: string): Promise<Block> {
     try {
       const request = `${config.ETHERSCAN_API.GET_BLOCK}&tag=${blockNumberHex}&apikey=${config.ETHERSCAN_APIKEY}`;
-      let i = 1;
+      let retries = 5;
       let block: Block;
-      while (i <= 5) {
+      while (retries > 0) {
         const response = await fetch(request);
         block = (await response.json()) as Block;
-        if (block?.status === '0') i++;
+        if (block?.status === '0') retries--;
         else break;
       }
-      if (i > 5) throw new Error('Failed to retrieve block after multiple attempts.');
+      if (retries === 0) throw new Error('Failed to retrieve block after multiple attempts.');
       if ('error' in block) {
         let errMsg = block.error.message;
         if (block.error.code === -32602) {
@@ -33,7 +35,9 @@ export class EtherscanService {
       }
       return block;
     } catch (e) {
-      throw Error(`Error! Failed to retrieve block! reason: ${e.message}`);
+      e.message = `Error! Failed to retrieve block! reason: ${e.message}`;
+      globalThis.ERROR_EMITTER.emit('Error', e);
+      return null;
     }
   }
 }
