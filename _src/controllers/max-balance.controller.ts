@@ -15,6 +15,7 @@ export class MaxBalanceController {
       const results = await getBalanceView({ ...queryParams, ...data });
       res.end(results);
     } catch (e) {
+      globalThis.ERROR_EMITTER.emit('Error', e);
       res.end(e.message);
     }
   }

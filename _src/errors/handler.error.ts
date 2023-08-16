@@ -12,7 +12,7 @@ export default class ErrorHandler {
 
   setEventListener(): void {
     globalThis.ERROR_EMITTER.on('Error', async (e) => {
-      logger.error('', e);
+      logger.error('\n', e);
     });
 
     process.on('uncaughtException', (e) => {
@@ -22,13 +22,13 @@ export default class ErrorHandler {
         error.message = 'UNCAUGHT ERROR!!!';
         error.code = 1000;
         error.stack = e.stack;
-        logger.error('', error);
+        logger.error('\n', error);
         process.exit(1);
         setTimeout(() => {
           process.abort();
         }, 1000).unref();
       } catch (err) {
-        logger.error('', err);
+        logger.error('\n', err);
       }
     });
   }
