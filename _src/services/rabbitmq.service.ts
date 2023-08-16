@@ -22,7 +22,6 @@ export class RabbitmqService extends Service {
 
   async downloadData(): Promise<number> {
     await super.downloadData();
-    // try {
     const startTime = Date.now();
     await this.downloadChannel.assertQueue('downloadQueue', { durable: true });
     await this.downloadChannel.assertQueue('processQueue', { durable: true });
@@ -39,11 +38,6 @@ export class RabbitmqService extends Service {
         await this.downloadQueueWorker({ task, startTime, resolve, reject });
       });
     });
-    // } catch (e) {
-    //   e.message = `Error! Fail to download data! reason: ${e.message}`;
-    //   globalThis.ERROR_EMITTER.emit('Error', e);
-    //   return null;
-    // }
   }
 
   async downloadQueueWorker(args: DownloadWorkerArgs): Promise<void> {

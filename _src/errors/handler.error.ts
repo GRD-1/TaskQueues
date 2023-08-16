@@ -12,12 +12,10 @@ export default class ErrorHandler {
 
   setEventListener(): void {
     globalThis.ERROR_EMITTER.on('Error', async (e) => {
-      console.log('\nERROR EMITTER has been launched!');
       logger.error('', e);
     });
 
     process.on('uncaughtException', (e) => {
-      console.log('\nUNCAUGHT ERROR EMITTER has been launched!');
       try {
         const error = globalThis.UNCAUGHT_ERROR;
         error.cause = e.message;

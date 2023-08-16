@@ -8,13 +8,14 @@ export class Service {
   private maxAccount: Account = { undefined };
   private amountOfTransactions = 0;
   public numberOfProcessedTasks = 0;
+  public terminateAllProcesses: boolean;
 
   constructor(public blocksAmount: number, public lastBlock: string) {
     this.sessionKey = Date.now();
   }
 
   async getMaxChangedBalance(): Promise<Data> {
-    let result: Data = {};
+    let result: Data;
     try {
       await this.connectToServer();
       result = await new Promise((resolve, reject) => {
@@ -40,7 +41,6 @@ export class Service {
         })();
       });
     } catch (e) {
-      console.log('\ngetMaxChangedBalance catch block');
       globalThis.ERROR_EMITTER.emit('Error', e);
       result = { error: e.message };
     }
@@ -66,12 +66,18 @@ export class Service {
     const task = new Task(
       'download block',
       () => {
+        if (this.terminateAllProcesses) {
+          scheduler.stop();
+          return;
+        }
         queueFiller({ taskNumber, blockNumberHex });
         if (taskNumber >= blocksAmount) scheduler.stop();
         taskNumber++;
         blockNumberHex = (lastBlockNumberDecimal - taskNumber).toString(16);
       },
-      () => scheduler.stop(),
+      () => {
+        scheduler.stop();
+      },
     );
     const interval = config.DEFAULT_QUERY.REQUEST_INTERVAL;
     const job = new SimpleIntervalJob({ milliseconds: interval, runImmediately: true }, task, {
