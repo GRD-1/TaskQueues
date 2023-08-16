@@ -29,35 +29,29 @@ export class BullService extends Service {
       });
 
       socket.on('error', () => {
-        reject(new Error('Error connecting to the Redis server!'));
+        reject(new globalThis.SRV_ERROR('Error connecting to the Redis server!'));
       });
     });
   }
 
   async downloadData(): Promise<number> {
     await super.downloadData();
-    try {
-      const startTime = Date.now();
-      this.downloadQueue = new Bull('downloadQueue', queueSettings);
-      this.processQueue = new Bull('processQueue', queueSettings);
+    const startTime = Date.now();
+    this.downloadQueue = new Bull('downloadQueue', queueSettings);
+    this.processQueue = new Bull('processQueue', queueSettings);
 
-      const queueFiller: DownloadQueueFiller = (args: QueueTaskArgs) => {
-        const terminateTask = args.taskNumber >= this.blocksAmount;
-        const task = JSON.stringify({ ...args, terminateTask, sessionKey: this.sessionKey });
-        this.downloadQueue.add('downloadQueue', task, {});
-      };
-      this.fillTheQueue(queueFiller, this.lastBlock, this.blocksAmount);
+    const queueFiller: DownloadQueueFiller = (args: QueueTaskArgs) => {
+      const terminateTask = args.taskNumber >= this.blocksAmount;
+      const task = JSON.stringify({ ...args, terminateTask, sessionKey: this.sessionKey });
+      this.downloadQueue.add('downloadQueue', task, {});
+    };
+    this.fillTheQueue(queueFiller, this.lastBlock, this.blocksAmount);
 
-      return new Promise((resolve, reject) => {
-        this.downloadQueue.process('downloadQueue', async (job, done) => {
-          await this.downloadQueueWorker({ task: job, startTime, resolve, reject }, done);
-        });
+    return new Promise((resolve, reject) => {
+      this.downloadQueue.process('downloadQueue', async (job, done) => {
+        await this.downloadQueueWorker({ task: job, startTime, resolve, reject }, done);
       });
-    } catch (e) {
-      e.message = `Error! Fail to download data! reason: ${e.message}`;
-      globalThis.ERROR_EMITTER.emit('Error', e);
-      return null;
-    }
+    });
   }
 
   async downloadQueueWorker(args: DownloadWorkerArgs, callback: Bull.DoneCallback): Promise<void> {
@@ -84,21 +78,30 @@ export class BullService extends Service {
   async processData(): Promise<number> {
     await super.processData();
     const startTime = Date.now();
-    await new Promise((resolve, reject) => {
+    // await new Promise((resolve, reject) => {
+    //   this.processQueue.process('processQueue', async (task, done) => {
+    //     const taskContent = task !== null ? JSON.parse(task.data) : null;
+    //     if (taskContent) {
+    //       await this.processQueueWorker({ ...taskContent, startTime, taskCallback: done, resolve, reject });
+    //     }
+    //   });
+    // });
+    // return (Date.now() - startTime) / 1000;
+
+    return new Promise((resolve, reject) => {
       this.processQueue.process('processQueue', async (task, done) => {
-        const taskContent = task !== null ? JSON.parse(task.data) : null;
-        if (taskContent) {
-          await this.processQueueWorker({ ...taskContent, startTime, taskCallback: done, resolve, reject });
-        }
+        const taskContent = JSON.parse(task.data);
+        await this.processQueueWorker({ ...taskContent, startTime, taskCallback: done, resolve, reject });
       });
     });
-    return (Date.now() - startTime) / 1000;
   }
 
   async cleanQueue(): Promise<void> {
+    await this.downloadQueue?.pause(true, true);
+    await this.processQueue?.pause(true, true);
     await this.downloadQueue?.obliterate({ force: true });
     await this.processQueue?.obliterate({ force: true });
-    await this.downloadQueue?.close();
-    await this.processQueue?.close();
+    // await this.downloadQueue?.close();
+    // await this.processQueue?.close();
   }
 }

@@ -18,8 +18,6 @@ export class Service {
     try {
       await this.connectToServer();
       result = await new Promise((resolve, reject) => {
-        this.setErrorHandler(reject);
-
         (async (): Promise<void> => {
           const errMsg = await this.setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
           resolve(errMsg);
@@ -41,18 +39,13 @@ export class Service {
           }
         })();
       });
-    } catch (err) {
-      result = { error: err.message };
+    } catch (e) {
+      console.log('\ngetMaxChangedBalance catch block');
+      globalThis.ERROR_EMITTER.emit('Error', e);
+      result = { error: e.message };
     }
     this.cleanQueue();
     return result;
-  }
-
-  setErrorHandler(reject: <T>(reason?: T) => void): void {
-    globalThis.ERROR_EMITTER.on('Error', async (e) => {
-      console.log('\na local ERROR EMITTER has been launched!');
-      reject({ message: e.message });
-    });
   }
 
   async connectToServer(): Promise<void> {

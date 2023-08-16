@@ -9,11 +9,10 @@ export class EtherscanService {
       const data = (await result.json()) as { result: string };
       return data.result;
     } catch (e) {
-      e.message = `Error! Failed to get the last block number! reason: ${e.message}`;
-      globalThis.ERROR_EMITTER.emit('Error', e);
-      return null;
+      throw new globalThis.SRV_ERROR(`Error! Failed to get the last block number! reason: ${e.message}`, e.message);
     }
   }
+
   async getBlock(blockNumberHex: string): Promise<Block> {
     try {
       const request = `${config.ETHERSCAN_API.GET_BLOCK}&tag=${blockNumberHex}&apikey=${config.ETHERSCAN_APIKEY}`;
@@ -31,13 +30,11 @@ export class EtherscanService {
         if (block.error.code === -32602) {
           errMsg = `Invalid block number [${blockNumberHex}] (incorrect hex)`;
         }
-        throw Error(errMsg);
+        throw new Error(errMsg);
       }
       return block;
     } catch (e) {
-      e.message = `Error! Failed to retrieve block! reason: ${e.message}`;
-      globalThis.ERROR_EMITTER.emit('Error', e);
-      return null;
+      throw new globalThis.SRV_ERROR(`Error! reason: ${e.message}`, e.message);
     }
   }
 }
