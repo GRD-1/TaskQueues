@@ -78,15 +78,6 @@ export class BullService extends Service {
   async processData(): Promise<number> {
     await super.processData();
     const startTime = Date.now();
-    // await new Promise((resolve, reject) => {
-    //   this.processQueue.process('processQueue', async (task, done) => {
-    //     const taskContent = task !== null ? JSON.parse(task.data) : null;
-    //     if (taskContent) {
-    //       await this.processQueueWorker({ ...taskContent, startTime, taskCallback: done, resolve, reject });
-    //     }
-    //   });
-    // });
-    // return (Date.now() - startTime) / 1000;
 
     return new Promise((resolve, reject) => {
       this.processQueue.process('processQueue', async (task, done) => {
@@ -101,7 +92,5 @@ export class BullService extends Service {
     await this.processQueue?.pause(true, true);
     await this.downloadQueue?.obliterate({ force: true });
     await this.processQueue?.obliterate({ force: true });
-    // await this.downloadQueue?.close();
-    // await this.processQueue?.close();
   }
 }

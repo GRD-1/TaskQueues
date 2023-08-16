@@ -14,27 +14,25 @@ export class EtherscanService {
   }
 
   async getBlock(blockNumberHex: string): Promise<Block> {
-    try {
-      const request = `${config.ETHERSCAN_API.GET_BLOCK}&tag=${blockNumberHex}&apikey=${config.ETHERSCAN_APIKEY}`;
-      let retries = 5;
-      let block: Block;
-      while (retries > 0) {
-        const response = await fetch(request);
-        block = (await response.json()) as Block;
-        if (block?.status === '0') retries--;
-        else break;
-      }
-      if (retries === 0) throw new Error('Failed to retrieve block after multiple attempts.');
-      if ('error' in block) {
-        let errMsg = block.error.message;
-        if (block.error.code === -32602) {
-          errMsg = `Invalid block number [${blockNumberHex}] (incorrect hex)`;
-        }
-        throw new Error(errMsg);
-      }
-      return block;
-    } catch (e) {
-      throw new globalThis.SRV_ERROR(`Error! reason: ${e.message}`, e.message);
+    const request = `${config.ETHERSCAN_API.GET_BLOCK}&tag=${blockNumberHex}&apikey=${config.ETHERSCAN_APIKEY}`;
+    let retries = 5;
+    let block: Block;
+    while (retries > 0) {
+      const response = await fetch(request).catch(() => {
+        throw new globalThis.SRV_ERROR('Error! Failed to connect to etherscan.io. Check your internet connection');
+      });
+      block = (await response.json()) as Block;
+      if (block?.status === '0') retries--;
+      else break;
     }
+    if (retries === 0) throw new globalThis.SRV_ERROR('Error! Failed to retrieve block after multiple attempts.');
+    if ('error' in block) {
+      let errMsg = block.error.message;
+      if (block.error.code === -32602) {
+        errMsg = `Error! Invalid block number [${blockNumberHex}] (incorrect hex)`;
+      }
+      throw new globalThis.SRV_ERROR(errMsg);
+    }
+    return block;
   }
 }
