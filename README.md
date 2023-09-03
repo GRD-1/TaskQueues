@@ -32,8 +32,8 @@ The processing time starts counting from the moment the data is completely loade
 1. Download the project: bash git clone https://github.com/GRD-1/balance-rating.git
 2. Install docker + docker-compose to your local operating system
 3. Using the terminal go to the project root
-4. Build project in product mode using the command [ docker-compose -f docker-prod.yml up --build ]
-5. Build project in development mode using the command [ docker-compose -f docker-dev.yml up --build ]
+4. Build project in product mode using the command [ docker-compose -f docker-prod.yml up ]
+5. Build project in development mode using the command [ docker-compose -f docker-dev.yml up ]
 
 ## Settings
 

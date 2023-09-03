@@ -1,9 +1,5 @@
 {
-  "env": {
-    "es2020": true,
-    "browser": true,
-    "node": true
-  },
+  "parser": "@typescript-eslint/parser",
   "plugins": [
     "@typescript-eslint",
     "import",
@@ -28,9 +24,13 @@
       }
     }
   },
-  "parser": "@typescript-eslint/parser",
+  "env": {
+    "es2020": true,
+    "browser": true,
+    "node": true
+  },
   "rules": {
-    // broken rooles
+    // broken rules
     "linebreak-style": "off",                                                                         // does not work correctly in Windows
     "arrow-parens": "off",                                                                            // conflicting with Prettier
     "object-curly-newline": "off",                                                                    // conflicting with Prettier
@@ -38,7 +38,7 @@
     "function-paren-newline": "off",                                                                  // conflicting with Prettier
     "space-before-function-paren": 0,                                                                 // conflicting with Prettier
 
-    // just rooles
+    // just rules
     "no-plusplus": "off",
     "max-len": ["error", 120, 2, { "ignoreUrls": true }],
     "no-console": "off",
