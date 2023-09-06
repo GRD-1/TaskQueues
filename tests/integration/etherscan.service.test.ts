@@ -1,22 +1,34 @@
 import { EtherscanService } from '../../_src/services/etherscan.service';
 
-describe('etherscan service methods', () => {
+describe('etherscan service', () => {
   const etherscan = new EtherscanService();
-  // beforeAll(async () => {
-  //   const etherscan = new EtherscanService();
-  // });
-  // afterAll(async () => {
-  //   // await dbTeardown();
-  // });
+  const mockFetch = jest.fn();
+  global.fetch = mockFetch;
 
-  describe('Get the last block number from etherscan.io', () => {
-    it('the return value must be the hex number', async () => {
-      const lastBlockNumber = await etherscan.getLastBlockNumber();
-      const lastBlockNumberDecimal = parseInt(lastBlockNumber, 16);
-      expect(lastBlockNumber).not.toBeNull();
-      expect(lastBlockNumberDecimal).toBeGreaterThan(1000);
+  beforeEach(() => {
+    mockFetch.mockReset();
+  });
+
+  describe('etherscan.getLastBlockNumber', () => {
+    it('should return the last block number as a string', async () => {
+      const mockResponse = {
+        json: jest.fn().mockResolvedValue({ result: '0x4e3b7' }),
+      };
+      mockFetch.mockResolvedValue(mockResponse);
+      const result = await etherscan.getLastBlockNumber();
+      expect(result).toBe('0x4e3b7');
     });
   });
+
+  // describe('getBlock', () => {
+  // it('should update a specific existing Ingredient entry', async () => {
+  //   await ingredientDal.update(ingredientId, {
+  //     description: 'A legume',
+  //   });
+  //   const ingredient = await Ingredient.findByPk(ingredientId);
+  //   expect(ingredient?.description).toEqual('A legume');
+  // });
+  // });
 
   // describe('findOrCreate method', () => {
   //   beforeAll(async () => {
@@ -47,15 +59,5 @@ describe('etherscan service methods', () => {
   //     expect(ingredientsFound[0].slug).toEqual('brown-rice');
   //     expect(ingredientsFound[0].description).toBeNull();
   //   });
-  // });
-
-  // describe('getBlock', () => {
-  // it('should update a specific existing Ingredient entry', async () => {
-  //   await ingredientDal.update(ingredientId, {
-  //     description: 'A legume',
-  //   });
-  //   const ingredient = await Ingredient.findByPk(ingredientId);
-  //   expect(ingredient?.description).toEqual('A legume');
-  // });
   // });
 });
