@@ -1,4 +1,7 @@
 import { EtherscanService } from '../../_src/services/etherscan.service';
+import ErrorHandler from '../../_src/errors/handler.error';
+import { Block } from '../../_src/models/max-balance.model';
+const errorHandler = new ErrorHandler();
 
 describe('etherscan service', () => {
   const etherscan = new EtherscanService();
@@ -18,46 +21,89 @@ describe('etherscan service', () => {
       const result = await etherscan.getLastBlockNumber();
       expect(result).toBe('0x4e3b7');
     });
+
+    it('should throw an error when the API request fails', async () => {
+      mockFetch.mockRejectedValue(new Error('Network error'));
+      try {
+        await etherscan.getLastBlockNumber();
+        expect(true).toBe(false);
+      } catch (error) {
+        expect(error).toBeInstanceOf(global.SRV_ERROR);
+        expect(error.message).toContain('Failed to get the last block number');
+      }
+    });
   });
 
-  // describe('getBlock', () => {
-  // it('should update a specific existing Ingredient entry', async () => {
-  //   await ingredientDal.update(ingredientId, {
-  //     description: 'A legume',
-  //   });
-  //   const ingredient = await Ingredient.findByPk(ingredientId);
-  //   expect(ingredient?.description).toEqual('A legume');
-  // });
-  // });
+  describe('etherscan.getBlock', () => {
+    it('should retrieve and return a valid block', async () => {
+      const resolvedValue: Block = {
+        status: '1',
+        result: {
+          number: '0x4e3b7',
+          transactions: [],
+        },
+      };
+      const mockResponse = {
+        json: jest.fn().mockResolvedValue(resolvedValue),
+      };
+      mockFetch.mockResolvedValue(mockResponse);
+      const block = await etherscan.getBlock('0x4e3b7');
+      expect(block).toEqual(resolvedValue);
+    });
 
-  // describe('findOrCreate method', () => {
-  //   beforeAll(async () => {
-  //     await Ingredient.create({
-  //       name: 'Brown Rice',
-  //       slug: 'brown-rice',
-  //     });
-  //   });
-  //   it('should create a new entry when none with matching name exists', async () => {
-  //     const payload = {
-  //       name: 'Rice',
-  //       slug: 'rice',
-  //     };
-  //     await ingredientDal.findOrCreate(payload);
-  //     const ingredientsFound = await Ingredient.findAll({ where: { name: 'Rice' } });
-  //     expect(ingredientsFound.length).toEqual(1);
-  //   });
-  //   it('should return an existing entry where one with same name exists without updating it', async () => {
-  //     const payload = {
-  //       name: 'Brown Rice',
-  //       slug: 'brownrice',
-  //       description: 'test',
-  //     };
-  //     await ingredientDal.findOrCreate(payload);
-  //     const ingredientsFound = await Ingredient.findAll({ where: { name: 'Brown Rice' } });
-  //
-  //     expect(ingredientsFound.length).toEqual(1);
-  //     expect(ingredientsFound[0].slug).toEqual('brown-rice');
-  //     expect(ingredientsFound[0].description).toBeNull();
-  //   });
-  // });
+    it('should handle network errors and throw an error', async () => {
+      mockFetch.mockRejectedValue(new Error('Network error'));
+      try {
+        await etherscan.getBlock('0x4e3b7');
+        expect(true).toBe(false);
+      } catch (error) {
+        expect(error).toBeInstanceOf(global.SRV_ERROR);
+        expect(error.message).toContain('Failed to connect to etherscan.io');
+      }
+    });
+
+    it('should handle API errors and throw an error with custom messages', async () => {
+      const resolvedValue: Block = {
+        status: '0',
+        error: {
+          code: -32602,
+          message: 'Error! Invalid block number ...',
+        },
+      };
+      const mockResponse = {
+        json: jest.fn().mockResolvedValue(resolvedValue),
+      };
+      mockFetch.mockResolvedValue(mockResponse);
+      try {
+        await etherscan.getBlock('invalid-block');
+        // The function should throw an error, so this line should not be reached
+        expect(true).toBe(false);
+      } catch (error) {
+        expect(error).toBeInstanceOf(global.SRV_ERROR);
+        expect(error.message).toContain('Error! Invalid block number [invalid-block]');
+      }
+    });
+
+    it('should handle repeated API errors and throw an error after retries', async () => {
+      const resolvedValue: Block = {
+        status: '0',
+        error: {
+          code: 2128507,
+          message: 'Error! Failed to retrieve block after multiple attempts',
+        },
+      };
+      const mockResponse = {
+        json: jest.fn().mockResolvedValue(resolvedValue),
+      };
+      mockFetch.mockResolvedValue(mockResponse);
+      try {
+        await etherscan.getBlock('0x4e3b7');
+        // The function should throw an error, so this line should not be reached
+        expect(true).toBe(false);
+      } catch (error) {
+        expect(error).toBeInstanceOf(global.SRV_ERROR);
+        expect(error.message).toContain('Failed to retrieve block after multiple attempts');
+      }
+    });
+  });
 });

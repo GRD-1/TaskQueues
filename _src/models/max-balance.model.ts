@@ -21,7 +21,7 @@ export interface Transaction {
 
 export interface Block {
   status: number | string | undefined;
-  result: {
+  result?: {
     number: string;
     transactions: Transaction[];
   };

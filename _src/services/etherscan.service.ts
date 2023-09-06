@@ -25,9 +25,8 @@ export class EtherscanService {
       if (block?.status === '0') retries--;
       else break;
     }
-    if (retries === 0) throw new globalThis.SRV_ERROR('Error! Failed to retrieve block after multiple attempts.');
     if ('error' in block) {
-      let errMsg = block.error.message;
+      let errMsg = `Error! Failed to retrieve block after multiple attempts. reason: ${block.error.message}`;
       if (block.error.code === -32602) {
         errMsg = `Error! Invalid block number [${blockNumberHex}] (incorrect hex)`;
       }
