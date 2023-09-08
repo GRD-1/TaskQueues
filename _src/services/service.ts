@@ -1,5 +1,5 @@
 import config from 'config';
-import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
+import { Job, SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
 import { Data, Account, DownloadQueueFiller, ProcessWorkerArgs } from '../models/max-balance.model';
 
 export class Service {
@@ -10,7 +10,7 @@ export class Service {
   public numberOfProcessedTasks = 0;
   public terminateAllProcesses: boolean;
 
-  constructor(public blocksAmount: number, public lastBlock: string) {
+  constructor(public blocksAmount?: number, public lastBlock?: string) {
     this.sessionKey = Date.now();
   }
 
@@ -57,7 +57,7 @@ export class Service {
     return null;
   }
 
-  fillTheQueue(queueFiller: DownloadQueueFiller, lastBlock: string, blocksAmount: number): void {
+  fillTheQueue(queueFiller: DownloadQueueFiller, lastBlock: string, blocksAmount: number): Job[] {
     const lastBlockNumberDecimal = parseInt(lastBlock, 16);
     let taskNumber = 1;
     let blockNumberHex = (lastBlockNumberDecimal - taskNumber).toString(16);
@@ -81,9 +81,10 @@ export class Service {
     );
     const interval = config.DEFAULT_QUERY.REQUEST_INTERVAL;
     const job = new SimpleIntervalJob({ milliseconds: interval, runImmediately: true }, task, {
-      id: `toadId_${taskNumber}`,
+      id: 'download all blocks',
     });
     scheduler.addSimpleIntervalJob(job);
+    return scheduler.getAllJobs();
   }
 
   processData(): Promise<number> {
