@@ -1,6 +1,7 @@
 import config from 'config';
 import { Job, SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
 import { Data, Account, DownloadQueueFiller, ProcessWorkerArgs } from '../models/max-balance.model';
+import serviceProvider from '../utils/service-provider.util';
 
 export class Service {
   readonly sessionKey: number;
@@ -57,12 +58,13 @@ export class Service {
     return null;
   }
 
-  fillTheQueue(queueFiller: DownloadQueueFiller, lastBlock: string, blocksAmount: number): Job[] {
+  async fillTheQueue(queueFiller: DownloadQueueFiller, lastBlock: string, blocksAmount: number): Promise<Job[]> {
     const lastBlockNumberDecimal = parseInt(lastBlock, 16);
     let taskNumber = 1;
     let blockNumberHex = (lastBlockNumberDecimal - taskNumber).toString(16);
 
-    const scheduler = new ToadScheduler();
+    // const scheduler = new ToadScheduler();
+    const scheduler = await serviceProvider.getService(ToadScheduler);
     const task = new Task(
       'download block',
       () => {
@@ -125,8 +127,10 @@ export class Service {
   }
 
   setTimer(awaitingTime: number): Promise<Data> {
-    return new Promise((resolve) => {
-      const scheduler = new ToadScheduler();
+    // eslint-disable-next-line no-async-promise-executor
+    return new Promise(async (resolve) => {
+      // const scheduler = new ToadScheduler();
+      const scheduler = await serviceProvider.getService(ToadScheduler);
       const task = new Task('deadline', () => {
         resolve({ error: `the waiting time has expired! (${awaitingTime} msec)` });
         scheduler.stop();

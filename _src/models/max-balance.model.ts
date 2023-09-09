@@ -63,3 +63,5 @@ export interface Data {
 }
 
 export interface ProcessedData extends Query, Data {}
+
+export type ArbitraryServiceType = { interfaceType: Function; instance: NonNullable<unknown> };

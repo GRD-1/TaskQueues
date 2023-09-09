@@ -3,11 +3,11 @@ import config from 'config';
 import mainRoute from './routes/main.route';
 import errorHandler from './errors/handler.error';
 
-// error handlers
-errorHandler.setErrorListener();
-
 const app = express();
 const urlencodedParser = express.urlencoded({ extended: false });
+
+// error handlers
+errorHandler.setErrorListener();
 
 // routers
 app.use('/', urlencodedParser, mainRoute);
