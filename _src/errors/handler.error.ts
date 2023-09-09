@@ -2,15 +2,16 @@ import Emitter from 'events';
 import { UNCAUGHT_ERROR, SRV_ERROR } from './library.error';
 const logger = { error: (a: string, b?: Error): void => console.log(a, b) };
 
-export default class ErrorHandler {
-  constructor() {
+class ErrorHandler {
+  private static _instance: ErrorHandler;
+
+  private constructor() {
     globalThis.ERROR_EMITTER = new Emitter();
     globalThis.UNCAUGHT_ERROR = UNCAUGHT_ERROR;
     globalThis.SRV_ERROR = SRV_ERROR;
-    this.setEventListener();
   }
 
-  setEventListener(): void {
+  setErrorListener(): void {
     globalThis.ERROR_EMITTER.on('Error', async (e) => {
       logger.error('\n', e);
     });
@@ -32,4 +33,13 @@ export default class ErrorHandler {
       }
     });
   }
+
+  static getInstance(): ErrorHandler {
+    if (!ErrorHandler._instance) {
+      ErrorHandler._instance = new ErrorHandler();
+    }
+    return ErrorHandler._instance;
+  }
 }
+
+export default ErrorHandler.getInstance();
