@@ -1,4 +1,5 @@
 module.exports = {
+  PROJECT_ROOT: __dirname.replace('/config', ''),
   LOG_BENCHMARKS: true,
   WAITING_TIME_FOR_BLOCK: 1500,
   LIBRARY_LIST: ['fastq', 'bull', 'rabbitmq'],
@@ -60,5 +61,4 @@ module.exports = {
     },
     port: 5672,
   },
-
 };

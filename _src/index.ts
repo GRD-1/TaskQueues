@@ -1,5 +1,5 @@
 import express from 'express';
-import PROJECT_ROOT from './utils/set-project-root.util';
+import config from 'config';
 import mainRoute from './routes/main.route';
 import errorHandler from './errors/handler.error';
 
@@ -13,7 +13,7 @@ const urlencodedParser = express.urlencoded({ extended: false });
 app.use('/', urlencodedParser, mainRoute);
 
 // public files storage
-app.use(express.static(`${PROJECT_ROOT}/public`));
+app.use(express.static(`${config.PROJECT_ROOT}/public`));
 
 // #404. page not found
 app.use((request, response) => {

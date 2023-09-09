@@ -19,7 +19,7 @@ export default async function getBalanceView(args: ProcessedData): Promise<strin
   try {
     if (args.error) return args.error;
 
-    let html = fs.readFileSync(`${process.env.PROJECT_ROOT}/public/max-balance.html`, 'utf8');
+    let html = fs.readFileSync(`${config.PROJECT_ROOT}/public/max-balance.html`, 'utf8');
     const maxAccountData = Object.entries(args.maxAccount)[0];
     html = html
       .replace('$library$', args.library)
