@@ -2,5 +2,5 @@
 node_modules/
 git
 package-lock.json
-app/*/
-coverage
+app/**/*.*
+_src/tests/coverage

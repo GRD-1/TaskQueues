@@ -13,8 +13,8 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "sourceMap": true,
-    "rootDir": "./_src",
-    "outDir": "./app",
+    "rootDir": "_src",
+    "outDir": "app",
 
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -22,5 +22,7 @@
 
     "strict": false,
     "skipLibCheck": true,
-  }
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["./_src/tests", "./_src/Dockerfile"]
 }

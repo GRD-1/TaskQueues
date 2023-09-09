@@ -1,6 +1,6 @@
-import { EtherscanService } from '../../_src/services/etherscan.service';
-import ErrorHandler from '../../_src/errors/handler.error';
-import { Block } from '../../_src/models/max-balance.model';
+import { EtherscanService } from '../../services/etherscan.service';
+import ErrorHandler from '../../errors/handler.error';
+import { Block } from '../../models/max-balance.model';
 const errorHandler = new ErrorHandler();
 
 describe('etherscan service', () => {
