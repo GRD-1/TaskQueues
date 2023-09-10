@@ -1,7 +1,7 @@
 import { EtherscanService } from '../../services/etherscan.service';
-import ErrorHandler from '../../errors/handler.error';
 import { Block } from '../../models/max-balance.model';
-const errorHandler = new ErrorHandler();
+import errorHandler from '../../errors/handler.error';
+errorHandler.setErrorListener();
 
 describe('etherscan service', () => {
   const etherscan = new EtherscanService();

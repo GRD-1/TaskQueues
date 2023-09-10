@@ -58,7 +58,7 @@ export class Service {
     return null;
   }
 
-  fillTheQueue(queueFiller: DownloadQueueFiller, lastBlock: string, blocksAmount: number): Job[] {
+  fillTheQueue(queueFiller: DownloadQueueFiller, lastBlock: string, blocksAmount: number): SimpleIntervalJob[] {
     const lastBlockNumberDecimal = parseInt(lastBlock, 16);
     let taskNumber = 1;
     let blockNumberHex = (lastBlockNumberDecimal - taskNumber).toString(16);
@@ -85,7 +85,7 @@ export class Service {
       id: 'download all blocks',
     });
     scheduler.addSimpleIntervalJob(job);
-    return scheduler.getAllJobs();
+    return scheduler.getAllJobs() as SimpleIntervalJob[];
   }
 
   processData(): Promise<number> {
