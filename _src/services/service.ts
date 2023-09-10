@@ -58,13 +58,12 @@ export class Service {
     return null;
   }
 
-  async fillTheQueue(queueFiller: DownloadQueueFiller, lastBlock: string, blocksAmount: number): Promise<Job[]> {
+  fillTheQueue(queueFiller: DownloadQueueFiller, lastBlock: string, blocksAmount: number): Job[] {
     const lastBlockNumberDecimal = parseInt(lastBlock, 16);
     let taskNumber = 1;
     let blockNumberHex = (lastBlockNumberDecimal - taskNumber).toString(16);
 
-    // const scheduler = new ToadScheduler();
-    const scheduler = await serviceProvider.getService(ToadScheduler);
+    const scheduler = serviceProvider.getService(ToadScheduler);
     const task = new Task(
       'download block',
       () => {
@@ -127,10 +126,8 @@ export class Service {
   }
 
   setTimer(awaitingTime: number): Promise<Data> {
-    // eslint-disable-next-line no-async-promise-executor
-    return new Promise(async (resolve) => {
-      // const scheduler = new ToadScheduler();
-      const scheduler = await serviceProvider.getService(ToadScheduler);
+    return new Promise((resolve) => {
+      const scheduler = serviceProvider.getService(ToadScheduler);
       const task = new Task('deadline', () => {
         resolve({ error: `the waiting time has expired! (${awaitingTime} msec)` });
         scheduler.stop();
