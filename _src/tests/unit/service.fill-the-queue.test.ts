@@ -1,10 +1,9 @@
 import { Service } from '../../services/service';
-import serviceProvider from '../../utils/service-provider.util';
 import errorHandler from '../../errors/handler.error';
 errorHandler.setErrorListener();
 
 describe('service methods', () => {
-  const service = serviceProvider.getService(Service);
+  const service = new Service();
   const fillTheQueue = service.fillTheQueue;
 
   describe('fillTheQueue method', () => {

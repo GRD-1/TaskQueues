@@ -1,15 +1,15 @@
 import config from 'config';
-import { Job, SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
+import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
 import { Data, Account, DownloadQueueFiller, ProcessWorkerArgs } from '../models/max-balance.model';
 import serviceProvider from '../utils/service-provider.util';
 
 export class Service {
-  readonly sessionKey: number;
-  private addressBalances: Account;
-  private maxAccount: Account = { undefined };
-  private amountOfTransactions = 0;
-  public numberOfProcessedTasks = 0;
-  public terminateAllProcesses: boolean;
+  sessionKey: number;
+  addressBalances: Account;
+  maxAccount: Account;
+  amountOfTransactions = 0;
+  numberOfProcessedTasks = 0;
+  terminateAllProcesses: boolean;
 
   constructor(public blocksAmount?: number, public lastBlock?: string) {
     this.sessionKey = Date.now();
