@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
-import { Service } from '../../services/service';
-import { Account, ProcessWorkerArgs } from '../../models/max-balance.model';
-import errorHandler from '../../errors/handler.error';
+import { Service } from '../../../../services/service';
+import { Account, ProcessWorkerArgs } from '../../../../models/max-balance.model';
+import errorHandler from '../../../../errors/handler.error';
 errorHandler.setErrorListener();
 
 describe('processQueueWorker function', () => {
