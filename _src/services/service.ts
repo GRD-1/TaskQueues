@@ -106,7 +106,7 @@ export class Service {
             const val = Number(item.value);
             accum[item.to] = (accum[item.to] || 0) + val;
             accum[item.from] = (accum[item.from] || 0) - val;
-            this.maxAccount = this.getMaxChangedAccount(
+            this.maxAccount = this.getMostChangedAccount(
               { [item.to]: accum[item.to] },
               { [item.from]: accum[item.from] },
               this.maxAccount,
@@ -137,7 +137,7 @@ export class Service {
     });
   }
 
-  getMaxChangedAccount(...args: Account[]): Account {
+  getMostChangedAccount(...args: Account[]): Account {
     args.sort((a, b) => {
       const item1 = Number.isNaN(Math.abs(Object.values(a)[0])) ? 0 : Math.abs(Object.values(a)[0]);
       const item2 = Number.isNaN(Math.abs(Object.values(b)[0])) ? 0 : Math.abs(Object.values(b)[0]);

@@ -7,7 +7,7 @@ errorHandler.setErrorListener();
 describe('processQueueWorker function', () => {
   class ExtendedService extends Service {
     sessionKey = 12345;
-    getMaxAccount = jest.fn(() => ({ address1: 10 }));
+    getMaxChangedAccount = jest.fn(() => ({ address1: 10 }));
   }
   let extendedService: ExtendedService;
   let args: ProcessWorkerArgs;
@@ -61,7 +61,7 @@ describe('processQueueWorker function', () => {
     const mockError = new Error('Test error');
     class RetryExtendedService extends Service {
       sessionKey = 12345;
-      getMaxAccount(...ar: Account[]): Account {
+      getMostChangedAccount(...ar: Account[]): Account {
         throw mockError;
       }
     }
