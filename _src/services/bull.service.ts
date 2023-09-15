@@ -4,8 +4,8 @@ import config from 'config';
 import { DownloadQueueFiller, QueueTaskArgs, DownloadWorkerArgs } from '../models/max-balance.model';
 import { Service } from './service';
 import { EtherscanService } from './etherscan.service';
+import serviceProvider from '../utils/service-provider.util';
 
-const etherscan = new EtherscanService();
 const queueSettings = {
   redis: config.REDIS,
   defaultJobOptions: config.BULL.JOB_OPTIONS,
@@ -61,6 +61,7 @@ export class BullService extends Service {
       if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${taskContent.taskNumber}`);
       this.numberOfProcessedTasks++;
       try {
+        const etherscan = serviceProvider.getService(EtherscanService);
         const block = await etherscan.getBlock(taskContent.blockNumberHex);
         const processQueueTask = JSON.stringify({ ...taskContent, content: block });
         await this.processQueue.add('processQueue', processQueueTask);
