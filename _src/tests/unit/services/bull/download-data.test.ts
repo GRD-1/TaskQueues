@@ -3,8 +3,6 @@ import { MockedBullService } from './__mocks__/mocked-bull-service';
 describe('downloadData method', () => {
   let mockedBullService: MockedBullService;
   beforeEach(() => {
-    // const startTime = 1000;
-    global.Date.now = (): number => 4000;
     mockedBullService = new MockedBullService();
     mockedBullService.sessionKey = 99999;
     mockedBullService.blocksAmount = 1;

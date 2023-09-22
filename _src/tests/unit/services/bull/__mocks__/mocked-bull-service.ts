@@ -1,8 +1,9 @@
 import * as Bull from 'bull';
 import { SimpleIntervalJob } from 'toad-scheduler';
 import { BullService } from '../../../../../services/bull.service';
-import { DownloadQueueFiller, DownloadWorkerArgs } from '../../../../../models/max-balance.model';
-import { MOCKED_TASK_CONTENT, MockedBullQueue } from './mocked-bull-queue';
+import { DownloadQueueFiller, DownloadWorkerArgs, ProcessWorkerArgs } from '../../../../../models/max-balance.model';
+import { MOCKED_TASK_CONTENT } from './mocked-bull-job';
+import { MockedBullQueue } from './mocked-bull-queue';
 
 export class MockedBullService extends BullService {
   get downloadQueue(): Bull.Queue {
@@ -31,6 +32,12 @@ export class MockedBullService extends BullService {
   async downloadQueueWorker(args: DownloadWorkerArgs, callback: Bull.DoneCallback): Promise<void> {
     const { startTime, resolve } = args;
     callback();
+    resolve((Date.now() - startTime) / 1000);
+  }
+
+  async processQueueWorker(args: ProcessWorkerArgs): Promise<void> {
+    const { startTime, taskCallback, resolve } = args;
+    taskCallback(null);
     resolve((Date.now() - startTime) / 1000);
   }
 }

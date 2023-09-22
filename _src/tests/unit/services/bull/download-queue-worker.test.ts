@@ -1,4 +1,3 @@
-import { MOCKED_TASK, MOCKED_TASK_CONTENT, MockedBullQueue } from './__mocks__/mocked-bull-queue';
 import {
   getMockedEtherscanService,
   getFailedEtherscanService,
@@ -7,6 +6,7 @@ import {
 import { BullService } from '../../../../services/bull.service';
 import serviceProvider from '../../../../utils/service-provider.util';
 import { MockedBullService } from './__mocks__/mocked-bull-service';
+import { MOCKED_TASK, MOCKED_TASK_CONTENT } from './__mocks__/mocked-bull-job';
 
 describe('downloadQueueWorker function', () => {
   const startTime = 1000;
@@ -40,7 +40,7 @@ describe('downloadQueueWorker function', () => {
     const etherscan = getFailedEtherscanService();
     jest.spyOn(serviceProvider, 'getService').mockReturnValue(etherscan);
 
-    await bullService.downloadQueueWorker({ task: MOCKED_TASK, startTime, resolve, reject }, callback);
+    await bullService.downloadQueueWorker({ task: { data: MOCKED_TASK }, startTime, resolve, reject }, callback);
 
     expect(callback).toHaveBeenCalledWith(expect.any(Error));
     expect(reject).toHaveBeenCalledWith(expect.any(Error));
@@ -67,9 +67,9 @@ describe('downloadQueueWorker function', () => {
 
     await bullService.downloadQueueWorker({ task, startTime, resolve, reject }, callback);
 
-    expect(callback).not.toHaveBeenCalled(); // No callbacks called
-    expect(resolve).not.toHaveBeenCalled(); // No resolve called
-    expect(reject).not.toHaveBeenCalled(); // No reject called
+    expect(callback).not.toHaveBeenCalled();
+    expect(resolve).not.toHaveBeenCalled();
+    expect(reject).not.toHaveBeenCalled();
     expect(etherscan.getBlock).not.toHaveBeenCalled();
   });
 });
