@@ -26,7 +26,7 @@ export const MOCKED_JOB = {
   } {
     return undefined;
   },
-  update(data: any): Promise<void> {
+  update(data: unknown): Promise<void> {
     return Promise.resolve(undefined);
   },
   discard(): Promise<void> {
@@ -71,7 +71,9 @@ export const MOCKED_JOB = {
   moveToFailed(errorInfo: { message: string }, ignoreLock?: boolean): Promise<[any, Bull.JobId] | null> {
     return Promise.resolve(undefined);
   },
-  progress(value?: any): any {},
+  progress(value?: unknown): any {
+    return null;
+  },
   promote(): Promise<void> {
     return Promise.resolve(undefined);
   },
