@@ -19,14 +19,14 @@ interface QueueSettings {
   limiter?: string;
 }
 
-export class MockedBull {
+export class MockedBullQueue {
   constructor(public name: string, settings: QueueSettings) {}
 
-  async add<T>(data: T): Promise<void> {
+  async add<T, U>(name: string, task: T, opts: U): Promise<void> {
     return Promise.resolve();
   }
-}
 
-export function getMockedQueue(name: string, settings: QueueSettings): Bull.Queue {
-  return new MockedBull('processQueue', {}) as unknown as Bull.Queue;
+  async process<T>(job: Bull.Job<any>, done: Bull.DoneCallback): Promise<void> {
+    done();
+  }
 }

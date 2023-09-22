@@ -1,4 +1,4 @@
-import { getMockedQueue, MOCKED_TASK, MOCKED_TASK_CONTENT } from './__mocks__/mocked-bull';
+import { MOCKED_TASK, MOCKED_TASK_CONTENT, MockedBullQueue } from './__mocks__/mocked-bull-queue';
 import {
   getMockedEtherscanService,
   getFailedEtherscanService,
@@ -6,13 +6,14 @@ import {
 } from './__mocks__/mocked-etherscan-service';
 import { BullService } from '../../../../services/bull.service';
 import serviceProvider from '../../../../utils/service-provider.util';
+import { MockedBullService } from './__mocks__/mocked-bull-service';
 
 describe('downloadQueueWorker function', () => {
   const startTime = 1000;
   global.Date.now = (): number => 4000;
-  const bullService = serviceProvider.getService(BullService);
+  const bullService = serviceProvider.getService(MockedBullService);
   bullService.sessionKey = 99999;
-  bullService.processQueue = getMockedQueue('processQueue', {});
+  // bullService.processQueue = new MockedBullQueue('processQueue', {});
   bullService.blocksAmount = 1;
   bullService.numberOfProcessedTasks = 10;
 

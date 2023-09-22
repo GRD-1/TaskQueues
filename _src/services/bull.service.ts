@@ -14,8 +14,22 @@ const queueSettings = {
 };
 
 export class BullService extends Service {
-  downloadQueue: Bull.Queue;
-  processQueue: Bull.Queue;
+  protected _downloadQueue: Bull.Queue | undefined;
+  protected _processQueue: Bull.Queue | undefined;
+
+  get downloadQueue(): Bull.Queue {
+    if (!this._downloadQueue) {
+      this._downloadQueue = new Bull('downloadQueue', queueSettings);
+    }
+    return this._downloadQueue;
+  }
+
+  get processQueue(): Bull.Queue {
+    if (!this._processQueue) {
+      this._processQueue = new Bull('processQueue', queueSettings);
+    }
+    return this._processQueue;
+  }
 
   async connectToServer(): Promise<void> {
     const redisServerHost = config.REDIS.host;
@@ -37,8 +51,6 @@ export class BullService extends Service {
   async downloadData(): Promise<number> {
     await super.downloadData();
     const startTime = Date.now();
-    this.downloadQueue = new Bull('downloadQueue', queueSettings);
-    this.processQueue = new Bull('processQueue', queueSettings);
 
     const queueFiller: DownloadQueueFiller = (args: QueueTaskArgs) => {
       const terminateTask = args.taskNumber >= this.blocksAmount;
