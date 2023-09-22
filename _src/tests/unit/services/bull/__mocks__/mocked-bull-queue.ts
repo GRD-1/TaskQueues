@@ -1,6 +1,7 @@
 import * as Bull from 'bull';
 import { QueueTaskArgs } from '../../../../../models/max-balance.model';
 import { MOCKED_BLOCK } from './mocked-etherscan-service';
+import { MOCKED_JOB } from './mocked-bull-job';
 
 export const MOCKED_TASK_CONTENT: QueueTaskArgs = {
   taskNumber: 1,
@@ -19,6 +20,8 @@ interface QueueSettings {
   limiter?: string;
 }
 
+type BullQueueCallback = (job?: Bull.Job<any>, done?: Bull.DoneCallback) => Promise<void>;
+
 export class MockedBullQueue {
   constructor(public name: string, settings: QueueSettings) {}
 
@@ -26,7 +29,7 @@ export class MockedBullQueue {
     return Promise.resolve();
   }
 
-  async process<T>(job: Bull.Job<any>, done: Bull.DoneCallback): Promise<void> {
-    done();
+  async process(name: string, callback: BullQueueCallback): Promise<void> {
+    await callback(MOCKED_JOB, jest.fn());
   }
 }

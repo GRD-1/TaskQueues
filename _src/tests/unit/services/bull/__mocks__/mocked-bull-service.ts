@@ -30,6 +30,7 @@ export class MockedBullService extends BullService {
 
   async downloadQueueWorker(args: DownloadWorkerArgs, callback: Bull.DoneCallback): Promise<void> {
     const { startTime, resolve } = args;
+    callback();
     resolve((Date.now() - startTime) / 1000);
   }
 }
