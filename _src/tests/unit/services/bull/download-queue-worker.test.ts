@@ -11,20 +11,26 @@ import { MockedBullService } from './__mocks__/mocked-bull-service';
 describe('downloadQueueWorker function', () => {
   const startTime = 1000;
   global.Date.now = (): number => 4000;
-  const bullService = serviceProvider.getService(MockedBullService);
+  const bullService = new BullService();
   bullService.sessionKey = 99999;
-  // bullService.processQueue = new MockedBullQueue('processQueue', {});
   bullService.blocksAmount = 1;
   bullService.numberOfProcessedTasks = 10;
+  let resolve: typeof jest.fn;
+  let reject: typeof jest.fn;
+  let callback: typeof jest.fn;
+
+  beforeEach(() => {
+    resolve = jest.fn();
+    reject = jest.fn();
+    callback = jest.fn();
+  });
 
   it('should process a valid task and resolve when successful', async () => {
-    const resolve = jest.fn();
-    const reject = jest.fn();
-    const callback = jest.fn();
     const etherscan = getMockedEtherscanService();
     jest.spyOn(serviceProvider, 'getService').mockReturnValue(etherscan);
+    const mockedBullService = new MockedBullService();
 
-    await bullService.downloadQueueWorker({ task: MOCKED_TASK, startTime, resolve, reject }, callback);
+    await mockedBullService.downloadQueueWorker({ task: MOCKED_TASK, startTime, resolve, reject }, callback);
 
     expect(callback).toHaveBeenCalledWith();
     expect(resolve).toHaveBeenCalledWith(3);
@@ -34,10 +40,6 @@ describe('downloadQueueWorker function', () => {
     const etherscan = getFailedEtherscanService();
     jest.spyOn(serviceProvider, 'getService').mockReturnValue(etherscan);
 
-    const resolve = jest.fn();
-    const reject = jest.fn();
-    const callback = jest.fn();
-
     await bullService.downloadQueueWorker({ task: MOCKED_TASK, startTime, resolve, reject }, callback);
 
     expect(callback).toHaveBeenCalledWith(expect.any(Error));
@@ -45,10 +47,6 @@ describe('downloadQueueWorker function', () => {
   });
 
   it('should ignore tasks with mismatched sessionKey', async () => {
-    const resolve = jest.fn();
-    const reject = jest.fn();
-    const callback = jest.fn();
-
     const etherscan = getNeverCalledEtherscanService();
     jest.spyOn(serviceProvider, 'getService').mockReturnValue(etherscan);
     MOCKED_TASK_CONTENT.sessionKey = 0;
@@ -63,10 +61,6 @@ describe('downloadQueueWorker function', () => {
   });
 
   it('should ignore tasks with null taskContent', async () => {
-    const resolve = jest.fn();
-    const reject = jest.fn();
-    const callback = jest.fn();
-
     const etherscan = getNeverCalledEtherscanService();
     jest.spyOn(serviceProvider, 'getService').mockReturnValue(etherscan);
     const task = { data: JSON.stringify(null) };
