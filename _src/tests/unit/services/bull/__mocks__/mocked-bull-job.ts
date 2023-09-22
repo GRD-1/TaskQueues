@@ -1,16 +1,5 @@
 import * as Bull from 'bull';
-import { QueueTaskArgs } from '../../../../../models/max-balance.model';
-import { MOCKED_BLOCK } from './mocked-etherscan-service';
-
-export const MOCKED_TASK_CONTENT: QueueTaskArgs = {
-  taskNumber: 1,
-  blockNumberHex: '0x4e3b7',
-  sessionKey: 99999,
-  content: MOCKED_BLOCK,
-  terminateTask: true,
-};
-
-export const MOCKED_TASK = JSON.stringify(MOCKED_TASK_CONTENT);
+import { MOCKED_TASK } from '../../__mocks__/mocked-task';
 
 export const MOCKED_JOB = {
   attemptsMade: 0,

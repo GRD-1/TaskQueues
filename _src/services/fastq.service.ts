@@ -7,20 +7,33 @@ import { EtherscanService } from './etherscan.service';
 const etherscan = new EtherscanService();
 
 export class FastqService extends Service {
-  private downloadQueue: queue<QueueTaskArgs, fastq.done>;
-  private processQueue: queue<QueueTaskArgs, fastq.done>;
+  private _downloadQueue: queue<QueueTaskArgs, fastq.done>;
+  private _processQueue: queue<QueueTaskArgs, fastq.done>;
 
-  async downloadData(): Promise<number> {
-    await super.downloadData();
-    const startTime = Date.now();
-    return new Promise((resolve, reject) => {
-      this.downloadQueue = fastq((args: QueueTaskArgs, callback: done) => this.downloadQueueWorker(args, callback), 1);
-      this.processQueue = fastq(async (args: QueueTaskArgs, callback: done) => {
+  get downloadQueue(): queue<QueueTaskArgs, fastq.done> {
+    if (!this._downloadQueue) {
+      this._downloadQueue = fastq((args: QueueTaskArgs, callback: done) => this.downloadQueueWorker(args, callback), 1);
+    }
+    return this._downloadQueue;
+  }
+
+  get processQueue(): queue<QueueTaskArgs, fastq.done> {
+    if (!this._processQueue) {
+      const startTime = Date.now();
+      this._processQueue = fastq(async (args: QueueTaskArgs, callback: done) => {
         const dataProcessArgs = { ...args, startTime, taskCallback: callback };
         await this.processQueueWorker(dataProcessArgs);
       }, 1);
       this.processQueue.pause();
+    }
+    return this._processQueue;
+  }
 
+  async downloadData(): Promise<number> {
+    await super.downloadData();
+    const startTime = Date.now();
+
+    return new Promise((resolve, reject) => {
       const queueFiller: DownloadQueueFiller = (args: QueueTaskArgs) => {
         const terminateTask = args.taskNumber >= this.blocksAmount;
         const task = { ...args, terminateTask, sessionKey: this.sessionKey };

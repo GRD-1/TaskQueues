@@ -2,8 +2,8 @@ import * as Bull from 'bull';
 import { SimpleIntervalJob } from 'toad-scheduler';
 import { BullService } from '../../../../../services/bull.service';
 import { DownloadQueueFiller, DownloadWorkerArgs, ProcessWorkerArgs } from '../../../../../models/max-balance.model';
-import { MOCKED_TASK_CONTENT } from './mocked-bull-job';
 import { MockedBullQueue } from './mocked-bull-queue';
+import { MOCKED_TASK_CONTENT } from '../../__mocks__/mocked-task';
 
 export class MockedBullService extends BullService {
   get downloadQueue(): Bull.Queue {
