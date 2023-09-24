@@ -18,4 +18,6 @@ export class MockedFastqQueue {
   get drain(): () => void {
     return this._drain;
   }
+
+  resume = jest.fn();
 }
