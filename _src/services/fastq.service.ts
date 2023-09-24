@@ -7,8 +7,8 @@ import { EtherscanService } from './etherscan.service';
 const etherscan = new EtherscanService();
 
 export class FastqService extends Service {
-  private _downloadQueue: queue<QueueTaskArgs, fastq.done>;
-  private _processQueue: queue<QueueTaskArgs, fastq.done>;
+  protected _downloadQueue: queue<QueueTaskArgs, fastq.done>;
+  protected _processQueue: queue<QueueTaskArgs, fastq.done>;
 
   get downloadQueue(): queue<QueueTaskArgs, fastq.done> {
     if (!this._downloadQueue) {
