@@ -4,7 +4,7 @@ import type { queue, done } from 'fastq';
 import { QueueTaskArgs, DownloadQueueFiller } from '../models/max-balance.model';
 import { Service } from './service';
 import { EtherscanService } from './etherscan.service';
-const etherscan = new EtherscanService();
+import serviceProvider from '../utils/service-provider.util';
 
 export class FastqService extends Service {
   protected _downloadQueue: queue<QueueTaskArgs, fastq.done>;
@@ -55,6 +55,7 @@ export class FastqService extends Service {
 
   async downloadQueueWorker(args: QueueTaskArgs, callback: done): Promise<void> {
     try {
+      const etherscan = serviceProvider.getService(EtherscanService);
       if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${args.taskNumber}`);
       const block = await etherscan.getBlock(args.blockNumberHex);
       const dataProcessTask = { ...args, content: block };
