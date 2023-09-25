@@ -3,12 +3,12 @@ import config from 'config';
 import { QueueTaskArgs, DownloadWorkerArgs } from '../models/max-balance.model';
 import { Service } from './service';
 import { EtherscanService } from './etherscan.service';
-const etherscan = new EtherscanService();
+import serviceProvider from '../utils/service-provider.util';
 
 export class RabbitmqService extends Service {
-  private connection: Connection;
-  private downloadChannel: Channel;
-  private processChannel: Channel;
+  protected connection: Connection;
+  protected downloadChannel: Channel;
+  protected processChannel: Channel;
 
   async connectToServer(): Promise<void> {
     try {
@@ -42,11 +42,16 @@ export class RabbitmqService extends Service {
 
   async downloadQueueWorker(args: DownloadWorkerArgs): Promise<void> {
     const { task, startTime, resolve, reject } = args;
+    // console.log('\nRabbitmqService downloadQueueWorker');
+    // console.log('task = ', task);
     const taskContent = task !== null ? JSON.parse(task.content) : null;
+    // console.log('taskContent =', taskContent);
     if (taskContent !== null && taskContent.sessionKey === this.sessionKey) {
+      // console.log('this.sessionKey = ', this.sessionKey);
       if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${taskContent.taskNumber}`);
       this.numberOfProcessedTasks++;
       try {
+        const etherscan = serviceProvider.getService(EtherscanService);
         const block = await etherscan.getBlock(taskContent.blockNumberHex);
         const processQueueTask = JSON.stringify({ ...taskContent, content: block });
         await this.downloadChannel.sendToQueue('processQueue', Buffer.from(processQueueTask), {
@@ -54,9 +59,11 @@ export class RabbitmqService extends Service {
         });
         this.downloadChannel.ack(task);
         if (this.numberOfProcessedTasks >= this.blocksAmount) {
+          // console.log('\nsuccessfully finished');
           resolve((Date.now() - startTime) / 1000);
         }
       } catch (e) {
+        // console.log('an error has been caught:', e);
         reject(e);
       }
     }
