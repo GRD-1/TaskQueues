@@ -16,4 +16,4 @@ ENV NODE_ENV=production
 ENV DOCKER_BUILD=true
 
 # Define the startup command
-ENTRYPOINT ["npm", "run", "start-prod"]
+ENTRYPOINT ["npm", "run", "start:prod"]

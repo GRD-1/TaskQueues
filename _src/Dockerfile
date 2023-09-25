@@ -16,4 +16,4 @@ ENV NODE_ENV=development
 ENV DOCKER_BUILD=true
 
 # Define the startup command
-ENTRYPOINT ["npm", "run", "start-dev"]
+ENTRYPOINT ["npm", "run", "start:dev"]
