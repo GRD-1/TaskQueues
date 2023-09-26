@@ -7,19 +7,11 @@ interface TaskParams {
 }
 
 export class MockedRabbitmqChannel {
-  assertQueue(queueName: string, settings: QueueSettings): void {
-    console.log('\nMockedRabbitmqChannel assertQueue');
-  }
+  assertQueue = jest.fn();
 
-  sendToQueue(queueName: string, taskBuffer: string, params: TaskParams): void {
-    console.log('\nMockedRabbitmqChannel sendToQueue');
-  }
+  sendToQueue = jest.fn();
 
-  consume(queueName: string, callback: (task: string) => Promise<void>): void {
-    console.log('\nMockedRabbitmqChannel consume');
-  }
+  consume = jest.fn();
 
-  ack(taskBuffer: string): void {
-    console.log('\nMockedRabbitmqChannel ack');
-  }
+  ack = jest.fn();
 }

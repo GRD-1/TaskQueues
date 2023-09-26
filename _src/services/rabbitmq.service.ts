@@ -10,11 +10,25 @@ export class RabbitmqService extends Service {
   protected downloadChannel: Channel;
   protected processChannel: Channel;
 
+  async getDownloadChannel(): Channel {
+    if (!this.downloadChannel) {
+      this.downloadChannel = await this.connection.createChannel();
+    }
+    return this.downloadChannel;
+  }
+
+  async getProcessChannel(): Channel {
+    if (!this.processChannel) {
+      this.processChannel = await this.connection.createChannel();
+    }
+    return this.processChannel;
+  }
+
   async connectToServer(): Promise<void> {
     try {
       this.connection = await connect(`amqp://${config.RABBIT.host}`);
-      this.downloadChannel = await this.connection.createChannel();
-      this.processChannel = await this.connection.createChannel();
+      await this.getDownloadChannel();
+      await this.getProcessChannel();
     } catch (e) {
       throw new globalThis.SRV_ERROR('Error connecting to the RabbitMQ server!');
     }
@@ -42,12 +56,8 @@ export class RabbitmqService extends Service {
 
   async downloadQueueWorker(args: DownloadWorkerArgs): Promise<void> {
     const { task, startTime, resolve, reject } = args;
-    // console.log('\nRabbitmqService downloadQueueWorker');
-    // console.log('task = ', task);
     const taskContent = task !== null ? JSON.parse(task.content) : null;
-    // console.log('taskContent =', taskContent);
     if (taskContent !== null && taskContent.sessionKey === this.sessionKey) {
-      // console.log('this.sessionKey = ', this.sessionKey);
       if (config.LOG_BENCHMARKS === true) console.log(`\ndownload queue iteration ${taskContent.taskNumber}`);
       this.numberOfProcessedTasks++;
       try {
@@ -59,11 +69,9 @@ export class RabbitmqService extends Service {
         });
         this.downloadChannel.ack(task);
         if (this.numberOfProcessedTasks >= this.blocksAmount) {
-          // console.log('\nsuccessfully finished');
           resolve((Date.now() - startTime) / 1000);
         }
       } catch (e) {
-        // console.log('an error has been caught:', e);
         reject(e);
       }
     }
