@@ -19,6 +19,12 @@ export class MockedRabbitmqService extends RabbitmqService {
     return this.processChannel;
   }
 
+  constructor() {
+    super();
+    this.downloadChannel = new MockedRabbitmqChannel();
+    this.processChannel = new MockedRabbitmqChannel();
+  }
+
   fillTheQueue(queueFiller: DownloadQueueFiller, lastBlock: string, blocksAmount: number): SimpleIntervalJob[] {
     queueFiller(MOCKED_TASK_CONTENT);
     return [];

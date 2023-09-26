@@ -1,3 +1,5 @@
+import { MOCKED_TASK } from '../../__mocks__/mocked-task';
+
 interface QueueSettings {
   [name: string]: any;
 }
@@ -11,7 +13,9 @@ export class MockedRabbitmqChannel {
 
   sendToQueue = jest.fn();
 
-  consume = jest.fn();
+  consume(queueName: string, callback: (task: string) => void): void {
+    callback(MOCKED_TASK);
+  }
 
   ack = jest.fn();
 }
