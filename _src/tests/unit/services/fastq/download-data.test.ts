@@ -1,7 +1,7 @@
 import { MockedFastqService } from './__mocks__/mocked-fastq-service';
 import { MOCKED_TASK_CONTENT } from '../__mocks__/mocked-task';
 
-describe('downloadData method', () => {
+describe('unit fastq.downloadData', () => {
   let mockedFastqService: MockedFastqService;
   beforeEach(() => {
     mockedFastqService = new MockedFastqService();

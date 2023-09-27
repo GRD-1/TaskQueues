@@ -2,7 +2,7 @@ import { ToadScheduler } from 'toad-scheduler';
 import serviceProvider from '../../../../utils/service-provider.util';
 import { Service } from '../../../../services/service';
 
-describe('setTimer function', () => {
+describe('unit service.setTimer', () => {
   let service: Service;
 
   beforeEach(() => {

@@ -1,6 +1,6 @@
 import { MockedBullService } from './__mocks__/mocked-bull-service';
 
-describe('downloadData method', () => {
+describe('unit bull.downloadData', () => {
   let mockedBullService: MockedBullService;
   beforeEach(() => {
     mockedBullService = new MockedBullService();

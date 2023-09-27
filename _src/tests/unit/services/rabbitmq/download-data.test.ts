@@ -1,7 +1,7 @@
 import { MockedRabbitmqService } from './__mocks__/mocked-rabbitmq-service';
 import { MOCKED_TASK } from '../__mocks__/mocked-task';
 
-describe('downloadData method', () => {
+describe('unit rabbitmq.downloadData', () => {
   let mockedRabbitmqService: MockedRabbitmqService;
   const startTime = 1000;
   global.Date.now = (): number => 1000;

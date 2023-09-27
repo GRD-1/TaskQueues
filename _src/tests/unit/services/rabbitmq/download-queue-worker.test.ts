@@ -7,7 +7,7 @@ import { MockedRabbitmqServiceWithoutDownloadQueueWorker } from './__mocks__/moc
 import serviceProvider from '../../../../utils/service-provider.util';
 import { MOCKED_TASK, MOCKED_TASK_CONTENT } from '../__mocks__/mocked-task';
 
-describe('downloadQueueWorker method', () => {
+describe('unit rabbitmq.downloadQueueWorker', () => {
   const startTime = 1000;
   global.Date.now = (): number => 4000;
   let mockedRabbitmqService: MockedRabbitmqServiceWithoutDownloadQueueWorker;

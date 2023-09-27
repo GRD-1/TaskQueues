@@ -4,7 +4,7 @@ import { FastqService } from '../../../../services/fastq.service';
 import { MockedFastqService } from './__mocks__/mocked-fastq-service';
 import { MOCKED_TASK_CONTENT } from '../__mocks__/mocked-task';
 
-describe('downloadQueueWorker function', () => {
+describe('unit fastq.downloadQueueWorker', () => {
   const fastqService = new FastqService();
   fastqService.sessionKey = 99999;
   fastqService.blocksAmount = 1;

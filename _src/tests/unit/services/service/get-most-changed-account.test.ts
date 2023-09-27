@@ -1,6 +1,6 @@
 import { Service } from '../../../../services/service';
 
-describe('getMostChangedAccount function', () => {
+describe('unit service.getMostChangedAccount', () => {
   let service: Service;
 
   beforeEach(() => {

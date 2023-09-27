@@ -1,6 +1,6 @@
 import { MockedFastqService } from './__mocks__/mocked-fastq-service';
 
-describe('processData method', () => {
+describe('unit fastq.processData', () => {
   let mockedFastqService: MockedFastqService;
   let mockProcessQueue: typeof mockedFastqService.processQueue;
 

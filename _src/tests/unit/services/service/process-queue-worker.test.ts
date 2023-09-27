@@ -2,32 +2,18 @@
 import { Service } from '../../../../services/service';
 import { Account, ProcessWorkerArgs } from '../../../../models/max-balance.model';
 import errorHandler from '../../../../errors/handler.error';
+import { MOCKED_TASK_CONTENT } from '../__mocks__/mocked-task';
 errorHandler.setErrorListener();
 
-describe('processQueueWorker function', () => {
-  class ExtendedService extends Service {
-    sessionKey = 12345;
-    getMaxChangedAccount = jest.fn(() => ({ address1: 10 }));
-  }
-  let extendedService: ExtendedService;
+describe('unit service.processQueueWorker', () => {
+  let service: Service;
   let args: ProcessWorkerArgs;
 
   beforeEach(() => {
-    extendedService = new ExtendedService();
+    service = new Service();
+    service.sessionKey = 99999;
     args = {
-      taskNumber: 1,
-      blockNumberHex: '0x4e3b7',
-      sessionKey: 12345,
-      content: {
-        status: 200,
-        result: {
-          number: '0x4e3b7',
-          transactions: [
-            { blockNumber: 0x4e3b7, to: 'address1', from: 'address2', value: 10 },
-            { blockNumber: 0x4e3b7, to: 'address2', from: 'address3', value: 5 },
-          ],
-        },
-      },
+      ...MOCKED_TASK_CONTENT,
       startTime: Date.now(),
       taskCallback: jest.fn(),
       resolve: jest.fn(),
@@ -36,37 +22,37 @@ describe('processQueueWorker function', () => {
   });
 
   it('should process a block with transactions', async () => {
-    await extendedService.processQueueWorker(args);
+    await service.processQueueWorker(args);
 
     expect(args.taskCallback).toHaveBeenCalledWith(null);
-    expect(extendedService.addressBalances).toEqual({
+    expect(service.addressBalances).toEqual({
       address1: 10,
       address2: -5,
       address3: -5,
     });
-    expect(extendedService.amountOfTransactions).toBe(2);
+    expect(service.amountOfTransactions).toBe(2);
     expect({ address1: 10 }).toEqual({ address1: 10 });
   });
 
   it('should handle empty content', async () => {
     args.content = null;
-    await extendedService.processQueueWorker(args);
+    await service.processQueueWorker(args);
 
-    expect(extendedService.addressBalances).toEqual(undefined);
-    expect(extendedService.amountOfTransactions).toBe(0);
-    expect(extendedService.maxAccount).toEqual(undefined);
+    expect(service.addressBalances).toEqual(undefined);
+    expect(service.amountOfTransactions).toBe(0);
+    expect(service.maxAccount).toEqual(undefined);
   });
 
   it('should handle exceptions', async () => {
     const mockError = new Error('Test error');
-    class RetryExtendedService extends Service {
-      sessionKey = 12345;
+    class ServiceWithException extends Service {
+      sessionKey = 99999;
       getMostChangedAccount(...ar: Account[]): Account {
         throw mockError;
       }
     }
-    const retryExtendedService = new RetryExtendedService();
-    await retryExtendedService.processQueueWorker(args);
+    const serviceWithException = new ServiceWithException();
+    await serviceWithException.processQueueWorker(args);
 
     expect(args.taskCallback).toHaveBeenCalledWith(mockError);
     expect(args.reject).toHaveBeenCalledWith(mockError);

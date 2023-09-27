@@ -8,7 +8,7 @@ import serviceProvider from '../../../../utils/service-provider.util';
 import { MockedBullService } from './__mocks__/mocked-bull-service';
 import { MOCKED_TASK, MOCKED_TASK_CONTENT } from '../__mocks__/mocked-task';
 
-describe('downloadQueueWorker function', () => {
+describe('unit bull.downloadQueueWorker', () => {
   const startTime = 1000;
   global.Date.now = (): number => 4000;
   const bullService = new BullService();

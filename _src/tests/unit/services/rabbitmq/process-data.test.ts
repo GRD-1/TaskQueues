@@ -1,6 +1,6 @@
 import { MockedRabbitmqService } from './__mocks__/mocked-rabbitmq-service';
 
-describe('processData method', () => {
+describe('unit rabbitmq.processData', () => {
   const mockedRabbitmqService = new MockedRabbitmqService();
   mockedRabbitmqService.sessionKey = 99999;
   mockedRabbitmqService.blocksAmount = 1;
