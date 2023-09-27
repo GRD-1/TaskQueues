@@ -3,6 +3,10 @@ import { EtherscanService } from '../../../../services/etherscan.service';
 import { MOCKED_BLOCK } from './mocked-block';
 
 class MockedEtherscanService extends EtherscanService {
+  async getLastBlockNumber(): Promise<string> {
+    return MOCKED_BLOCK.result.number;
+  }
+
   async getBlock(blockNumberHex: string): Promise<Block> {
     return MOCKED_BLOCK;
   }

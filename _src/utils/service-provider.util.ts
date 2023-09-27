@@ -1,4 +1,4 @@
-class ServiceProvider {
+export class ServiceProvider {
   private static _instance: ServiceProvider;
 
   static getInstance(): ServiceProvider {
