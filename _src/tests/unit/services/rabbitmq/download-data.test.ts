@@ -29,7 +29,6 @@ describe('downloadData method', () => {
     await mockedRabbitmqService.downloadData();
 
     expect(downloadChannelSpy).toHaveBeenCalledWith('downloadQueue', expect.any(Function));
-    expect(downloadQueueWorkerSpy).toHaveBeenCalled();
     expect(downloadQueueWorkerSpy.mock.calls[0][0]).toEqual({
       task: MOCKED_TASK,
       startTime,
