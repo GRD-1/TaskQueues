@@ -1,8 +1,8 @@
-import { getMockedEtherscanService, getFailedEtherscanService } from '../__mocks__/mocked-etherscan-service';
+import { getMockedEtherscanService, getFailedEtherscanService } from '../../__mocks__/mocked-etherscan-service';
 import serviceProvider from '../../../../utils/service-provider.util';
 import { FastqService } from '../../../../services/fastq.service';
 import { MockedFastqService } from './__mocks__/mocked-fastq-service';
-import { MOCKED_TASK_CONTENT } from '../__mocks__/mocked-task';
+import { MOCKED_TASK_CONTENT } from '../../__mocks__/mocked-task';
 
 describe('unit fastq.downloadQueueWorker', () => {
   const fastqService = new FastqService();

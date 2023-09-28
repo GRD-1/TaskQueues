@@ -1,4 +1,4 @@
-import { Block } from '../../../../models/max-balance.model';
+import { Block } from '../../../models/max-balance.model';
 
 export const MOCKED_BLOCK: Block = {
   status: '1',

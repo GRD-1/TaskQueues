@@ -1,5 +1,5 @@
-import { Block } from '../../../../models/max-balance.model';
-import { EtherscanService } from '../../../../services/etherscan.service';
+import { Block } from '../../../models/max-balance.model';
+import { EtherscanService } from '../../../services/etherscan.service';
 import { MOCKED_BLOCK } from './mocked-block';
 
 class MockedEtherscanService extends EtherscanService {

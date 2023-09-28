@@ -2,7 +2,7 @@ import { SimpleIntervalJob } from 'toad-scheduler';
 import { queue, done } from 'fastq';
 import { FastqService } from '../../../../../services/fastq.service';
 import { DownloadQueueFiller, ProcessWorkerArgs, QueueTaskArgs } from '../../../../../models/max-balance.model';
-import { MOCKED_TASK_CONTENT } from '../../__mocks__/mocked-task';
+import { MOCKED_TASK_CONTENT } from '../../../__mocks__/mocked-task';
 import { MockedFastqQueue } from './mocked-fastq-queue';
 
 export class MockedFastqService extends FastqService {

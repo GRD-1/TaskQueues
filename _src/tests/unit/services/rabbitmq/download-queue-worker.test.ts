@@ -2,10 +2,10 @@ import {
   getMockedEtherscanService,
   getFailedEtherscanService,
   getNeverCalledEtherscanService,
-} from '../__mocks__/mocked-etherscan-service';
+} from '../../__mocks__/mocked-etherscan-service';
 import { MockedRabbitmqServiceWithoutDownloadQueueWorker } from './__mocks__/mocked-rabbitmq-service';
 import serviceProvider from '../../../../utils/service-provider.util';
-import { MOCKED_TASK, MOCKED_TASK_CONTENT } from '../__mocks__/mocked-task';
+import { MOCKED_TASK, MOCKED_TASK_CONTENT } from '../../__mocks__/mocked-task';
 
 describe('unit rabbitmq.downloadQueueWorker', () => {
   const startTime = 1000;

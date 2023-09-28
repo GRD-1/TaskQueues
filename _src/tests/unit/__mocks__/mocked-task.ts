@@ -1,4 +1,4 @@
-import { QueueTaskArgs } from '../../../../models/max-balance.model';
+import { QueueTaskArgs } from '../../../models/max-balance.model';
 import { MOCKED_BLOCK } from './mocked-block';
 
 export const MOCKED_TASK_CONTENT: QueueTaskArgs = {

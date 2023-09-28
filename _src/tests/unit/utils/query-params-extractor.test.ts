@@ -1,5 +1,5 @@
 import getQueryParams from '../../../utils/query-params-extractor.util';
-import { getMockedEtherscanService } from '../services/__mocks__/mocked-etherscan-service';
+import { getMockedEtherscanService } from '../__mocks__/mocked-etherscan-service';
 import config from '../../__mocks__/config';
 import serviceProvider from '../../../utils/service-provider.util';
 import errorHandler from '../../../errors/handler.error';

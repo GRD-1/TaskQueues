@@ -2,11 +2,11 @@ import {
   getMockedEtherscanService,
   getFailedEtherscanService,
   getNeverCalledEtherscanService,
-} from '../__mocks__/mocked-etherscan-service';
+} from '../../__mocks__/mocked-etherscan-service';
 import { BullService } from '../../../../services/bull.service';
 import serviceProvider from '../../../../utils/service-provider.util';
 import { MockedBullService } from './__mocks__/mocked-bull-service';
-import { MOCKED_TASK, MOCKED_TASK_CONTENT } from '../__mocks__/mocked-task';
+import { MOCKED_TASK, MOCKED_TASK_CONTENT } from '../../__mocks__/mocked-task';
 
 describe('unit bull.downloadQueueWorker', () => {
   const startTime = 1000;

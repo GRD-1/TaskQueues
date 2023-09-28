@@ -1,6 +1,6 @@
 import { SimpleIntervalJob } from 'toad-scheduler';
 import { DownloadQueueFiller, DownloadWorkerArgs, ProcessWorkerArgs } from '../../../../../models/max-balance.model';
-import { MOCKED_TASK_CONTENT } from '../../__mocks__/mocked-task';
+import { MOCKED_TASK_CONTENT } from '../../../__mocks__/mocked-task';
 import { RabbitmqService } from '../../../../../services/rabbitmq.service';
 import { MockedRabbitmqDownloadChannel, MockedRabbitmqProcessChannel } from './mocked-rabbitmq-channel';
 

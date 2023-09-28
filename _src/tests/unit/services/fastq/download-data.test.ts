@@ -1,5 +1,5 @@
 import { MockedFastqService } from './__mocks__/mocked-fastq-service';
-import { MOCKED_TASK_CONTENT } from '../__mocks__/mocked-task';
+import { MOCKED_TASK_CONTENT } from '../../__mocks__/mocked-task';
 
 describe('unit fastq.downloadData', () => {
   let mockedFastqService: MockedFastqService;

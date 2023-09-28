@@ -1,5 +1,5 @@
 import { MockedRabbitmqService } from './__mocks__/mocked-rabbitmq-service';
-import { MOCKED_TASK } from '../__mocks__/mocked-task';
+import { MOCKED_TASK } from '../../__mocks__/mocked-task';
 
 describe('unit rabbitmq.downloadData', () => {
   let mockedRabbitmqService: MockedRabbitmqService;

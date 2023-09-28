@@ -1,4 +1,4 @@
-import { MOCKED_TASK } from '../../__mocks__/mocked-task';
+import { MOCKED_TASK } from '../../../__mocks__/mocked-task';
 
 export class MockedRabbitmqDownloadChannel {
   assertQueue = jest.fn();

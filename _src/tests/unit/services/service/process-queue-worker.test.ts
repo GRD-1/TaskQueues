@@ -2,7 +2,7 @@
 import { Service } from '../../../../services/service';
 import { Account, ProcessWorkerArgs } from '../../../../models/max-balance.model';
 import errorHandler from '../../../../errors/handler.error';
-import { MOCKED_TASK_CONTENT } from '../__mocks__/mocked-task';
+import { MOCKED_TASK_CONTENT } from '../../__mocks__/mocked-task';
 errorHandler.setErrorListener();
 
 describe('unit service.processQueueWorker', () => {

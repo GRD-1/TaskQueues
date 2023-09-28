@@ -1,5 +1,5 @@
 import * as Bull from 'bull';
-import { MOCKED_TASK } from '../../__mocks__/mocked-task';
+import { MOCKED_TASK } from '../../../__mocks__/mocked-task';
 
 export const MOCKED_JOB = {
   attemptsMade: 0,
