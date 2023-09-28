@@ -55,7 +55,8 @@ export interface ProcessWorkerArgs extends QueueTaskArgs {
 
 export interface Data {
   addressBalances?: Account;
-  maxAccount?: Account;
+  maxAccountAddress?: string;
+  maxAccountBalanceChange?: number;
   amountOfTransactions?: number;
   loadingTime?: number;
   processTime?: number;

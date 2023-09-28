@@ -29,9 +29,11 @@ export class Service {
           try {
             const loadingTime = await this.downloadData();
             const processTime = await this.processData();
+            const maxAccountParams = this.getMostChangedAccountParams();
             resolve({
               addressBalances: this.addressBalances,
-              maxAccount: this.maxAccount,
+              maxAccountAddress: maxAccountParams[0],
+              maxAccountBalanceChange: maxAccountParams[1],
               amountOfTransactions: this.amountOfTransactions,
               processTime,
               loadingTime,
@@ -145,6 +147,18 @@ export class Service {
       return item1 < item2 ? 1 : -1;
     });
     return args[0];
+  }
+
+  getMostChangedAccountParams(): [string, number] {
+    let address: string;
+    let balance: number;
+
+    if (this.maxAccount) {
+      const maxAccountData = Object.entries(this.maxAccount)[0];
+      address = maxAccountData[0];
+      balance = maxAccountData[1];
+    }
+    return [address, balance];
   }
 
   cleanQueue(): Promise<void> {
