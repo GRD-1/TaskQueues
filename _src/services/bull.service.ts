@@ -89,6 +89,7 @@ export class BullService extends Service {
   }
 
   async processData(): Promise<number> {
+    this.numberOfProcessedTasks = 0;
     const startTime = Date.now();
 
     return new Promise((resolve, reject) => {

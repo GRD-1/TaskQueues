@@ -18,7 +18,7 @@ export default {
   DEFAULT_QUERY: {
     LIBRARY: 'fastq',
     BLOCKS_AMOUNT: 3,
-    LAST_BLOCK: '0x4e3b7',
+    LAST_BLOCK: '0x10b2feb',
     REQUEST_INTERVAL: 200,
   },
 

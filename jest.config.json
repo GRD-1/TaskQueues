@@ -9,6 +9,6 @@
   "testRegex": ".*.test.ts$",
   "coverageDirectory": "_src/tests/coverage",
   "collectCoverageFrom": ["_src/controllers/*.ts", "_src/services/*.ts", "_src/utils/*.ts", "_src/views/*.ts"],
-  "coveragePathIgnorePatterns": ["_src/utils/set-project-root.util.ts"],
+  "testPathIgnorePatterns": ["<rootDir>/_src/tests/stubbbb"],
   "testEnvironment": "node"
 }

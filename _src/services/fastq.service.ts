@@ -71,6 +71,7 @@ export class FastqService extends Service {
   }
 
   async processData(): Promise<number> {
+    this.numberOfProcessedTasks = 0;
     const startTime = Date.now();
     await new Promise((resolve) => {
       this.processQueue.drain = (): void => {
