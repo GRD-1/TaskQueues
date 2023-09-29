@@ -3,7 +3,7 @@ import { SimpleIntervalJob, Task, ToadScheduler } from 'toad-scheduler';
 import { Data, Account, DownloadQueueFiller, ProcessWorkerArgs } from '../models/max-balance.model';
 import serviceProvider from '../utils/service-provider.util';
 
-export class Service {
+export abstract class Service {
   sessionKey: number;
   addressBalances: Account;
   maxAccount: Account;
@@ -51,15 +51,6 @@ export class Service {
     return result;
   }
 
-  async connectToServer(): Promise<void> {
-    return null;
-  }
-
-  async downloadData(): Promise<number> {
-    this.numberOfProcessedTasks = 0;
-    return null;
-  }
-
   fillTheQueue(queueFiller: DownloadQueueFiller, lastBlock: string, blocksAmount: number): SimpleIntervalJob[] {
     const lastBlockNumberDecimal = parseInt(lastBlock, 16);
     let taskNumber = 1;
@@ -88,11 +79,6 @@ export class Service {
     });
     scheduler.addSimpleIntervalJob(job);
     return scheduler.getAllJobs() as SimpleIntervalJob[];
-  }
-
-  processData(): Promise<number> {
-    this.numberOfProcessedTasks = 0;
-    return null;
   }
 
   async processQueueWorker(args: ProcessWorkerArgs): Promise<void> {
@@ -161,7 +147,11 @@ export class Service {
     return [address, balance];
   }
 
-  cleanQueue(): Promise<void> {
-    return null;
-  }
+  abstract connectToServer(): Promise<void>;
+
+  abstract downloadData(): Promise<number>;
+
+  abstract processData(): Promise<number>;
+
+  abstract cleanQueue(): Promise<void>;
 }

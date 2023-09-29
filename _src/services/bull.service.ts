@@ -49,7 +49,7 @@ export class BullService extends Service {
   }
 
   async downloadData(): Promise<number> {
-    await super.downloadData();
+    this.numberOfProcessedTasks = 0;
     const startTime = Date.now();
 
     const queueFiller: DownloadQueueFiller = (args: QueueTaskArgs) => {
@@ -89,7 +89,6 @@ export class BullService extends Service {
   }
 
   async processData(): Promise<number> {
-    await super.processData();
     const startTime = Date.now();
 
     return new Promise((resolve, reject) => {

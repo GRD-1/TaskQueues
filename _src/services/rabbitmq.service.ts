@@ -35,7 +35,7 @@ export class RabbitmqService extends Service {
   }
 
   async downloadData(): Promise<number> {
-    await super.downloadData();
+    this.numberOfProcessedTasks = 0;
     const startTime = Date.now();
     await this.downloadChannel.assertQueue('downloadQueue', { durable: true });
     await this.downloadChannel.assertQueue('processQueue', { durable: true });
@@ -78,7 +78,6 @@ export class RabbitmqService extends Service {
   }
 
   async processData(): Promise<number> {
-    await super.processData();
     const startTime = Date.now();
 
     return new Promise((resolve, reject) => {

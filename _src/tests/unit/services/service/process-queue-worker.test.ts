@@ -3,15 +3,16 @@ import { Service } from '../../../../services/service';
 import { Account, ProcessWorkerArgs } from '../../../../models/max-balance.model';
 import errorHandler from '../../../../errors/handler.error';
 import { MOCKED_TASK_CONTENT } from '../../__mocks__/mocked-task';
+import { MockedService } from './__mocks__/mocked-service';
 errorHandler.setErrorListener();
 
 describe('unit service.processQueueWorker', () => {
-  let service: Service;
+  let mockedService: MockedService;
   let args: ProcessWorkerArgs;
 
   beforeEach(() => {
-    service = new Service();
-    service.sessionKey = 99999;
+    mockedService = new MockedService();
+    mockedService.sessionKey = 99999;
     args = {
       ...MOCKED_TASK_CONTENT,
       startTime: Date.now(),
@@ -22,30 +23,30 @@ describe('unit service.processQueueWorker', () => {
   });
 
   it('should process a block with transactions', async () => {
-    await service.processQueueWorker(args);
+    await mockedService.processQueueWorker(args);
 
     expect(args.taskCallback).toHaveBeenCalledWith(null);
-    expect(service.addressBalances).toEqual({
+    expect(mockedService.addressBalances).toEqual({
       address1: 10,
       address2: -5,
       address3: -5,
     });
-    expect(service.amountOfTransactions).toBe(2);
+    expect(mockedService.amountOfTransactions).toBe(2);
     expect({ address1: 10 }).toEqual({ address1: 10 });
   });
 
   it('should handle empty content', async () => {
     args.content = null;
-    await service.processQueueWorker(args);
+    await mockedService.processQueueWorker(args);
 
-    expect(service.addressBalances).toEqual(undefined);
-    expect(service.amountOfTransactions).toBe(0);
-    expect(service.maxAccount).toEqual(undefined);
+    expect(mockedService.addressBalances).toEqual(undefined);
+    expect(mockedService.amountOfTransactions).toBe(0);
+    expect(mockedService.maxAccount).toEqual(undefined);
   });
 
   it('should handle exceptions', async () => {
     const mockError = new Error('Test error');
-    class ServiceWithException extends Service {
+    class ServiceWithException extends MockedService {
       sessionKey = 99999;
       getMostChangedAccount(...ar: Account[]): Account {
         throw mockError;

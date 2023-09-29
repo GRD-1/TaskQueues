@@ -1,10 +1,10 @@
-import { Service } from '../../../../services/service';
 import errorHandler from '../../../../errors/handler.error';
+import { MockedService } from './__mocks__/mocked-service';
 errorHandler.setErrorListener();
 
 describe('unit service.fillTheQueue', () => {
-  const service = new Service();
-  const fillTheQueue = service.fillTheQueue;
+  const mockedService = new MockedService();
+  const fillTheQueue = mockedService.fillTheQueue;
 
   it('should return an array with a valid job', () => {
     const lastBlock = '0x100';

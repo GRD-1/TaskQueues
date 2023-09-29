@@ -1,12 +1,12 @@
 import { ToadScheduler } from 'toad-scheduler';
 import serviceProvider from '../../../../utils/service-provider.util';
-import { Service } from '../../../../services/service';
+import { MockedService } from './__mocks__/mocked-service';
 
 describe('unit service.setTimer', () => {
-  let service: Service;
+  let mockedService: MockedService;
 
   beforeEach(() => {
-    service = new Service();
+    mockedService = new MockedService();
   });
 
   it('should resolve with an error message when the timer expires', async () => {
@@ -22,7 +22,7 @@ describe('unit service.setTimer', () => {
       }
     }
     jest.spyOn(serviceProvider, 'getService').mockReturnValue(new MockedToadScheduler());
-    const result = await service.setTimer(awaitingTime);
+    const result = await mockedService.setTimer(awaitingTime);
 
     expect(result).toEqual({ error: `the waiting time has expired! (${awaitingTime} msec)` });
     expect(mockStop).toHaveBeenCalled();

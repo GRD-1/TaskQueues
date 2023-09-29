@@ -29,8 +29,12 @@ export class FastqService extends Service {
     return this._processQueue;
   }
 
+  async connectToServer(): Promise<void> {
+    return null;
+  }
+
   async downloadData(): Promise<number> {
-    await super.downloadData();
+    this.numberOfProcessedTasks = 0;
     const startTime = Date.now();
 
     return new Promise((resolve, reject) => {
@@ -67,7 +71,6 @@ export class FastqService extends Service {
   }
 
   async processData(): Promise<number> {
-    await super.processData();
     const startTime = Date.now();
     await new Promise((resolve) => {
       this.processQueue.drain = (): void => {
