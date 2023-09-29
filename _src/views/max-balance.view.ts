@@ -19,7 +19,7 @@ export default class View {
         .replace('$loadingTime$', String(args.loadingTime))
         .replace('$processTime$', String(args.processTime));
 
-      if (config.LOG_BENCHMARKS === true) View.logBenchmarks(args);
+      if (config.LOG_BENCHMARKS === true) this.logBenchmarks(args);
       return html;
     } catch (err) {
       console.error('Error in view handler [getResults]: ', err.message);
