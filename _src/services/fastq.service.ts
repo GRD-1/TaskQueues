@@ -1,7 +1,6 @@
 import fastq from 'fastq';
 import config from 'config';
 import type { queue, done } from 'fastq';
-import { start } from 'repl';
 import { QueueTaskArgs, DownloadQueueFiller } from '../models/max-balance.model';
 import { Service } from './service';
 import { EtherscanService } from './etherscan.service';
