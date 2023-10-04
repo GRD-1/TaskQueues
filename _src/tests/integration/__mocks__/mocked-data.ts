@@ -1,4 +1,4 @@
-import { Data } from '../../../../models/max-balance.model';
+import { Data } from '../../../models/max-balance.model';
 
 export const MOCKED_DATA: Data = {
   addressBalances: {},

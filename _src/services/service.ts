@@ -20,10 +20,10 @@ export abstract class Service {
     try {
       await this.connectToServer();
       result = await new Promise((resolve, reject) => {
-        // (async (): Promise<void> => {
-        //   const errMsg = await this.setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
-        //   resolve(errMsg);
-        // })();
+        (async (): Promise<void> => {
+          const errMsg = await this.setTimer(this.blocksAmount * config.WAITING_TIME_FOR_BLOCK);
+          resolve(errMsg);
+        })();
 
         (async (): Promise<void> => {
           try {
