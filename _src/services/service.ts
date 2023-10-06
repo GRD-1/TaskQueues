@@ -47,7 +47,7 @@ export abstract class Service {
       globalThis.ERROR_EMITTER.emit('Error', e);
       result = { error: e.message };
     }
-    this.cleanQueue();
+    await this.cleanQueue();
     return result;
   }
 
