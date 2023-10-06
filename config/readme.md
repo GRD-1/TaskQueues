@@ -28,6 +28,7 @@ The details are here: https://github.com/node-config/node-config/wiki/Configurat
 git tracking has been disabled for these files:
   * config/local-development.cjs
   * config/local-production.cjs
+  * config/local-test.cjs
 
 It was done not by the gitignore file, but with the help of a special git command
 Otherwise, git will delete such files while downloading the updates from the repository.

@@ -19,11 +19,12 @@
     "watch": "nodemon --watch '_src/**/*.ts' --exec \"NODE_ENV=development node --experimental-specifier-resolution=node --loader ts-node/esm\" _src/index.ts",
     "run-typescript": "ts-node-transpile-only",
     "build": "tsc && node app/utils/fix-imports.util.js",
-    "test": "jest --config jest.config.json && NODE_ENV=test",
-    "test:watch": "jest --watch && NODE_ENV=test",
-    "test:cov": "jest --coverage && NODE_ENV=test",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand && NODE_ENV=test",
-    "test:e2e": "jest --config ./test/jest-e2e.json && NODE_ENV=test"
+    "test:unit": "jest --config ./test/jest.config.json",
+    "test:int": "jest --config ./test/jest-int.json",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
   },
   "dependencies": {
     "amqplib": "^0.10.3",
