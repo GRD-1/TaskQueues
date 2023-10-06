@@ -3,4 +3,4 @@ node_modules/
 git
 package-lock.json
 app/**/*.*
-_src/tests/coverage
+_src/test/coverage

@@ -1,12 +1,11 @@
-import fs from 'fs';
 import config from 'config';
+import fs from 'fs';
 import { ProcessedData } from '../models/max-balance.model';
 
 export default class View {
   static async getBalanceView(args: ProcessedData): Promise<string> {
     try {
       if (args.error) return args.error;
-
       let html = fs.readFileSync(`${config.PROJECT_ROOT}/public/max-balance.html`, 'utf8');
       html = html
         .replace('$library$', args.library)

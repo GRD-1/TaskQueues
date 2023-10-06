@@ -2,6 +2,7 @@ import { MOCKED_RESULTS } from './__mocks__/mocked-results';
 import { processedHtml } from './__mocks__/processed-html';
 import View from '../../../views/max-balance.view';
 import { ProcessedData } from '../../../models/max-balance.model';
+jest.mock('config');
 jest.mock('fs');
 
 describe('unit view max-balance', () => {

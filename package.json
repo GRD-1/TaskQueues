@@ -19,9 +19,9 @@
     "watch": "nodemon --watch '_src/**/*.ts' --exec \"NODE_ENV=development node --experimental-specifier-resolution=node --loader ts-node/esm\" _src/index.ts",
     "run-typescript": "ts-node-transpile-only",
     "build": "tsc && node app/utils/fix-imports.util.js",
-    "test:unit": "jest --config ./test/jest.config.json",
-    "test:int": "jest --config ./test/jest-int.json",
-    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "test:unit": "jest --config ./_src/test/unit/jest-unit.json",
+    "test:int": "jest --config ./_src/test/integration/jest-int.json",
+    "test:e2e": "jest --config ./_src/test/e2e/jest-e2e.json",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"

@@ -1,10 +1,8 @@
+import config from 'config';
 import { BullService } from '../../services/bull.service';
-import config from '../__mocks__/config';
 import errorHandler from '../../errors/handler.error';
 import { MOCKED_DATA } from './__mocks__/mocked-data';
 errorHandler.setErrorListener();
-
-jest.mock('config');
 
 describe('integration bull service', () => {
   const queryParams = config.DEFAULT_QUERY;
@@ -23,11 +21,11 @@ describe('integration bull service', () => {
   //   expect(data.error).toEqual(undefined);
   // });
 
-  it('should throw an error when failed to connect to etherscan.io API', async () => {
-    const data = await bullService.getMaxChangedBalance();
-
-    expect(true).toEqual(true);
-  });
+  // it('should throw an error when failed to connect to etherscan.io API', async () => {
+  //   const data = await bullService.getMaxChangedBalance();
+  //
+  //   expect(true).toEqual(true);
+  // });
 
   // it('should throw an error when the waiting time expired', async () => {
   //   const data = await bullService.getMaxChangedBalance();

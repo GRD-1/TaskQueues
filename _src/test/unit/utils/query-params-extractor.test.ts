@@ -1,10 +1,9 @@
+import config from 'config';
 import getQueryParams from '../../../utils/query-params-extractor.util';
 import { getMockedEtherscanService } from '../__mocks__/mocked-etherscan-service';
-import config from '../../__mocks__/config';
 import serviceProvider from '../../../utils/service-provider.util';
 import errorHandler from '../../../errors/handler.error';
 errorHandler.setErrorListener();
-jest.mock('config');
 const etherscan = getMockedEtherscanService();
 
 describe('unit util query-params-extractor', () => {

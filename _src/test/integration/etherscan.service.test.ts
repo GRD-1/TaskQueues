@@ -3,8 +3,6 @@ import { Block } from '../../models/max-balance.model';
 import errorHandler from '../../errors/handler.error';
 errorHandler.setErrorListener();
 
-jest.mock('config');
-
 describe('integration etherscan', () => {
   const etherscan = new EtherscanService();
   const mockFetch = jest.fn();
