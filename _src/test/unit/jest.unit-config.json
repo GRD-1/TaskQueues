@@ -1,0 +1,12 @@
+{
+  "verbose": true,
+  "transform": {
+    "^.+\\.ts?$": "ts-jest"
+  },
+
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testRegex": ".*.test.ts$",
+  "testPathIgnorePatterns": ["<rootDir>/_src/test/stubbbb"],
+  "testEnvironment": "node"
+}

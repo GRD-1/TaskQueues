@@ -2,7 +2,7 @@ import {
   getMockedEtherscanService,
   getFailedEtherscanService,
   getNeverCalledEtherscanService,
-} from '../../__mocks__/mocked-etherscan-service';
+} from '../../../__mocks__/mocked-etherscan-service';
 import { BullService } from '../../../../services/bull.service';
 import serviceProvider from '../../../../utils/service-provider.util';
 import { MockedBullService } from './__mocks__/mocked-bull-service';

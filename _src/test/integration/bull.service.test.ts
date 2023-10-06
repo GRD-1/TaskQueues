@@ -12,14 +12,14 @@ describe('integration bull service', () => {
     bullService = new BullService(queryParams.BLOCKS_AMOUNT, queryParams.LAST_BLOCK);
   });
 
-  // it('should return the correct data set', async () => {
-  //   const data = await bullService.getMaxChangedBalance();
-  //
-  //   expect(data.amountOfTransactions).toEqual(MOCKED_DATA.amountOfTransactions);
-  //   expect(data.maxAccountAddress).toEqual(MOCKED_DATA.maxAccountAddress);
-  //   expect(data.maxAccountBalanceChange).toEqual(MOCKED_DATA.maxAccountBalanceChange);
-  //   expect(data.error).toEqual(undefined);
-  // });
+  it('should return the correct data set', async () => {
+    const data = await bullService.getMaxChangedBalance();
+
+    expect(data.amountOfTransactions).toEqual(MOCKED_DATA.amountOfTransactions);
+    expect(data.maxAccountAddress).toEqual(MOCKED_DATA.maxAccountAddress);
+    expect(data.maxAccountBalanceChange).toEqual(MOCKED_DATA.maxAccountBalanceChange);
+    expect(data.error).toEqual(undefined);
+  });
 
   // it('should throw an error when failed to connect to etherscan.io API', async () => {
   //   const data = await bullService.getMaxChangedBalance();

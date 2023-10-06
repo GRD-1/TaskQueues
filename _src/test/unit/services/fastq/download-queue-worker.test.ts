@@ -1,4 +1,4 @@
-import { getMockedEtherscanService, getFailedEtherscanService } from '../../__mocks__/mocked-etherscan-service';
+import { getMockedEtherscanService, getFailedEtherscanService } from '../../../__mocks__/mocked-etherscan-service';
 import serviceProvider from '../../../../utils/service-provider.util';
 import { FastqService } from '../../../../services/fastq.service';
 import { MockedFastqService } from './__mocks__/mocked-fastq-service';

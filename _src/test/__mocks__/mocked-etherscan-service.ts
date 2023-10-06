@@ -1,6 +1,6 @@
-import { Block } from '../../../models/max-balance.model';
-import { EtherscanService } from '../../../services/etherscan.service';
-import { MOCKED_BLOCK } from './mocked-block';
+import { Block } from '../../models/max-balance.model';
+import { EtherscanService } from '../../services/etherscan.service';
+import { MOCKED_BLOCK } from '../unit/__mocks__/mocked-block';
 
 class MockedEtherscanService extends EtherscanService {
   async getLastBlockNumber(): Promise<string> {
