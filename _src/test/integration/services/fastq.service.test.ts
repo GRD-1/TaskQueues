@@ -4,7 +4,7 @@ import { MOCKED_DATA } from '../__mocks__/mocked-data';
 import errorHandler from '../../../errors/handler.error';
 errorHandler.setErrorListener();
 
-describe('integration fastq service', () => {
+describe('integration test of the "fastq" service', () => {
   const queryParams = config.DEFAULT_QUERY;
   let fastqService: FastqService;
 

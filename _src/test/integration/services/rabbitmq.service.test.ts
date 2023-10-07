@@ -5,7 +5,7 @@ import { RabbitmqService } from '../../../services/rabbitmq.service';
 
 errorHandler.setErrorListener();
 
-describe('integration rabbitmq service', () => {
+describe('integration test of the "rabbitmq" service', () => {
   const queryParams = config.DEFAULT_QUERY;
   let rabbitmqService: RabbitmqService;
 

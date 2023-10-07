@@ -4,7 +4,7 @@ import errorHandler from '../../../errors/handler.error';
 import { MOCKED_DATA } from '../__mocks__/mocked-data';
 errorHandler.setErrorListener();
 
-describe('integration bull service', () => {
+describe('integration test of the "bull" service', () => {
   const queryParams = config.DEFAULT_QUERY;
   let bullService: BullService;
 
