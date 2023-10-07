@@ -1,6 +1,6 @@
-import { EtherscanService } from '../../services/etherscan.service';
-import { Block } from '../../models/max-balance.model';
-import errorHandler from '../../errors/handler.error';
+import { EtherscanService } from '../../../services/etherscan.service';
+import { Block } from '../../../models/max-balance.model';
+import errorHandler from '../../../errors/handler.error';
 errorHandler.setErrorListener();
 
 describe('integration etherscan', () => {

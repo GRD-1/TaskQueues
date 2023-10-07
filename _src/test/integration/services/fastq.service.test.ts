@@ -1,7 +1,7 @@
 import config from 'config';
-import { FastqService } from '../../services/fastq.service';
-import { MOCKED_DATA } from './__mocks__/mocked-data';
-import errorHandler from '../../errors/handler.error';
+import { FastqService } from '../../../services/fastq.service';
+import { MOCKED_DATA } from '../__mocks__/mocked-data';
+import errorHandler from '../../../errors/handler.error';
 errorHandler.setErrorListener();
 
 describe('integration fastq service', () => {
@@ -20,16 +20,4 @@ describe('integration fastq service', () => {
     expect(data.maxAccountBalanceChange).toEqual(MOCKED_DATA.maxAccountBalanceChange);
     expect(data.error).toEqual(undefined);
   });
-
-  // it('should throw an error when failed to connect to etherscan.io API', async () => {
-  //   const data = await fastqService.getMaxChangedBalance();
-  //
-  //   expect(true).toEqual(true);
-  // });
-  //
-  // it('should throw an error when the waiting time expired', async () => {
-  //   const data = await fastqService.getMaxChangedBalance();
-  //
-  //   expect(false).toEqual(false);
-  // });
 });

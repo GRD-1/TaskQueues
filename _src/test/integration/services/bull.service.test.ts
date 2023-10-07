@@ -1,7 +1,7 @@
 import config from 'config';
-import { BullService } from '../../services/bull.service';
-import errorHandler from '../../errors/handler.error';
-import { MOCKED_DATA } from './__mocks__/mocked-data';
+import { BullService } from '../../../services/bull.service';
+import errorHandler from '../../../errors/handler.error';
+import { MOCKED_DATA } from '../__mocks__/mocked-data';
 errorHandler.setErrorListener();
 
 describe('integration bull service', () => {
@@ -20,16 +20,4 @@ describe('integration bull service', () => {
     expect(data.maxAccountBalanceChange).toEqual(MOCKED_DATA.maxAccountBalanceChange);
     expect(data.error).toEqual(undefined);
   });
-
-  // it('should throw an error when failed to connect to etherscan.io API', async () => {
-  //   const data = await bullService.getMaxChangedBalance();
-  //
-  //   expect(true).toEqual(true);
-  // });
-
-  // it('should throw an error when the waiting time expired', async () => {
-  //   const data = await bullService.getMaxChangedBalance();
-  //
-  //   expect(false).toEqual(false);
-  // });
 });
