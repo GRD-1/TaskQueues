@@ -4,6 +4,11 @@ import { MaxBalanceController } from '../controllers/max-balance.controller';
 const mainRoute = express.Router();
 
 mainRoute.get('/', (req, res) => {
+  res.status(301).redirect('/home');
+});
+
+mainRoute.get('/home', (req, res) => {
+  console.log('\nmain route config.PROJECT_ROOT = ', config.PROJECT_ROOT);
   res.sendFile(`${config.PROJECT_ROOT}/public/index.html`);
 });
 
