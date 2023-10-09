@@ -8,5 +8,6 @@
   "rootDir": ".",
   "testRegex": ".*.test.ts$",
   "testPathIgnorePatterns": ["<rootDir>/_src/test/stubbbb"],
-  "testEnvironment": "node"
+  "testEnvironment": "node",
+  "clearMocks": true
 }

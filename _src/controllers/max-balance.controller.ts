@@ -4,7 +4,7 @@ import { RabbitmqService } from '../services/rabbitmq.service';
 import { FastqService } from '../services/fastq.service';
 import getQueryParams from '../utils/query-params-extractor.util';
 import { Query } from '../models/max-balance.model';
-import View from '../views/max-balance.view';
+import View from '../views/view';
 
 export class MaxBalanceController {
   async get(req: Request, res: Response): Promise<void> {
