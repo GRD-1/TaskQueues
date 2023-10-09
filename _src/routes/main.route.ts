@@ -8,7 +8,6 @@ mainRoute.get('/', (req, res) => {
 });
 
 mainRoute.get('/home', (req, res) => {
-  console.log('\nmain route path = ', `${config.PROJECT_ROOT}/public/index.html`);
   res.sendFile(`${config.PROJECT_ROOT}/public/index.html`);
 });
 
