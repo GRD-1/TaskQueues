@@ -1,5 +1,5 @@
 import config from 'config';
-import { MOCKED_DATA } from '../__mocks__/mocked-data';
+import { MOCKED_DATA } from '../__mocks__/mocked-calculation-result';
 import errorHandler from '../../../errors/handler.error';
 import { RabbitmqService } from '../../../services/rabbitmq.service';
 

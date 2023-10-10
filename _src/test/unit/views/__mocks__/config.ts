@@ -1,8 +1,6 @@
-// import getProjectRoot from '../../../../utils/get-project-root';
-
 export default {
   PROJECT_ROOT: undefined,
-  LOG_BENCHMARKS: true,
+  LOG_BENCHMARKS: false,
   WAITING_TIME_FOR_BLOCK: 1500,
   LIBRARY_LIST: ['fastq', 'bull', 'rabbitmq'],
 

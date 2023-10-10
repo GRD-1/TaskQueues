@@ -1,6 +1,6 @@
 import config from 'config';
 import { FastqService } from '../../../services/fastq.service';
-import { MOCKED_DATA } from '../__mocks__/mocked-data';
+import { MOCKED_DATA } from '../__mocks__/mocked-calculation-result';
 import errorHandler from '../../../errors/handler.error';
 errorHandler.setErrorListener();
 

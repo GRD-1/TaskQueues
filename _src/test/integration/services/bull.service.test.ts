@@ -1,7 +1,7 @@
 import config from 'config';
 import { BullService } from '../../../services/bull.service';
 import errorHandler from '../../../errors/handler.error';
-import { MOCKED_DATA } from '../__mocks__/mocked-data';
+import { MOCKED_DATA } from '../__mocks__/mocked-calculation-result';
 errorHandler.setErrorListener();
 
 describe('integration test of the "bull" service', () => {
