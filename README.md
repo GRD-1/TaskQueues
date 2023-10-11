@@ -13,6 +13,15 @@ For each library will be performed the following sequence of tasks:
 
 The processing time starts counting from the moment the data is completely loaded. 
 
+## Table of Contents
+1. [Environment](#environment)
+2. [Deploy](#deploy)
+3. [Settings](#settings)
+4. [Launch](#launch)
+5. [Usage](#usage)
+6. [Tests](#tests)
+7. [Comments](#comments)
+
 ## Environment
 
 - OS Ubuntu-22.04
@@ -44,7 +53,7 @@ The processing time starts counting from the moment the data is completely loade
   * to set the number of blocks loaded by default use the variable __[ DEFAULT_QUERY.BLOCKS_AMOUNT ]__ in config/default.cjs
   * to set the default "last block" number use the variable __[ DEFAULT_QUERY.LAST_BLOCK ]__ in config/default.cjs
 
-## Launch 
+## Launch
 
 * if you launch the project for the first time, you just need to follow the instructions from chapter [Deploy](#deploy), 
 project will be launched automatically
