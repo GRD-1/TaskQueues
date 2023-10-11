@@ -75,17 +75,20 @@ project will be launched automatically
 ## Tests
 
 * All tests are here: _src/test
+* html coverage report will be here: _src/test/coverage
 
 * to run tests in local mode:
   * To run unit tests use the command: [ npm run test:unit ]
   * To run integration tests use the command: [ npm run test:int ]
   * To run a specific test use the command: [ jest <pathToSpecificTest> ]
+  * To run all tests and get the coverage map use the command: [ npm run test:cov ]
 
 * to run tests in docker mode:
-  * Build the project in development mode using the command [ docker-compose -f docker-test.yml up --build ]
+  * Build the project in development mode using the command [ docker-compose -f docker-dev.yml up --build ]
   * To run unit tests use the command: [ docker exec -it taskqueues-node-1 npm run test:unit ]
   * To run integration tests use the command: [ docker exec -it taskqueues-node-1 npm run test:int ]
   * To run a specific test use the command: [ docker exec -it taskqueues-node-1 jest <pathToSpecificTest> ]
+  * To run all tests and get the coverage map use the command: [ docker exec -it taskqueues-node-1 npm run test:cov ]
 
 ## Comments
 

@@ -5,10 +5,9 @@
   },
 
   "moduleFileExtensions": ["js", "json", "ts"],
-  "rootDir": "./",
+  "rootDir": "../",
   "testRegex": ".*.test.ts$",
-  "coverageDirectory": "_src/test/coverage",
-  "collectCoverageFrom": ["_src/controllers/*.ts", "_src/services/*.ts", "_src/utils/*.ts", "_src/views/*.ts"],
+  "coverageDirectory": "<rootDir>/test/coverage",
   "testPathIgnorePatterns": ["<rootDir>/_src/test/stubbbb"],
   "testEnvironment": "node",
   "clearMocks": true
