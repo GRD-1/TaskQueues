@@ -7,7 +7,7 @@
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": "./",
   "testRegex": ".*.test.ts$",
-  "coverageDirectory": "_src/tests/coverage",
+  "coverageDirectory": "_src/test/coverage",
   "collectCoverageFrom": ["_src/controllers/*.ts", "_src/services/*.ts", "_src/utils/*.ts", "_src/views/*.ts"],
   "testPathIgnorePatterns": ["<rootDir>/_src/test/stubbbb"],
   "testEnvironment": "node",

@@ -32,8 +32,8 @@ The processing time starts counting from the moment the data is completely loade
 1. Download the project: bash git clone https://github.com/GRD-1/balance-rating.git
 2. Install docker + docker-compose to your local operating system
 3. Using the terminal go to the project root
-4. Build project in product mode using the command [ docker-compose -f docker-prod.yml up ]
-5. Build project in development mode using the command [ docker-compose -f docker-dev.yml up ]
+4. Build project in product mode using the command [ docker-compose -f docker-prod.yml up --build ]
+5. Build project in development mode using the command [ docker-compose -f docker-dev.yml up --build ]
 
 ## Settings
 
@@ -71,6 +71,21 @@ project will be launched automatically
   by default the application uses the number "0x10b2feb". 
   to start downloading from the last blockchain block use the expression [lastBlock]=last
   for example: <a href = "http://localhost:3000/max-balance?lastBlock=last">http://localhost:3000/max-balance?lastBlock=last</a>
+
+## Tests
+
+* All tests are here: _src/test
+
+* to run tests in local mode:
+  * To run unit tests use the command: [ npm run test:unit ]
+  * To run integration tests use the command: [ npm run test:int ]
+  * To run a specific test use the command: [ jest <pathToSpecificTest> ]
+
+* to run tests in docker mode:
+  * Build the project in development mode using the command [ docker-compose -f docker-test.yml up --build ]
+  * To run unit tests use the command: [ docker exec -it taskqueues-node-1 npm run test:unit ]
+  * To run integration tests use the command: [ docker exec -it taskqueues-node-1 npm run test:int ]
+  * To run a specific test use the command: [ docker exec -it taskqueues-node-1 jest <pathToSpecificTest> ]
 
 ## Comments
 

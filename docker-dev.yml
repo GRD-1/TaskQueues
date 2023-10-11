@@ -19,7 +19,7 @@ services:
       - ./config:/projectFiles/config
     build:
       context: .
-      dockerfile: _src/Dockerfile
+      dockerfile: _src/Dockerfile-dev
     ports:
       - '3000:3000'
     depends_on:
