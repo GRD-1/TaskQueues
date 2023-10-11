@@ -9,9 +9,16 @@ jest.mock('config');
 jest.mock('fs');
 
 describe('unit view max-balance', () => {
-  it('should return a correct html string', async () => {
+  beforeAll(() => {
     const projectRoot = path.resolve(process.cwd());
     config.PROJECT_ROOT = projectRoot;
+    config.LOG_BENCHMARKS = true;
+  });
+  afterAll(() => {
+    config.LOG_BENCHMARKS = false;
+  });
+
+  it('should return a correct html string', async () => {
     class MockedView extends View {
       static logBenchmarks = jest.fn();
     }
