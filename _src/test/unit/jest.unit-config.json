@@ -5,7 +5,7 @@
   },
 
   "moduleFileExtensions": ["js", "json", "ts"],
-  "rootDir": ".",
+  "rootDir": "./",
   "testRegex": ".*.test.ts$",
   "testPathIgnorePatterns": ["<rootDir>/_src/test/stubbbb"],
   "testEnvironment": "node",

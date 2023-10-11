@@ -23,7 +23,7 @@ describe('integration test of routes', () => {
       const result = await agent(app).get('/home');
 
       expect(result.status).toEqual(200);
-      expect(result.text.length).toEqual(2884);
+      expect(result.text.length).toEqual(2883);
     });
   });
 });

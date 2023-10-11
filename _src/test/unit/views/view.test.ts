@@ -3,7 +3,7 @@ import { MOCKED_RESULTS } from './__mocks__/mocked-results';
 import { processedHtml } from './__mocks__/processed-html';
 import View from '../../../views/view';
 import { ProcessedData } from '../../../models/max-balance.model';
-import config from './__mocks__/config';
+import config from '../__mocks__/config';
 // it is necessary to mock 'config' library here because we mock 'fs' library. 'config' doesn't work without 'fs' (!)
 jest.mock('config');
 jest.mock('fs');

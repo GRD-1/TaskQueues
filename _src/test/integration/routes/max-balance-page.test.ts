@@ -14,7 +14,6 @@ describe('integration test of routes', () => {
 
     describe('default parameters', () => {
       it('should return an html page with the correct values', async () => {
-        console.log('default parameters');
         const result = await agent(app).get('/max-balance');
 
         expect(result.status).toEqual(200);
@@ -25,21 +24,18 @@ describe('integration test of routes', () => {
       });
 
       it('should return an html page with the correct values', async () => {
-        console.log('default parameters + lastBLock');
         const result = await agent(app).get('/max-balance?lastBlock=last');
 
         expect(result.status).toEqual(200);
       });
 
       it('should return an html page with the correct values', async () => {
-        console.log('default parameters + blocksAmount');
         const result = await agent(app).get('/max-balance?blocksAmount=4');
 
         expect(result.status).toEqual(200);
       });
 
       it('should return an error', async () => {
-        console.log('default parameters + wrong library name');
         const result = await agent(app).get('/max-balance?library=wrongLibraryName');
 
         expect(result.status).toEqual(200);
@@ -47,7 +43,6 @@ describe('integration test of routes', () => {
       });
 
       it('should return an error', async () => {
-        console.log('default parameters + wrong amount of blocks');
         const result = await agent(app).get('/max-balance?blocksAmount=333');
 
         expect(result.status).toEqual(200);
@@ -57,7 +52,6 @@ describe('integration test of routes', () => {
 
     describe('fastq library', () => {
       it('should return an html page with the correct values', async () => {
-        console.log('fastq library');
         const result = await agent(app).get('/max-balance?library=fastq');
 
         expect(result.status).toEqual(200);
@@ -70,7 +64,6 @@ describe('integration test of routes', () => {
 
     describe('bull library', () => {
       it('should return an html page with the correct values', async () => {
-        console.log('bull library');
         const result = await agent(app).get('/max-balance?library=bull');
 
         expect(result.status).toEqual(200);
@@ -83,7 +76,6 @@ describe('integration test of routes', () => {
 
     describe('rabbitmq library', () => {
       it('should return an html page with the correct values', async () => {
-        console.log('rabbitmq library');
         const result = await agent(app).get('/max-balance?library=rabbitmq');
 
         expect(result.status).toEqual(200);
