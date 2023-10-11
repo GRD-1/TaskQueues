@@ -22,7 +22,7 @@
     "test:unit": "jest --config ./_src/test/unit/jest.unit-config.json",
     "test:int": "jest --config ./_src/test/integration/jest.integration-config.json",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage --config ./_src/test/jest.config.json",
+    "test:cov": "jest --coverage --config jest.config.json",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
   },
   "dependencies": {
