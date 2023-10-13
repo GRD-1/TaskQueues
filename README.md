@@ -1,5 +1,5 @@
 # Task Queues
-This service is designed to compare the performance of the following libraries:
+This service is designed to practice for work with the task queues. It includes the following queue libraries:
 * fastq https://www.npmjs.com/package/fastq
 * bull https://www.npmjs.com/package/bull
 * rabbitMQ https://www.rabbitmq.com/
