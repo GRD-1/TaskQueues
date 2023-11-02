@@ -3,7 +3,7 @@
 The configs in this application are organized using the node-config library: https://www.npmjs.com/package/config. 
 It lets you define a set of default parameters, and extend them for different deployment environments (development, qa, staging, production, etc.).
 
-* The name of current application's deployment (development, production e t.c.) is stored in the __[process.env.NODE_ENV]__ variable. 
+* The name of current application's deployment (dev, prod e t.c.) is stored in the __[process.env.NODE_ENV]__ variable. 
 It is defined in the application start script: npm run start-dev (start-prod).
 
 

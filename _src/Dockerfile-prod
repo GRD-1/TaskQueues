@@ -1,5 +1,5 @@
 # Base image for Node
-FROM node:18.16.0 as nodeapp
+FROM node:18.16.0 as task_queues-nodeimg-prod
 
 # Copy project files
 WORKDIR /projectFiles
@@ -12,7 +12,7 @@ RUN npm install
 EXPOSE 3000
 
 # Set NODE_ENV to production (it is necessory to define here. It wouldn't work for docker in package.json )
-ENV NODE_ENV=production
+ENV NODE_ENV=prod
 ENV DOCKER_BUILD=true
 
 # Define the startup command

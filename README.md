@@ -11,38 +11,69 @@ For each library will be performed the following sequence of tasks:
 * find the wallet address whose balance has been changed the most
 * return the wallet address, the balance and the performing time  
 
-The processing time starts counting from the moment the data is completely loaded. 
+The processing time starts counting from the moment the data is completely loaded.
 
-## Table of Contents
-1. [Environment](#environment)
-2. [Deploy](#deploy)
-3. [Settings](#settings)
-4. [Launch](#launch)
-5. [Usage](#usage)
-6. [Tests](#tests)
-7. [Comments](#comments)
+<br>
+<p style="display: block; width: 100%; text-align:left;">
+  <a href="https://nodejs.org/en/about" target="_blank"><img src="https://img.shields.io/badge/Node.js-v18.16.0-blue?logo=nodedotjs" alt="Node.js Version" /></a>
+  <a href="https://www.typescriptlang.org/" target="_blank"><img src="https://img.shields.io/badge/TypeScript-v4.7.4-blue?logo=typescript" alt="TypeScript Version" /></a>
+  <a href="" target="_blank"><img src="https://img.shields.io/badge/covarage-91.92%20-%2300c642?style=flat" alt="Coverage" /></a>
+  <a href="" rel="nofollow"><img src="https://img.shields.io/badge/istall_size-236%20KB-%23ebdb32?style=flat" alt="install size"></a>
+</p>
 
-## Environment
+## Contents
+1. [Packages](#packages)
+2. [Settings](#settings)
+3. [Launch](#launch)
+4. [Usage](#usage)
+5. [Tests](#tests)
+6. [Comments](#comments)
 
-- OS Ubuntu-22.04
-- Node.js 18.16.0
-- npm 9.5.1
-- Redis server 6.0.16
-- fastq 1.15.0
-- Bull 4.10.4
-- RabbitMQ 3.12
-- toad-scheduler 3.0.0
-- Docker 24.0.2
-- Docker-compose 2.18.1
-- the other dependencies described in the package.json
+## Packages
 
-## Deploy <a id="deploy"></a>
+<div>
+    <div>
+      <div style="display: flex; flex-wrap: wrap; height: 200px;">
+        <div style="width: 40%; height: fit-content;"><a href="https://ubuntu.com/" target="_blank"><img src="https://img.shields.io/badge/Linux_Ubuntu-v22.04-blue?style=for-the-badge&logo=ubuntu" alt="Linux Ubuntu Version" /></a></div>
+        <div style="width: 40%; height: fit-content;"><a href="https://jestjs.io/" target="_blank"><img src="https://img.shields.io/badge/Jest-v29.0.5-blue?style=for-the-badge&logo=jest" alt="Jest Version" /></a></div>
+        <div style="width: 40%; height: fit-content;"><a href="https://www.docker.com/products/docker-desktop/" target="_blank"><img src="https://img.shields.io/badge/docker-v24.0.2-blue?style=for-the-badge&logo=docker" alt="Docker Version" /></a></div>
+        <div style="width: 40%; height: fit-content;"><a href="https://www.npmjs.com/package/supertest" target="_blank"><img src="https://img.shields.io/badge/supertest-v6.1.3-blue?style=for-the-badge" alt="Supertest Version" /></a></div>
+        <div style="width: 40%; height: fit-content;"><a href="https://nodejs.org/en/about" target="_blank"><img src="https://img.shields.io/badge/Node.js-v18.16.0-blue?style=for-the-badge&logo=nodedotjs" alt="Node.js Version" /></a></div>
+        <div style="width: 40%; height: fit-content;"><a href="https://eslint.org/" target="_blank"><img src="https://img.shields.io/badge/eslint-v8.51.0-blue?style=for-the-badge&logo=eslint" alt="Eslint Version" /></a></div>
+        <div style="width: 40%; height: fit-content;"><a href="https://www.typescriptlang.org/" target="_blank"><img src="https://img.shields.io/badge/TypeScript-v4.7.4-blue?style=for-the-badge&logo=typescript" alt="TypeScript Version" /></a></div>
+        <div style="width: 40%; height: fit-content;"><a href="https://prettier.io/" target="_blank"><img src="https://img.shields.io/badge/prettier-v2.3.2-blue?style=for-the-badge&logo=prettier" alt="Prettier Version" /></a></div>
+        <div style="width: 40%; height: fit-content;"><a href="https://www.npmjs.com/" target="_blank"><img src="https://img.shields.io/badge/npm-v9.5.1-blue?style=for-the-badge&logo=npm" alt="npm Version" /></a></div>
+        <div style="width: 40%; height: fit-content;"><a href="https://redis.io/" target="_blank"><img src="https://img.shields.io/badge/Redis-v6.0.16-blue?style=for-the-badge&logo=redis" alt="Redis Version" /></a></div>
+        <div style="width: 40%; height: fit-content;"><a href="https://www.npmjs.com/package/fastq" target="_blank"><img src="https://img.shields.io/badge/fastq-v1.15.0-blue?style=for-the-badge" alt="Fastq Version" /></a></div>
+        <div style="width: 40%; height: fit-content;"><a href="https://www.npmjs.com/package/bull" target="_blank"><img src="https://img.shields.io/badge/bull-v4.10.4-blue?style=for-the-badge" alt="Bull Version" /></a></div>
+        <div style="width: 40%; height: fit-content;"><a href="https://www.rabbitmq.com/" target="_blank"><img src="https://img.shields.io/badge/RabbitMQ-v3.12-blue?style=for-the-badge&logo=rabbitmq" alt="RabbitMQ Version" /></a></div>
+        </div>
+    </div>
+</div>
+<br>
 
-1. Download the project: bash git clone https://github.com/GRD-1/balance-rating.git
-2. Install docker + docker-compose to your local operating system
-3. Using the terminal go to the project root
-4. Build project in product mode using the command [ docker-compose -f docker-prod.yml up --build ]
-5. Build project in development mode using the command [ docker-compose -f docker-dev.yml up --build ]
+## Launch
+
+The project is prepared to launch via the docker.You need to install
+<a href="https://www.docker.com/products/docker-desktop/" target="_blank">Docker</a>
+and then run the corresponding command in the terminal.
+
+* for development mode use:
+``` bash
+$ docker stop $(docker ps -aq)
+$ docker-compose -f docker-dev.yml -p task_queues-dev up -d
+$ docker logs task_queues-node-dev -f --tail 30
+```
+* for product mode use:
+``` bash
+$ docker stop $(docker ps -aq)
+$ docker-compose -f docker-prod.yml -p task_queues-prod up -d
+```
+* for test mode use:
+``` bash
+$ docker stop $(docker ps -aq)
+$ docker-compose -f docker-test.yml -p task_queues-test up -d
+```
 
 ## Settings
 
@@ -52,17 +83,6 @@ The processing time starts counting from the moment the data is completely loade
   * to set the default queue library use the variable __[ DEFAULT_QUERY.LIBRARY ]__ in config/default.cjs
   * to set the number of blocks loaded by default use the variable __[ DEFAULT_QUERY.BLOCKS_AMOUNT ]__ in config/default.cjs
   * to set the default "last block" number use the variable __[ DEFAULT_QUERY.LAST_BLOCK ]__ in config/default.cjs
-
-## Launch
-
-* if you launch the project for the first time, you just need to follow the instructions from chapter [Deploy](#deploy), 
-project will be launched automatically
-* if you already have the built docker image set use the command:
-  * [ docker-compose -f docker-prod.yml up ] for product mode
-  * [ docker-compose -f docker-dev.yml up ] for development mode
-* to stop the project use the command:
-  * [ docker-compose -f docker-prod.yml down ] for product mode
-  * [ docker-compose -f docker-dev.yml down ] for development mode
 
 ## Usage
 
@@ -83,21 +103,22 @@ project will be launched automatically
 
 ## Tests
 
-* All tests are here: _src/test
-* html coverage report will be here: _src/test/coverage
+* To perform the tests you need to be loaded in [Test mode](#Launch). It's important because the tests use a database (!)
 
-* to run tests in local mode:
-  * To run unit tests use the command: [ npm run test:unit ]
-  * To run integration tests use the command: [ npm run test:int ]
-  * To run a specific test use the command: [ jest <pathToSpecificTest> ]
-  * To run all tests and get the coverage map use the command: [ npm run test:cov ]
+```bash
+# unit tests
+$ docker exec -it task_queues-node-test npm run test:unit
+```
 
-* to run tests in docker mode:
-  * Build the project in development mode using the command [ docker-compose -f docker-dev.yml up --build ]
-  * To run unit tests use the command: [ docker exec -it taskqueues-node-1 npm run test:unit ]
-  * To run integration tests use the command: [ docker exec -it taskqueues-node-1 npm run test:int ]
-  * To run a specific test use the command: [ docker exec -it taskqueues-node-1 jest <pathToSpecificTest> ]
-  * To run all tests and get the coverage map use the command: [ docker exec -it taskqueues-node-1 npm run test:cov ]
+```bash
+# integration tests
+$ docker exec -it task_queues-node-test npm run test:int
+```
+
+```bash
+# test coverage
+$ docker exec -it task_queues-node-test npm run test:cov
+```
 
 ## Comments
 

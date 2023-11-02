@@ -2,7 +2,7 @@ version: '3'
 services:
   rabbitmq:
     image: rabbitmq:3.12-management
-    container_name: task_queues-rabbitmq-dev
+    container_name: task_queues-rabbitmq-test
     restart: on-failure
     ports:
       - '5672:5672'
@@ -10,14 +10,14 @@ services:
 
   redis:
     image: redis:6.0.16
-    container_name: task_queues-redis-dev
+    container_name: task_queues-redis-test
     restart: on-failure
     ports:
       - '6379:6379'
 
   node:
-    image: task_queues-nodeimg-dev
-    container_name: task_queues-node-dev
+    image: task_queues-nodeimg-test
+    container_name: task_queues-node-test
     restart: on-failure
     volumes:
       - ./_src:/projectFiles/_src
@@ -25,7 +25,7 @@ services:
       - ./config:/projectFiles/config
     build:
       context: .
-      dockerfile: _src/Dockerfile-dev
+      dockerfile: _src/Dockerfile-test
     ports:
       - '3000:3000'
     depends_on:

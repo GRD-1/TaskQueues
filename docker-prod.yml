@@ -5,7 +5,7 @@ version: '3'
 services:
   rabbitmq:
     image: rabbitmq:3.12-management
-    container_name: taskQueues-rabbitmq
+    container_name: task_queues-rabbitmq-prod
     restart: on-failure
     ports:
       - '5672:5672'
@@ -13,14 +13,14 @@ services:
 
   redis:
     image: redis:6.0.16
-    container_name: taskQueues-redis
+    container_name: task_queues-redis-prod
     restart: on-failure
     ports:
       - '6379:6379'
 
   node:
-    image: nodeapp
-    container_name: taskQueues-node
+    image: task_queues-nodeimg-prod
+    container_name: task_queues-node-prod
     restart: on-failure
     volumes:
       - ./_src:/projectFiles/_src
