@@ -6,7 +6,4 @@ COPY ../package.json ../tsconfig.json ../nodemon-debug.json ./
 
 RUN npm install
 
-ENV NODE_ENV=debug
-ENV DOCKER_BUILD=true
-
 ENTRYPOINT ["npm", "run", "start:debug"]
