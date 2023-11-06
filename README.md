@@ -64,6 +64,12 @@ $ docker stop $(docker ps -aq)
 $ docker-compose -f docker-dev.yml -p task_queues-dev up -d
 $ docker logs task_queues-node-dev -f --tail 30
 ```
+* for debug mode use:
+``` bash
+$ docker stop $(docker ps -aq)
+$ docker-compose -f docker-debug.yml -p task_queues-debug up -d
+$ docker logs task_queues-node-debug -f --tail 30
+```
 * for product mode use:
 ``` bash
 $ docker stop $(docker ps -aq)

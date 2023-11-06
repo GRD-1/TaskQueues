@@ -15,8 +15,8 @@
   "license": "ISC",
   "scripts": {
     "start:prod": "npm run build && NODE_ENV=prod node app/index.js",
-    "start:dev": "tsc-watch --onSuccess \"npm run watch\"",
-    "watch": "nodemon --watch '_src/**/*.ts' --exec \"NODE_ENV=dev node --experimental-specifier-resolution=node --loader ts-node/esm\" _src/index.ts",
+    "start:dev": "NODE_ENV=dev tsc-watch --onSuccess 'nodemon --config ./nodemon-dev.json _src/index.js'",
+    "start:debug": "NODE_ENV=debug tsc-watch --onSuccess 'nodemon --config ./nodemon-debug.json _src/index.js'",
     "run-typescript": "ts-node-transpile-only",
     "build": "tsc && node app/utils/fix-imports.util.js",
     "test:unit": "jest --config ./_src/test/unit/jest.unit-config.json",

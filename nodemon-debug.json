@@ -1,0 +1,10 @@
+{
+  "watch": [
+    "_src"
+  ],
+  "ext": "ts",
+  "ignore": [
+    "src/test"
+  ],
+  "exec": "node --inspect=0.0.0.0:9229 --experimental-specifier-resolution=node --loader ts-node/esm --require ts-node/register --require tsconfig-paths/register _src/index.ts"
+}

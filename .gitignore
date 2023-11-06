@@ -4,3 +4,4 @@ git
 package-lock.json
 app
 _src/test/coverage
+logs
