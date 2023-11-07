@@ -15,12 +15,12 @@
   "license": "ISC",
   "scripts": {
     "start:prod": "npm run build && NODE_ENV=prod node app/index.js",
-    "start:dev": "NODE_ENV=dev tsc-watch --onSuccess 'nodemon --config devops/nodemon-dev.json _src/index.js'",
-    "start:debug": "NODE_ENV=debug tsc-watch --onSuccess 'nodemon --config devops/nodemon-debug.json _src/index.js'",
+    "start:dev": "NODE_ENV=dev tsc-watch --onSuccess 'nodemon --config devops/nodemon-dev.json _src/index.ts'",
+    "start:debug": "NODE_ENV=debug tsc-watch --onSuccess 'nodemon --config devops/nodemon-debug.json _src/index.ts'",
     "run-typescript": "ts-node-transpile-only",
     "build": "tsc && node app/utils/fix-imports.util.js",
-    "test:unit": "jest --config ./_src/test/unit/jest.unit-config.json",
-    "test:int": "jest --config ./_src/test/integration/jest.integration-config.json",
+    "test:unit": "jest --config _src/test/unit/jest.unit-config.json",
+    "test:int": "jest --config _src/test/integration/jest.integration-config.json",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage --config jest.config.json",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"

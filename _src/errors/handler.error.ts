@@ -1,6 +1,6 @@
 import Emitter from 'events';
 import { UNCAUGHT_ERROR, SRV_ERROR } from './library.error';
-const logger = { error: (a: string, b?: Error): void => console.log(a, b.message) };
+const logger = { error: (a: string, b?: Error): void => console.log(a, b) };
 
 class ErrorHandler {
   private static _instance: ErrorHandler;
