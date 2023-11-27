@@ -22,14 +22,14 @@ The processing time starts counting from the moment the data is completely loade
 </p>
 
 ## Contents
-1. [Packages](#packages)
+1. [Stack](#Stack)
 2. [Settings](#settings)
 3. [Launch](#launch)
 4. [Usage](#usage)
 5. [Tests](#tests)
 6. [Comments](#comments)
 
-## Packages
+## Stack
 
 <div>
     <div>
